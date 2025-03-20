@@ -17,7 +17,14 @@ from dotenv import load_dotenv
 
 from .init_system import init_system
 from .multi_agent_graph import PensionAdvisorGraph
+from .agent import PensionAdvisor
+from .multi_agent_graph import PensionAnalystAgent
+from .document_processor import DocumentProcessor
 
+# Create instances
+doc_processor = DocumentProcessor()  # Ensure DocumentProcessor is initialized
+analyst_agent = PensionAnalystAgent(doc_processor) 
+advisor = PensionAdvisor(doc_processor, analyst_agent)  # Pass the analyst agent instance
 # Configure logging
 logging.basicConfig(
     level=logging.DEBUG,  # Set to DEBUG for more detailed logs

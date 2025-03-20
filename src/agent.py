@@ -13,8 +13,9 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain.callbacks.manager import CallbackManager
-
 from .document_processor import DocumentProcessor
+from .analyst_agent import PensionAnalystAgent
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -25,6 +26,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class PensionAdvisor:
+    def __init__(self, doc_processor: DocumentProcessor,analyst_agent: PensionAnalystAgent):
+        self.doc_processor = doc_processor
+        self.vectorstore = self.doc_processor.load_vectorstore()  # This should now work without creating a new instance
+        self.analyst_agent = PensionAnalystAgent(doc_processor) 
+
     _instance = None
     _initialized = False
     

@@ -9,16 +9,16 @@ import logging
 from dataclasses import dataclass, field
 import datetime
 import re
-
+import os
+from .document_processor import DocumentProcessor
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
-
+from .analyst_agent import PensionAnalystAgent
 from .agent import PensionAdvisor
-from .document_processor import DocumentProcessor
 from .cost_tracker import cost_tracker, TokenUsage, AgentCostLog
 from .error_analyzer import error_analyzer, ErrorType
-from .presentation_db import presentation_db
+from .presentation_db import PensionAnalysisManager  # Import the manager
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -67,18 +67,35 @@ class ConversationalAgent:
             temperature=0.7,
             model="gpt-4"
         )
-        
+        self.presentation_manager = PensionAnalysisManager()  # Create an instance of the manager
+    
+    
     def generate_response(self, state: GraphState) -> GraphState:
+        # Check if a specific agreement is selected
+        if self.selected_agreement is None:
+            factors = self.presentation_manager.get_factors()
+            if not factors or not factors.agreements:
+                raise ValueError("No agreements found in the presentation manager.")
+            all_agreements = factors.agreements
+            docs = doc_processor.query_documents(state["question"], all_agreements, top_k=3)
+        else:
+            if not self.selected_agreement:
+                raise ValueError("Selected agreement is empty.")
+            docs = doc_processor.query_documents(state["question"], self.selected_agreement, top_k=3)
+        
+        # Generate a response based on the user's question and available documents
+        response_content = self._generate_response_based_on_agreements(state["question"], docs)
+
         try:
-            # Get the required information from the presentation database
-            required_fields = presentation_db.get_required_factors()
+            # Get the required information from the presentation manager
+            required_fields = self.presentation_manager.get_required_factors()
             
             # Extract user profile information from state
             user_profile = state.get("user_profile", {})
             
             # Check which required fields are missing
             missing_fields = [field.name for field in required_fields 
-                             if field.name not in user_profile]
+                            if field.name not in user_profile]
             
             # Prepare system message based on missing fields
             if missing_fields:
@@ -103,6 +120,7 @@ class ConversationalAgent:
             if conversation_history:
                 messages = [SystemMessage(content=system_message)] + conversation_history + [HumanMessage(content=state["question"])]
             
+
             try:
                 response = self.llm.invoke(messages)
                 
@@ -139,7 +157,7 @@ class ConversationalAgent:
                 
                 return GraphState(
                     **state,
-                    response=response.content,
+                    response=response_content,  # Include the response content here
                     state=next_state
                 )
             except Exception as e:
@@ -274,135 +292,6 @@ class ConversationalAgent:
         completion_cost = (usage.completion_tokens / 1000) * 0.06
         return prompt_cost + completion_cost
 
-class PensionAnalystAgent:
-    """Expert agent that analyzes gathered information and pension rules"""
-    def __init__(self):
-        self.llm = ChatOpenAI(
-            temperature=0.2,
-            model="gpt-4"
-        )
-        self.advisor = PensionAdvisor()
-        
-    def analyze_needs(self, state: GraphState) -> GraphState:
-        try:
-            # Get user profile information
-            user_profile = state.get("user_profile", {})
-            
-            # If user profile is empty, return a friendly message
-            if not user_profile:
-                return GraphState(
-                    **state,
-                    response="Jag har inte tillräckligt med information för att analysera dina pensionsbehov. Kan du berätta lite mer om din situation?",
-                    state=AgentState.GATHERING_INFO.value
-                )
-            
-            # Create a user-friendly summary of the collected information
-            profile_summary = []
-            if "age" in user_profile:
-                profile_summary.append(f"Ålder: {user_profile['age']} år")
-            if "current_salary" in user_profile:
-                profile_summary.append(f"Lön: {user_profile['current_salary']} kr/månad")
-            if "employment_type" in user_profile:
-                emp_type = user_profile['employment_type']
-                emp_type_swedish = {
-                    "public": "offentlig sektor",
-                    "private": "privat sektor",
-                    "self-employed": "egenföretagare"
-                }.get(emp_type, emp_type)
-                profile_summary.append(f"Anställningstyp: {emp_type_swedish}")
-            
-            # Generate analysis using LLM
-            system_prompt = """Du är en expert på pensionsanalys i Sverige.
-            Baserat på den information du har, ge en kort och tydlig analys av personens pensionssituation.
-            Var pedagogisk och förklara på ett sätt som är lätt att förstå.
-            Om du saknar viktig information, nämn det och förklara varför den informationen är viktig."""
-            
-            messages = [
-                SystemMessage(content=system_prompt),
-                HumanMessage(content=f"Analysera följande information om en person:\n{', '.join(profile_summary)}")
-            ]
-            
-            response = self.llm.invoke(messages)
-            
-            # Track token usage
-            usage = response.usage
-            state["token_usage"].append({
-                "agent_type": "analyst",
-                "action": "analyze_needs",
-                "conversation_id": state["conversation_id"],
-                "token_usage": {
-                    "prompt_tokens": usage.prompt_tokens,
-                    "completion_tokens": usage.completion_tokens,
-                    "total_tokens": usage.total_tokens,
-                    "cost": self._calculate_cost(usage)
-                }
-            })
-            
-            # Create a response that acknowledges the user's information and provides analysis
-            final_response = f"""Tack för informationen! Baserat på det du berättat kan jag ge dig följande analys:
-
-{response.content}
-
-Vill du ha mer specifika råd om din pensionssituation?"""
-            
-            return GraphState(
-                **state,
-                analysis=response.content,
-                response=final_response,
-                state=AgentState.ANALYZING_NEEDS.value
-            )
-            
-        except Exception as e:
-            logger.error(f"Error in analyst agent: {str(e)}", exc_info=True)
-            return GraphState(
-                **state,
-                error=str(e),
-                response="Tyvärr kunde jag inte analysera din pensionssituation just nu. Kan vi försöka igen?",
-                state=AgentState.ERROR.value
-            )
-
-    def generate_advice(self, state: GraphState) -> GraphState:
-        try:
-            # Generate professional advice based on analysis
-            messages = [
-                SystemMessage(content="Du är en expert på att ge pensionsråd."),
-                HumanMessage(content=f"Ge råd baserat på denna analys: {state['analysis']}")
-            ]
-            
-            response = self.llm.invoke(messages)
-            
-            # Track token usage
-            usage = response.usage
-            state["token_usage"].append({
-                "agent_type": "analyst",
-                "action": "generate_advice",
-                "conversation_id": state["conversation_id"],
-                "token_usage": {
-                    "prompt_tokens": usage.prompt_tokens,
-                    "completion_tokens": usage.completion_tokens,
-                    "total_tokens": usage.total_tokens,
-                    "cost": self._calculate_cost(usage)
-                }
-            })
-            
-            return GraphState(
-                **state,
-                response=response.content,
-                state=AgentState.GENERATING_ADVICE.value
-            )
-            
-        except Exception as e:
-            return GraphState(
-                **state,
-                error=str(e),
-                state=AgentState.ERROR.value
-            )
-
-    def _calculate_cost(self, usage) -> float:
-        """Calculate cost based on GPT-4 pricing"""
-        prompt_cost = (usage.prompt_tokens / 1000) * 0.03  # $0.03 per 1K tokens
-        completion_cost = (usage.completion_tokens / 1000) * 0.06  # $0.06 per 1K tokens
-        return prompt_cost + completion_cost
 
 class CalculationAgent:
     """Agent for performing pension calculations"""
@@ -640,13 +529,24 @@ class FeedbackHandler:
         completion_cost = (usage.completion_tokens / 1000) * 0.06  # $0.06 per 1K tokens
         return prompt_cost + completion_cost
 
+
 class PensionAdvisorGraph:
     def __init__(self):
         self.conversational_agent = ConversationalAgent()
-        self.analyst_agent = PensionAnalystAgent()
+        self.doc_processor = DocumentProcessor()
+        self.analyst_agent = PensionAnalystAgent(doc_processor)
         self.calculation_agent = CalculationAgent()
         self.recommendation_agent = RecommendationAgent()
         self.feedback_handler = FeedbackHandler()
+        self.selected_agreement = None  # Initialize selected agreement
+        self.presentation_manager = PensionAnalysisManager()  # Add this line to initialize presentation_manager
+        self.doc_processor = DocumentProcessor()  # Initialize the DocumentProcessor
+
+    def get_selected_agreement(self):
+        return self.selected_agreement
+
+    def set_selected_agreement(self, agreement):
+        self.selected_agreement = agreement
 
     def should_analyze_needs(self, state: GraphState) -> str:
         """Determine if we should move to analyzing needs"""
@@ -865,20 +765,67 @@ class PensionAdvisorGraph:
             return "Tyvärr uppstod ett fel. Vårt team har notifierats.", []
     
     def _generate_direct_response(self, question: str, conversation_history: List) -> str:
+        if self.selected_agreement is None:
+            # Retrieve all available agreements from the presentation manager
+            all_agreements = self.presentation_manager.get_factors().agreements
+            print(f'all agreements: {all_agreements}')
+
+            # Use the analyst agent's LLM to generate a response
+            llm = ChatOpenAI(
+                model_name="gpt-4",
+                temperature=0.5
+            )
+            # Include relevant information in the prompt if available
+            system_prompt = ''
+            if all_agreements:
+                system_prompt += f"\n\nRelevant information från dokument:\n{all_agreements}"
+            system_prompt = f"""Du är SIWRA, en varm, självsäker och engagerande pensionsrådgivare som specialiserar sig på alla avtal tillgängliga i {all_agreements} listan (om den är tom, säg bara just nu är listan tom, hitta inte på).
+            
+            VIKTIGT: 
+            1. Var ALLTID POSITIV och SJÄLVSÄKER i dina svar. Undvik fraser som "Som en AI kan jag inte..."
+            2. Håll dina svar KORTA och KONCISA - max 2-3 meningar.
+            3. Använd ett VARMT och PERSONLIGT språk, som om du pratar med en vän.
+            4. Använd KOMPLIMANGER och visa UPPSKATTNING för användarens frågor.
+            5. Om du inte har personlig information, säg något som: "Jag känner inte till dina personliga detaljer ännu, men jag skulle älska att lära mig mer så jag kan ge dig personlig rådgivning!"
+            6. Nämn avtalsnamn som du hittar i all_agreements eller om användare har nämnt, fortsätt nämna den så man ser att du har koll.
+            
+            Om frågan är om personlig pension, visa ENTUSIASM för att hjälpa och be om mer information på ett VARMT sätt."""
+            
+
+            
+            messages = [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=question)
+            ]
+            
+            # Add conversation history to the prompt
+            if conversation_history:
+                messages = [SystemMessage(content=system_prompt)] + conversation_history + [HumanMessage(content=question)]
+            
+            response = llm.invoke(messages)
+            
+            # Ensure response is concise (truncate if necessary)
+            content = response.content
+            if len(content) > 500:
+                sentences = content.split('.')
+                shortened = '.'.join(sentences[:3]) + '.'
+                logger.info(f"Shortened response from {len(content)} to {len(shortened)} characters")
+                content = shortened
+            
+            logger.info(f"Generated direct response: {content[:100]}...")
+            
+            return content
+
+        else:
+            docs = self.doc_processor.query_documents(question, self.selected_agreement, top_k=3)
+
         """Generate a direct response to a question using embeddings first, then LLM"""
         try:
             logger.info(f"Generating direct response for: {question}")
-            
+
             # First, query the vector store for relevant information
             relevant_info = ""
             try:
-                # Use document processor to query vector store
-                from .document_processor import DocumentProcessor
-                doc_processor = DocumentProcessor()
-                
-                # Get relevant documents from vector store
-                docs = doc_processor.query_documents(question, top_k=3)
-                
                 if docs:
                     # Extract the content from the documents
                     relevant_info = "\n\n".join([f"Document: {doc.metadata.get('source', 'Unknown')}\nContent: {doc.page_content}" for doc in docs])
@@ -888,14 +835,14 @@ class PensionAdvisorGraph:
             except Exception as e:
                 logger.error(f"Error querying vector store: {str(e)}", exc_info=True)
                 relevant_info = ""
-            
+
             # Use the analyst agent's LLM to generate a response
             llm = ChatOpenAI(
                 model_name="gpt-4",
                 temperature=0.5
             )
-            
-            system_prompt = """Du är SIWRA, en varm, självsäker och engagerande pensionsrådgivare som specialiserar sig på AKAP-KR avtalet.
+
+            system_prompt = """Du är SIWRA, en varm, självsäker och engagerande pensionsrådgivare som specialiserar sig på alla avtal tillgängliga i databasen (om den är tom, säg bara just nu är tom, hitta inte på).
             
             VIKTIGT: 
             1. Var ALLTID POSITIV och SJÄLVSÄKER i dina svar. Undvik fraser som "Som en AI kan jag inte..."
@@ -903,7 +850,7 @@ class PensionAdvisorGraph:
             3. Använd ett VARMT och PERSONLIGT språk, som om du pratar med en vän.
             4. Använd KOMPLIMANGER och visa UPPSKATTNING för användarens frågor.
             5. Om du inte har personlig information, säg något som: "Jag känner inte till dina personliga detaljer ännu, men jag skulle älska att lära mig mer så jag kan ge dig personlig rådgivning!"
-            6. Nämn AKAP-KR eller andra specifika avtal när det är relevant.
+            6. Nämn avtalsnamn som du hittar i vektordatabasen eller om användare har nämnt, fortsätt nämna den så man ser att du har koll.
             
             Om frågan är om personlig pension, visa ENTUSIASM för att hjälpa och be om mer information på ett VARMT sätt."""
             
@@ -937,7 +884,7 @@ class PensionAdvisorGraph:
         except Exception as e:
             logger.error(f"Error generating direct response: {str(e)}", exc_info=True)
             return "Jag kan tyvärr inte svara på den frågan just nu. Kan du omformulera?"
-
+            
 def main():
     """Example usage"""
     advisor = PensionAdvisorGraph()

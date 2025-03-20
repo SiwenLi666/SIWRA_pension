@@ -9,7 +9,7 @@ from enum import Enum
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from .presentation_db import presentation_db, InformationFactor
+from .presentation_db import PensionAnalysisManager  # Import the manager
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class ErrorType(Enum):
 class ErrorAnalysis:
     error_type: ErrorType
     description: str
-    missing_factors: List[InformationFactor] = None
+    missing_factors: List[str] = None  # Change to str if you just want names
     can_recover: bool = False
     next_action: str = None
     user_message: str = None
@@ -35,6 +35,7 @@ class ErrorAnalyzer:
             temperature=0.1,  # Low temperature for consistent analysis
             model="gpt-4"  # Using GPT-4 for better error understanding
         )
+        self.presentation_manager = PensionAnalysisManager()  # Create an instance of the manager
         
     def _prepare_error_prompt(self, error: str, state: Dict) -> str:
         """Prepare a prompt for error analysis"""
@@ -70,7 +71,7 @@ class ErrorAnalyzer:
         try:
             # First, check if it's clearly a missing info error
             if "required field" in error.lower() or "missing" in error.lower():
-                missing_factors = presentation_db.get_missing_factors(state.get('user_profile', {}))
+                missing_factors = self.presentation_manager.get_missing_factors(state.get('user_profile', {}))
                 if missing_factors:
                     return ErrorAnalysis(
                         error_type=ErrorType.MISSING_INFO,
@@ -104,7 +105,7 @@ class ErrorAnalyzer:
             
             # Parse the analysis
             if "MISSING_INFO" in analysis:
-                missing_factors = presentation_db.get_missing_factors(state.get('user_profile', {}))
+                missing_factors = self.presentation_manager.get_missing_factors(state.get('user_profile', {}))
                 return ErrorAnalysis(
                     error_type=ErrorType.MISSING_INFO,
                     description=analysis.get('description', ''),
@@ -155,7 +156,7 @@ class ErrorAnalyzer:
         if error_analysis.error_type == ErrorType.MISSING_INFO:
             # Update frequency of missing factors
             for factor in error_analysis.missing_factors:
-                presentation_db.increment_factor_frequency(factor.name)
+                self.presentation_manager.increment_factor_frequency(factor.name)
             
             # If we have a conversation history, try to extract new question templates
             if state.get('conversation_history'):
@@ -165,10 +166,7 @@ class ErrorAnalyzer:
         """Extract useful question patterns from successful conversations"""
         try:
             # Prepare conversation for analysis
-            conversation_text = "\n".join([
-                f"{'Bot' if msg['role'] == 'assistant' else 'User'}: {msg['content']}"
-                for msg in conversation_history
-            ])
+            conversation_text = "\n".join([f"{'Bot' if msg['role'] == 'assistant' else 'User'}: {msg['content']}" for msg in conversation_history])
             
             # Ask LLM to identify useful question patterns
             messages = [
@@ -190,10 +188,7 @@ class ErrorAnalyzer:
             for pattern in patterns:
                 if ':' in pattern:
                     factor, template = pattern.split(':', 1)
-                    presentation_db.add_question_template(
-                        factor.strip().lower(),
-                        template.strip()
-                    )
+                    self.presentation_manager.add_question_template(factor.strip().lower(), template.strip())
                     
         except Exception as e:
             logger.error(f"Failed to extract question patterns: {e}")

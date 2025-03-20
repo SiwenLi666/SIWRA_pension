@@ -5,7 +5,7 @@ import asyncio
 import logging
 from pathlib import Path
 from .document_processor import DocumentProcessor
-from .presentation_db import presentation_db
+from .presentation_db import PensionAnalysisManager  # Import the manager
 from .cost_tracker import cost_tracker
 
 # Set up logging
@@ -24,12 +24,6 @@ async def init_system():
         # Create directories if they don't exist
         for directory in [data_dir, docs_dir, agreements_dir]:
             directory.mkdir(parents=True, exist_ok=True)
-        
-        # Initialize presentation database
-        logger.info("Initializing presentation database...")
-        if not (data_dir / "presentation.db").exists():
-            logger.info("Creating new presentation database...")
-            presentation_db._init_db()
         
         # Initialize cost tracker
         logger.info("Initializing cost tracker...")
