@@ -16,7 +16,11 @@ from src.database.presentation_db import PensionAnalysisManager
 
 DetectorFactory.seed = 0
 logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.WARNING,  # 🔇 suppress info/debug
+    format="%(levelname)s:%(name)s:%(message)s"
+)
+
 logger = logging.getLogger(__name__)
 
 

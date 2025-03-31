@@ -60,9 +60,7 @@ class PensionAdvisorGraph:
             logger.error("❌ LangGraph returned None. Something went wrong during execution.")
             raise RuntimeError("LangGraph returned None instead of a GraphState")
 
-        return getattr(result, "response", "Ingen respons genererades."), result
-
-
+        return result.get("response", "Ingen respons genererades."), result
 
 
 class ChatMessage(BaseModel):

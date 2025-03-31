@@ -54,7 +54,10 @@ class AnswerAgent:
 
         try:
             response = self.llm.invoke(prompt).content.strip()
-            logger.info(f"[generate_answer] LLM response: {response[:100]}...")
+            logger.debug("[generate_answer] Generating answer...")
+            logger.warning(f"[generate_answer] LLM draft answer:\n{response}")
+
+
             state["draft_answer"] = response
             return state
 
@@ -87,6 +90,9 @@ class RefinerAgent:
         ]
         reformulated = self.llm.invoke(messages).content.strip()
         logger.info(f"[refine_answer] Reformulated question: {reformulated}")
+        logger.warning(f"[refine_answer] LLM refined answer:\n{new_answer}")
+
+        
 
         # 2. Retrieve again
         new_docs = self.retriever.retrieve_relevant_docs(reformulated, top_k=3)
@@ -136,6 +142,7 @@ class VerifierAgent:
         route = "good" if is_sufficient else "bad"
 
         state["route"] = route
+        logger.warning(f"[verify_answer] LLM judged sufficiency: {route}")
         return state
 
 
@@ -182,6 +189,7 @@ class MissingFieldsAgent:
         # Return the final conversation outcome
         state["response"] = full_response
         state["state"] = AgentState.FINISHED.value
+        logger.warning(f"[ask_for_missing_fields] Follow-up response to user:\n{full_response}")
         return state
 
 
