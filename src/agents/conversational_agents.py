@@ -148,7 +148,8 @@ class FeedbackAgent:
                 """Du är en expert på pensionsrådgivning i Sverige.
                 En användare har gett feedback på ett tidigare svar. Analysera feedbacken och ge ett förbättrat svar.
                 Var lyhörd för användarens behov och anpassa ditt svar därefter.
-                Om användaren verkar nöjd, fortsätt att bygga på det tidigare svaret med mer värdefull information."""
+                Om användaren verkar nöjd, fortsätt att bygga på det tidigare svaret med mer värdefull information.
+                OBS! försök vara kort och koncist!"""
             )
 
             messages = [

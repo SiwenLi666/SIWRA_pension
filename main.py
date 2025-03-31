@@ -49,29 +49,37 @@ class PensionAdvisorGraph:
 
         logger.info(f"🧪 Building state: {state_dict}")
 
-        final = None
+        final_state = None
         for step in self.graph.stream(state_dict):
-            if "status" in step:
-                logger.info(f"🧠 Status update: {step['status']}")
-            final = step
+            if isinstance(step, dict):
+                final_state = step  # always track the last dict
 
-        if final is None:
-            logger.error("❌ LangGraph returned None. Something went wrong during execution.")
-            raise RuntimeError("LangGraph returned None instead of a GraphState")
+        if not final_state:
+            logger.error("❌ LangGraph did not return any state.")
+            raise RuntimeError("LangGraph failed to produce a final output.")
 
-        logger.info(f"🧠 Final state from LangGraph:\n{final}")
+        # 🔓 UNWRAP single-node result like {"ask_for_missing_fields": {...}}
+        if len(final_state) == 1 and isinstance(list(final_state.values())[0], dict):
+            logger.warning("[DEBUG] Detected wrapped final state — unwrapping it.")
+            final_state = list(final_state.values())[0]
 
-        # ✅ Fallback if response is missing
-        response_text = final.get("response") or final.get("draft_answer") or "Tyvärr, ingen respons genererades."
+        logger.info(f"🧠 Final state from LangGraph:\n{final_state}")
+        logger.warning(f"[DEBUG] state keys: {list(final_state.keys())}")
 
-        # 💡 Force string for safety
+        response_text = (
+            final_state.get("response")
+            or final_state.get("draft_answer")
+            or "Tyvärr, ingen respons genererades."
+        )
+
         if not isinstance(response_text, str):
             response_text = str(response_text)
+        response_text = response_text.strip().replace('\u202f', ' ').replace('\xa0', ' ')
 
-        # ✅ Final log
-        logger.info(f"✅ Final response to frontend: {response_text[:300]}")
+        logger.info(f"✅ Cleaned response: {response_text[:300]}")
+        return response_text, final_state
 
-        return response_text, final
+
 
 
 
@@ -143,8 +151,8 @@ async def chat(message: ChatMessage, request: Request):
         # ✅ Safety net: force string
         if not isinstance(response, str):
             response = str(response)
-        logger.info(f"Generated response: {response[:100]}...")
-        logger.info(f"🚀 Returning to frontend: {response}")
+        
+        logger.info(f"[chat endpoint] Final response: {repr(response)}")
         return ChatResponse(response=response)
 
 

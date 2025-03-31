@@ -2,7 +2,7 @@
   "agreements": [
     {
       "name": "PA16",
-      "description": "Auto-generated description for PA16",
+      "description": "Bekrivning för PA16",
       "documents": [
         {
           "file": "arbetsgivarnyckel-till-pa16-230509.pdf",
@@ -12,7 +12,7 @@
     },
     {
       "name": "SKR2023",
-      "description": "Auto-generated description for SKR2023",
+      "description": "Bekrivning för  SKR2023",
       "documents": [
         {
           "file": "SKR2023 Tryckversion AKAP-KR i lydelse 2023-01-01 474115_1_1_siwen.pdf",

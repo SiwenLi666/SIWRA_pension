@@ -67,6 +67,7 @@ class PensionAnalystAgent:
 
         prompt = f"""
         Du är pensionsrådgivare. Sammanfatta lämplig rådgivning baserat på:
+        
 
         PROFIL:
         {user_profile}
@@ -77,7 +78,7 @@ class PensionAnalystAgent:
         BERÄKNINGAR:
         {calculations}
 
-        Ge tydlig, handlingsbar rådgivning med värme och professionalism.
+        Ge tydlig, handlingsbar rådgivning med värme och professionalism, och Begräns svaret till **max två meningar**!
         """
 
         messages = [SystemMessage(content=prompt)]
@@ -117,7 +118,8 @@ class RecommendationAgent:
                 Baserat på användarens profil, analys och beräkningar, ge personliga rekommendationer.
                 Var konkret och ge praktiska råd som användaren kan följa.
                 Förklara varför dina rekommendationer är lämpliga för just denna person.
-                Avsluta med att fråga om användaren har några frågor om rekommendationerna."""
+                Avsluta med att fråga om användaren har några frågor om rekommendationerna.
+                OBS! försök vara kort och koncist! """
             )
 
             context = f"""
@@ -192,7 +194,8 @@ class CalculationAgent:
                 """Du är en expert på pensionsberäkningar i Sverige.
                 Baserat på den information du har, gör en uppskattning av personens pension.
                 Förklara dina beräkningar på ett pedagogiskt sätt.
-                Om du saknar viktig information för att göra en bra beräkning, nämn det."""
+                Om du saknar viktig information för att göra en bra beräkning, nämn det.
+                OBS! försök vara kort och koncist!"""
             )
 
             profile_summary = [f"{key}: {value}" for key, value in user_profile.items()]

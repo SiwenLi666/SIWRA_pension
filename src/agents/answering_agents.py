@@ -222,6 +222,15 @@ class MissingFieldsAgent:
         state["response"] = full_response
         state["state"] = AgentState.FINISHED.value
         logger.warning(f"[ask_for_missing_fields] Follow-up response to user:\n{full_response}")
-        return state
+        return {
+            "response": state["response"],
+            "status": state.get("status"),
+            "user_profile": state.get("user_profile", {}),
+            "conversation_id": state.get("conversation_id"),
+            "token_usage": state.get("token_usage", []),
+            "conversation_history": state.get("conversation_history", []),
+            "state": state.get("state", AgentState.FINISHED.value),
+        }
+
 
 

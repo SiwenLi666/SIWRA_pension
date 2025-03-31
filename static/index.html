@@ -134,9 +134,10 @@
                     },
                     body: JSON.stringify({ message: message })
                 });
-
+                console.log("[debug] Raw fetch response:", response);
                 const data = await response.json();
-                
+                console.log("[debug] Parsed response data:", data);
+
                 // Hide typing indicator
                 typingIndicator.style.display = 'none';
 
