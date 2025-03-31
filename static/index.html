@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>SIWRA Pension Advisor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        #chat-container {
+            height: 500px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 5px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            position: relative;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: 20%;
+        }
+        .bot-message {
+            background-color: #f5f5f5;
+            margin-right: 20%;
+        }
+        .language-indicator {
+            position: absolute;
+            top: -8px;
+            right: 10px;
+            font-size: 0.8em;
+            color: #666;
+            background-color: white;
+            padding: 0 5px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+        #input-container {
+            display: flex;
+            gap: 10px;
+        }
+        #message-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #1976D2;
+        }
+        .typing-indicator {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 10px;
+            display: none;
+        }
+        .welcome-message {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>SIWRA Pension Advisor</h1>
+    <div class="welcome-message">
+        Välkommen! Ställ dina frågor om pension på svenska eller engelska.<br>
+        Welcome! Ask your pension-related questions in Swedish or English.
+    </div>
+    <div id="chat-container"></div>
+    <div class="typing-indicator" id="typing-indicator">Pension advisor is thinking...</div>
+    <div id="input-container">
+        <input type="text" id="message-input" placeholder="Ställ en fråga om pension..." autofocus>
+        <button onclick="sendMessage()">Skicka</button>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const messageInput = document.getElementById('message-input');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function detectLanguage(text) {
+            // Simple language detection based on common Swedish characters
+            const swedishChars = /[åäöÅÄÖ]/;
+            return swedishChars.test(text) ? 'sv' : 'en';
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Add user message to chat
+            const detectedLang = detectLanguage(message);
+            addMessage(message, 'user', detectedLang);
+            messageInput.value = '';
+
+            // Show typing indicator
+            typingIndicator.style.display = 'block';
+            typingIndicator.textContent = detectedLang === 'sv' ? 
+                'Pensionsrådgivaren tänker...' : 
+                'Pension advisor is thinking...';
+
+            try {
+                const response = await fetch('http://localhost:9090/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                
+                // Hide typing indicator
+                typingIndicator.style.display = 'none';
+
+                // Add bot response to chat
+                const responseLang = detectLanguage(data.response);
+                addMessage(data.response, 'bot', responseLang);
+            } catch (error) {
+                console.error('Error:', error);
+                typingIndicator.style.display = 'none';
+                const errorMessage = detectedLang === 'sv' ? 
+                    'Ett fel uppstod. Försök igen senare.' : 
+                    'An error occurred. Please try again later.';
+                addMessage(errorMessage, 'bot', detectedLang);
+            }
+        }
+
+        function addMessage(text, sender, lang) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            
+            // Add language indicator
+            const langIndicator = document.createElement('span');
+            langIndicator.className = 'language-indicator';
+            langIndicator.textContent = lang.toUpperCase();
+            messageDiv.appendChild(langIndicator);
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Add initial welcome message
+        addMessage('Hej! Jag är din pensionsrådgivare. Hur kan jag hjälpa dig?', 'bot', 'sv');
+    </script>
+</body>
+</html>
