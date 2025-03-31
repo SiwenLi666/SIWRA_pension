@@ -17,7 +17,7 @@ class AnswerAgent:
         self.llm = ChatOpenAI(temperature=0.3, model="gpt-4")
 
     def generate(self, state):
-        question = state.get("question", "")
+        question =  state.get("question", "")
         logger.info("[generate_answer] Generating answer from summary.json via LLM...")
 
         try:
@@ -72,7 +72,7 @@ class RefinerAgent:
         logger.info(f"[refine_answer] attempt #{attempts_so_far + 1}")
 
         # 1. Reformulate query
-        question = state.get("question", "")
+        question =  state.get("question", "")
         messages = [
             SystemMessage(content="You are a helpful assistant. Reformulate the question to make it more specific or clearer."),
             HumanMessage(content=f"Original question: {question}")
@@ -117,7 +117,7 @@ class VerifierAgent:
         Check if 'draft_answer' in state is good enough.
         If good, return route='good', else route='bad'.
         """
-        question = state.get("question", "")
+        question =  state.get("question", "")
         draft_answer = state.get("draft_answer", "")
         retrieved_docs = [doc.page_content for doc in state.get("retrieved_docs", [])]
 

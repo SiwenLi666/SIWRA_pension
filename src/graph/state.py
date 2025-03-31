@@ -51,8 +51,13 @@ class GraphState(dict):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        # Fix: explicitly set `question` so it stays available across steps
-        self["question"] = kwargs.get("question", "")
+        # 🔁 OVERRIDE - säkerställ att 'question' blir korrekt
+        if "question" in kwargs:
+            self["question"] = kwargs["question"]
+        elif hasattr(self, "question"):
+            self["question"] = self.question
+        else:
+            self["question"] = ""
 
         self.setdefault("conversation_id", str(uuid.uuid4()))
         self.setdefault("token_usage", [])

@@ -5,17 +5,15 @@ from src.graph.state import GraphState, AgentState
 logger = logging.getLogger(__name__)
 
 def gather_query(state: GraphState) -> GraphState:
-    """
-    This function doesn't do much except confirm we have state["question"] from the user.
-    If the user typed something, we proceed to generate_answer next.
-    """
-    logger.debug(f"[gather_query] State keys: {list(state.keys())}")
-
+    
     question = state.get("question", "")
     logger.info(f"[gather_query] User asked: {question!r}")
 
-    # Just return the same state, possibly setting the state=some_value
+    if not question.strip():
+        logger.warning("[gather_query] ⚠️ Inget meddelande mottaget från användaren – kontrollera att frågan är korrekt satt i GraphState.")
+
     return GraphState(
         **state,
-        state=AgentState.RETRIEVING_CONTEXT.value  # example
+        state=AgentState.RETRIEVING_CONTEXT.value
     )
+

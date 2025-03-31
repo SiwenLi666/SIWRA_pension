@@ -50,7 +50,7 @@ class ConversationalAgent:
 
         # 5) Build messages
         conversation_history = state.get("conversation_history", [])
-        question = state.get("question", "")
+        question =  state.get("question", "")
         messages = [system_message] + conversation_history + [HumanMessage(content=question)]
 
         # 6) Invoke LLM
@@ -143,7 +143,7 @@ class FeedbackAgent:
 
     def process_feedback(self, state: GraphState) -> GraphState:
         try:
-            feedback = state.get("question", "")
+            feedback =  state.get("question", "")
             previous_response = state.get("response", "")
 
             system_prompt = (

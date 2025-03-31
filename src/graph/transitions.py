@@ -10,7 +10,7 @@ def should_analyze_needs(state: GraphState) -> str:
     Decide whether to analyze needs (if user has provided enough data),
     or continue gathering info.
     """
-    question = state.get("question", "")
+    question =  state.get("question", "")
     user_profile = state.get("user_profile", {}) or {}
 
     # 1) Grab the required field names from UserProfile
@@ -56,7 +56,7 @@ def should_refine_or_continue(state: GraphState) -> str:
     for a good answer. If not, return 'refine'.
     """
     response = state.get("response", "")
-    question = state.get("question", "")
+    question =  state.get("question", "")
     docs = state.get("retrieved_docs", [])
     if not ResponseVerifier.is_response_sufficient(question, docs):
         return "refine"
@@ -66,6 +66,7 @@ def should_refine_or_continue(state: GraphState) -> str:
 def route_by_agreement(state: GraphState) -> str:
     detector = AgreementDetector()
     agreement = detector.detect(state.get("question", ""))
+
 
     if agreement:
         state["detected_agreement"] = agreement

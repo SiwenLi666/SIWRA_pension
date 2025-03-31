@@ -26,7 +26,7 @@ class CoreRouterAgent:
 
     def analyze_query(self, state: GraphState) -> GraphState:
         try:
-            user_question = state.get("question", "")
+            user_question =  state.get("question", "")
             all_agreements = self.presentation_manager.get_factors().agreements
 
             prompt = f"""

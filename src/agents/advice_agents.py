@@ -15,7 +15,7 @@ class PensionAnalystAgent:
         self.doc_processor = doc_processor
 
     def analyze_needs(self, state: GraphState) -> GraphState:
-        question = state.get("question", "")
+        question =  state.get("question", "")
         user_profile = state.get("user_profile", {})
         selected_agreement = state.get("selected_agreement")
 

@@ -5,26 +5,26 @@ from pathlib import Path
 from typing import Dict
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
 from src.utils.config import setup_logger
 from src.graph.pension_graph import create_pension_graph
 from src.graph.state import GraphState
 from src.retriever.document_processor import DocumentProcessor
 from src.agents.advice_agents import PensionAnalystAgent
-from src.utils.config import BASE_DIR  # ← if not already imported
+from src.graph.state import AgentState
+
+from src.utils.config import BASE_DIR  
 
 static_dir = Path(BASE_DIR) / "static"
 
 
 setup_logger()
 load_dotenv()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('main')
 
 processor = DocumentProcessor()
 analyst_agent = PensionAnalystAgent(processor)
@@ -36,17 +36,20 @@ class PensionAdvisorGraph:
 
     def run_with_visualization(self, message: str):
         logger.info(f"🔍 Initial user message: {message!r}")
-        assert message.strip(), "❌ Empty message passed to LangGraph."
+        assert isinstance(message, str) and message.strip(), "❌ Tom eller ogiltig fråga skickades till LangGraph."
 
-        state = GraphState(
-            question=message,
-            state="gather_info",
-            conversation_id=str(uuid.uuid4()),
-            conversation_history=[],
-            user_profile={},
-            token_usage=[],
-        )
-        logger.debug(f"🧪 Created initial state: {state}")
+        state_dict = {
+            "question": message.strip(),
+            "state": AgentState.GATHERING_INFO.value,
+            "conversation_id": str(uuid.uuid4()),
+            "conversation_history": [],
+            "user_profile": {},
+            "token_usage": [],
+        }
+
+        logger.info(f"🧪 Building state: {state_dict}")
+        state = GraphState(**state_dict)
+
 
         result = self.graph.invoke(state)
         if result is None:
