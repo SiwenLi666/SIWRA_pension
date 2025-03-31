@@ -46,10 +46,16 @@ class AnswerAgent:
 
 
         prompt = [
-            SystemMessage(content="Du är en pensionsrådgivare som ska hjälpa användaren."),
+            SystemMessage(content=(
+                "Du är en expert pensionsrådgivare. "
+                "Du får endast svara baserat på innehållet i summeringarna nedan. "
+                "summeringarna är extraherad från en vectordatabasen på olika pensions avtal"
+                "Om du inte hittar ett tydligt svar i summeringarna, svara exakt: 'nej'. "
+                "Gissa inte. Hitta ett tydligt matchande svar eller säg 'nej'."
+            )),
             HumanMessage(content=(
                 f"Här är en fråga: '{question}'\n\n"
-                f"Här är summeringar av olika dokument:\n\n{chr(10).join(all_summaries)}\n\n"
+                f"Här är summeringar av olika dokument/avtal:\n\n{chr(10).join(all_summaries)}\n\n"
                 "Om du kan besvara frågan baserat på summeringarna ovan, gör det."
                 " Om det inte finns tillräcklig information för att ge ett meningsfullt svar, svara exakt: 'nej'."
             ))
@@ -132,23 +138,29 @@ class VerifierAgent:
     def verify(self, state):
         """
         Check if 'draft_answer' in state is good enough.
-        If good, return route='good', else route='bad'.
+        If generate_answer gives anything other than 'nej', accept it.
         """
         state["status"] = "📋 Utvärderar om svaret är tillräckligt..."
-        question =  state.get("question", "")
-        draft_answer = state.get("draft_answer", "")
+        question = state.get("question", "")
+        draft_answer = state.get("draft_answer", "").strip()
         retrieved_docs = [doc.page_content for doc in state.get("retrieved_docs", [])]
 
         logger.info("[verify_answer] Verifying draft_answer quality...")
 
+        # ✅ Shortcut: if answer is NOT 'nej', treat it as good
+        if draft_answer.lower() != "nej":
+            logger.info("[verify_answer] Bypassing verifier — draft answer is not 'nej'")
+            state["route"] = "good"
+            return state
+
+        # Otherwise, do proper check
         is_sufficient = self._custom_check(question, draft_answer, retrieved_docs)
-
-        logger.info(f"[verify_answer] is_sufficient={is_sufficient}")
         route = "good" if is_sufficient else "bad"
-
         state["route"] = route
+
         logger.warning(f"[verify_answer] LLM judged sufficiency: {route}")
         return state
+
 
 
 
