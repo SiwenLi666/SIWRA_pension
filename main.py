@@ -12,11 +12,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from src.utils.logger_config import setup_logger
+from src.utils.config import setup_logger
 from src.graph.pension_graph import create_pension_graph
 from src.graph.state import GraphState
 from src.retriever.document_processor import DocumentProcessor
-from src.agents.analyst_agent import PensionAnalystAgent
+from src.agents.advice_agents import PensionAnalystAgent
 from src.utils.config import BASE_DIR  # ← if not already imported
 
 static_dir = Path(BASE_DIR) / "static"

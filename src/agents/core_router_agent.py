@@ -4,7 +4,7 @@ from src.graph.state import GraphState, AgentState
 from src.database.presentation_db import PensionAnalysisManager
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('core_router_agent')
 
 class CoreRouterAgent:
     """

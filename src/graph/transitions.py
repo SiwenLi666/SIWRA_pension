@@ -1,9 +1,9 @@
 # src/graph/transitions.py
 
 from src.graph.state import AgentState, GraphState, UserProfile
-from src.reasoning.intent_classifier import IntentClassifier
-from src.reasoning.agreement_detector import AgreementDetector
-from src.reasoning.response_verifier import ResponseVerifier
+from src.reasoning.reasoning_utils import IntentClassifier
+from src.reasoning.reasoning_utils import AgreementDetector
+from src.reasoning.reasoning_utils import ResponseVerifier
 
 def should_analyze_needs(state: GraphState) -> str:
     """

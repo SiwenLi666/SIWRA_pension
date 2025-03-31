@@ -9,7 +9,7 @@ print("📦 Loading summary.json from:")
 traceback.print_stack(limit=3)
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('presentation_db')
 
 
 SUMMARY_FILE = SUMMARY_JSON_PATH
