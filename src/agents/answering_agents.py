@@ -17,6 +17,9 @@ class AnswerAgent:
         self.llm = ChatOpenAI(temperature=0.3, model="gpt-4")
 
     def generate(self, state):
+        state["status"] = "🔎 Läser summeringar från dokument..."
+        logger.info(state["status"])
+
         question =  state.get("question", "")
         logger.info("[generate_answer] Generating answer from summary.json via LLM...")
 
@@ -77,6 +80,7 @@ class RefinerAgent:
         self.attempts = {}
 
     def refine(self, state):
+        state["status"] = "✏️ Reformulerar frågan..."
         conversation_id = state.get("conversation_id")
         attempts_so_far = self.attempts.get(conversation_id, 0)
         self.attempts[conversation_id] = attempts_so_far + 1
@@ -90,7 +94,7 @@ class RefinerAgent:
         ]
         reformulated = self.llm.invoke(messages).content.strip()
         logger.info(f"[refine_answer] Reformulated question: {reformulated}")
-        logger.warning(f"[refine_answer] LLM refined answer:\n{new_answer}")
+        
 
         
 
@@ -104,7 +108,7 @@ class RefinerAgent:
             HumanMessage(content=f"Question: {reformulated}\n\nContext:\n{context}")
         ]
         new_answer = self.llm.invoke(answer_prompt).content.strip()
-
+        logger.warning(f"[refine_answer] LLM refined answer:\n{new_answer}")
         # 4. Decide route
         route = "retry" if attempts_so_far + 1 < 2 else "give_up"
         state["draft_answer"] = new_answer
@@ -130,6 +134,7 @@ class VerifierAgent:
         Check if 'draft_answer' in state is good enough.
         If good, return route='good', else route='bad'.
         """
+        state["status"] = "📋 Utvärderar om svaret är tillräckligt..."
         question =  state.get("question", "")
         draft_answer = state.get("draft_answer", "")
         retrieved_docs = [doc.page_content for doc in state.get("retrieved_docs", [])]
@@ -167,6 +172,7 @@ class MissingFieldsAgent:
         3) Append a polite question about them to the final answer
         4) Return final 'response' to user
         """
+        state["status"] = "📨 Formulerar slutgiltigt svar till användaren..."
         user_profile = state.get("user_profile", {})
         required_fields = UserProfile.required_fields()
         missing = [
@@ -178,8 +184,34 @@ class MissingFieldsAgent:
         final_answer = state.get("draft_answer", "Tyvärr har jag inget svar.")
         if missing:
             logger.info("[ask_for_missing_fields] Adding follow-up question for missing fields.")
-            followup = f"\n\nBy the way, I'd like to know your {', '.join(missing)} " \
-                       "to give more precise guidance next time."
+
+            field_translations = {
+                "age": "din ålder",
+                "current_salary": "din nuvarande lön",
+                "employment_type": "vilken typ av anställning du har",
+                "years_of_service": "hur länge du har arbetat",
+                "risk_tolerance": "hur stor risk du är villig att ta",
+                "family_situation": "din familjesituation"
+            }
+
+            # Hitta användarens språk
+            user_lang = "sv" if "å" in state.get("question", "").lower() else "en"
+
+            if missing:
+                readable_fields = [field_translations.get(f, f) for f in missing]
+                if user_lang == "sv":
+                    followup = (
+                        "\n\nFör att kunna ge mer personliga råd framöver, "
+                        f"skulle det hjälpa om jag kan be få lite information om {', '.join(readable_fields)}."
+                    )
+                else:
+                    followup = (
+                        "\n\nTo offer more personalized guidance, "
+                        f"it would help to know your {', '.join(readable_fields)}."
+                    )
+            else:
+                followup = ""
+
         else:
             logger.info("[ask_for_missing_fields] No missing fields to ask about.")
             followup = ""

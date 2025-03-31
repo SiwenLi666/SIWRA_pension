@@ -38,9 +38,6 @@ class PensionAdvisorGraph:
         logger.info(f"🔍 Initial user message: {message!r}")
         assert isinstance(message, str) and message.strip(), "❌ Tom eller ogiltig fråga skickades till LangGraph."
 
-        # 🔧 Hardcoded test override
-        # message = "hej vilka avtal har du koll?"
-
         state_dict = {
             "question": message.strip(),
             "state": AgentState.GATHERING_INFO.value,
@@ -51,16 +48,33 @@ class PensionAdvisorGraph:
         }
 
         logger.info(f"🧪 Building state: {state_dict}")
-        print(f"👀 Type of state before invoke: {type(state_dict)}")
-        print(f"✅ Keys in state before invoke: {list(state_dict.keys())}")
 
-        result = self.graph.invoke(state_dict)  # ✅ final invoke — just once
+        final = None
+        for step in self.graph.stream(state_dict):
+            if "status" in step:
+                logger.info(f"🧠 Status update: {step['status']}")
+            final = step
 
-        if result is None:
+        if final is None:
             logger.error("❌ LangGraph returned None. Something went wrong during execution.")
             raise RuntimeError("LangGraph returned None instead of a GraphState")
 
-        return result.get("response", "Ingen respons genererades."), result
+        logger.info(f"🧠 Final state from LangGraph:\n{final}")
+
+        # ✅ Fallback if response is missing
+        response_text = final.get("response") or final.get("draft_answer") or "Tyvärr, ingen respons genererades."
+
+        # 💡 Force string for safety
+        if not isinstance(response_text, str):
+            response_text = str(response_text)
+
+        # ✅ Final log
+        logger.info(f"✅ Final response to frontend: {response_text[:300]}")
+
+        return response_text, final
+
+
+
 
 
 class ChatMessage(BaseModel):
@@ -126,8 +140,14 @@ async def chat(message: ChatMessage, request: Request):
         advisor = conversation_store[session_id]
         response, _ = advisor.run_with_visualization(message.message)
 
+        # ✅ Safety net: force string
+        if not isinstance(response, str):
+            response = str(response)
         logger.info(f"Generated response: {response[:100]}...")
+        logger.info(f"🚀 Returning to frontend: {response}")
         return ChatResponse(response=response)
+
+
     except Exception as e:
         logger.error(f"Error in chat endpoint: {str(e)}", exc_info=True)
         return ChatResponse(response="Tyvärr uppstod ett fel. Försök igen senare.")
@@ -141,7 +161,6 @@ async def websocket_endpoint(websocket: WebSocket):
         session_id = str(uuid.uuid4())
         logger.info(f"WebSocket session ID: {session_id}")
         advisor = PensionAdvisorGraph()
-        response, _ = advisor.run_with_visualization(message)
         conversation_store[session_id] = advisor
 
         while True:
