@@ -38,6 +38,9 @@ class PensionAdvisorGraph:
         logger.info(f"🔍 Initial user message: {message!r}")
         assert isinstance(message, str) and message.strip(), "❌ Tom eller ogiltig fråga skickades till LangGraph."
 
+        # 🔧 Hardcoded test override
+        # message = "hej vilka avtal har du koll?"
+
         state_dict = {
             "question": message.strip(),
             "state": AgentState.GATHERING_INFO.value,
@@ -48,16 +51,17 @@ class PensionAdvisorGraph:
         }
 
         logger.info(f"🧪 Building state: {state_dict}")
-        state = GraphState(**state_dict)
+        print(f"👀 Type of state before invoke: {type(state_dict)}")
+        print(f"✅ Keys in state before invoke: {list(state_dict.keys())}")
 
+        result = self.graph.invoke(state_dict)  # ✅ final invoke — just once
 
-        result = self.graph.invoke(state)
         if result is None:
             logger.error("❌ LangGraph returned None. Something went wrong during execution.")
             raise RuntimeError("LangGraph returned None instead of a GraphState")
 
-        # result must be a GraphState – return attributes directly
         return getattr(result, "response", "Ingen respons genererades."), result
+
 
 
 
@@ -175,5 +179,18 @@ async def websocket_endpoint(websocket: WebSocket):
 app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static")
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host=host, port=port)
+   import uvicorn
+   uvicorn.run(app, host=host, port=port)
+
+
+# if __name__ == "__main__":
+#     # Run test directly
+#     advisor = PensionAdvisorGraph()
+#     response, state = advisor.run_with_visualization("ignored because hardcoded inside")
+
+#     print("\n🧪 Final response:")
+#     print(response)
+
+#     print("\n🧠 Final state:")
+#     for k, v in state.items():
+#         print(f"{k}: {v}")

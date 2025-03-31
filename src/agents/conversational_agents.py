@@ -74,21 +74,19 @@ class ConversationalAgent:
 
             # 9) Return updated state
             self.logger.info("[gather_info] Finished generating response")
-            return GraphState(
-                **state,
-                conversation_history=conversation_history,
-                user_profile=user_profile,
-                response=response.content,
-                state=next_state
-            )
+            state["conversation_history"] = conversation_history
+            state["user_profile"] = user_profile
+            state["response"] = response.content
+            state["state"] = next_state
+            return state
+
 
         except Exception as e:
             self.logger.error(f"[gather_info] LLM error: {str(e)}")
-            return GraphState(
-                **state,
-                response="Ett fel uppstod, kan du upprepa din fråga?",
-                state=AgentState.ERROR.value
-            )
+            state["response"] = "Ett fel uppstod, kan du upprepa din fråga?"
+            state["state"] = AgentState.ERROR.value
+            return state
+
 
     def _extract_user_info(self, state: GraphState, message: str) -> None:
         """Optional method for auto-filling user_profile from numeric details in the message."""
@@ -187,19 +185,16 @@ Ge ett förbättrat svar baserat på denna feedback:
             state["conversation_history"].append(HumanMessage(content=feedback))
             state["conversation_history"].append(AIMessage(content=response.content))
 
-            return GraphState(
-                **state,
-                response=response.content,
-                state=AgentState.FINISHED.value
-            )
+            state["response"] = response.content
+            state["state"] = AgentState.FINISHED.value
+            return state
 
         except Exception as e:
             logger.error(f"Error in feedback handler: {str(e)}")
-            return GraphState(
-                **state,
-                error=str(e),
-                state=AgentState.ERROR.value
-            )
+            state["error"] = str(e)
+            state["state"] = AgentState.ERROR.value
+            return state
+
 
     def _calculate_cost(self, usage) -> float:
         prompt_cost = (usage.prompt_tokens / 1000) * 0.03

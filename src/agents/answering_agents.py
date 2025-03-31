@@ -25,7 +25,9 @@ class AnswerAgent:
                 summary_data = json.load(f)
         except Exception as e:
             logger.error(f"❌ Failed to load summary.json: {e}")
-            return {**state, "draft_answer": "Tyvärr, jag kunde inte ladda summeringsfilen."}
+            state["draft_answer"] = "Tyvärr, jag kunde inte ladda summeringsfilen."
+            return state
+
 
         all_summaries = []
         for entry in summary_data.get("agreements", []):
@@ -36,7 +38,9 @@ class AnswerAgent:
 
         if not all_summaries:
             logger.warning("⚠️ No summaries found in summary.json")
-            return {**state, "draft_answer": "Tyvärr, inga summeringar fanns tillgängliga."}
+            state["draft_answer"] = "Tyvärr, inga summeringar fanns tillgängliga."
+            return state
+
 
         prompt = [
             SystemMessage(content="Du är en pensionsrådgivare som ska hjälpa användaren."),
@@ -51,10 +55,14 @@ class AnswerAgent:
         try:
             response = self.llm.invoke(prompt).content.strip()
             logger.info(f"[generate_answer] LLM response: {response[:100]}...")
-            return {**state, "draft_answer": response}
+            state["draft_answer"] = response
+            return state
+
         except Exception as e:
             logger.error(f"❌ LLM failed to generate answer: {e}")
-            return {**state, "draft_answer": "Tyvärr, ett fel uppstod när jag försökte besvara frågan."}
+            state["draft_answer"] = "Tyvärr, ett fel uppstod när jag försökte besvara frågan."
+            return state
+
 
 #--------------------------------------------
 
@@ -93,12 +101,11 @@ class RefinerAgent:
 
         # 4. Decide route
         route = "retry" if attempts_so_far + 1 < 2 else "give_up"
-        return {
-            **state,
-            "draft_answer": new_answer,
-            "retrieved_docs": new_docs,
-            "route": route
-        }
+        state["draft_answer"] = new_answer
+        state["retrieved_docs"] = new_docs
+        state["route"] = route
+        return state
+
 
     def route_refinement(self, state):
         return state.get("route", "give_up")
@@ -128,10 +135,9 @@ class VerifierAgent:
         logger.info(f"[verify_answer] is_sufficient={is_sufficient}")
         route = "good" if is_sufficient else "bad"
 
-        return {
-            **state,
-            "route": route
-        }
+        state["route"] = route
+        return state
+
 
 
     def route_verification(self, state):
@@ -174,9 +180,8 @@ class MissingFieldsAgent:
         full_response = final_answer + followup
 
         # Return the final conversation outcome
-        return GraphState(
-            **state,
-            response=full_response,
-            state=AgentState.FINISHED.value
-        )
+        state["response"] = full_response
+        state["state"] = AgentState.FINISHED.value
+        return state
+
 

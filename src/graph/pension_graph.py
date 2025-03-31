@@ -7,7 +7,8 @@ from src.agents.answering_agents import AnswerAgent,RefinerAgent,VerifierAgent,M
 
 
 def create_pension_graph():
-    builder = StateGraph(GraphState)
+    builder = StateGraph(dict)  # ✅ matches input you're passing in
+
 
     # Agents (you can define them in separate files)
     answer_agent = AnswerAgent()

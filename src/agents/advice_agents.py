@@ -107,11 +107,10 @@ class RecommendationAgent:
             calculations = state.get("calculations", "")
 
             if not user_profile or not analysis:
-                return GraphState(
-                    **state,
-                    response="Jag behöver mer information för att kunna ge personliga rekommendationer.",
-                    state=AgentState.GATHERING_INFO.value
-                )
+                state["response"] = "Jag behöver mer information för att kunna ge personliga rekommendationer."
+                state["state"] = AgentState.GATHERING_INFO.value
+                return state
+
 
             system_prompt = (
                 """Du är en expert på pensionsrådgivning i Sverige.
@@ -151,20 +150,18 @@ class RecommendationAgent:
                 }
             })
 
-            return GraphState(
-                **state,
-                recommendations=response.content,
-                response=response.content,
-                state=AgentState.GENERATING_RECOMMENDATIONS.value
-            )
+            state["recommendations"] = response.content
+            state["response"] = response.content
+            state["state"] = AgentState.GENERATING_RECOMMENDATIONS.value
+            return state
+
 
         except Exception as e:
             logger.error(f"Error in recommendation agent: {str(e)}")
-            return GraphState(
-                **state,
-                error=str(e),
-                state=AgentState.ERROR.value
-            )
+            state["error"] = str(e)
+            state["state"] = AgentState.ERROR.value
+            return state
+
 
     def _calculate_cost(self, usage) -> float:
         prompt_cost = (usage.prompt_tokens / 1000) * 0.03
@@ -186,11 +183,10 @@ class CalculationAgent:
         try:
             user_profile = state.get("user_profile", {})
             if not user_profile:
-                return GraphState(
-                    **state,
-                    response="Jag har inte tillräckligt med information för att göra beräkningar. Kan du berätta mer om din situation?",
-                    state=AgentState.GATHERING_INFO.value
-                )
+                state["response"] = "Jag har inte tillräckligt med information för att göra beräkningar. Kan du berätta mer om din situation?"
+                state["state"] = AgentState.GATHERING_INFO.value
+                return state
+
 
             system_prompt = (
                 """Du är en expert på pensionsberäkningar i Sverige.
@@ -221,21 +217,19 @@ class CalculationAgent:
                 }
             })
 
-            return GraphState(
-                **state,
-                calculations=response.content,
-                response=response.content,
-                state=AgentState.CALCULATING.value
-            )
+            state["calculations"] = response.content
+            state["response"] = response.content
+            state["state"] = AgentState.CALCULATING.value
+            return state
+
 
         except Exception as e:
             logger.error(f"Error in calculation agent: {str(e)}")
-            return GraphState(
-                **state,
-                error=str(e),
-                response="Tyvärr kunde jag inte räkna just nu.",
-                state=AgentState.ERROR.value
-            )
+            state["error"] = str(e)
+            state["response"] = "Tyvärr kunde jag inte räkna just nu."
+            state["state"] = AgentState.ERROR.value
+            return state
+
 
     def _calculate_cost(self, usage) -> float:
         prompt_cost = (usage.prompt_tokens / 1000) * 0.03
