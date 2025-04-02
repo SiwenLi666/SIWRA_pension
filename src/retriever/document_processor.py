@@ -1,9 +1,10 @@
 import os
 import json
 import time
+import re
 import logging
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -32,11 +33,73 @@ class DocumentProcessor:
         self.embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
         self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=50, length_function=len)
 
+    def detect_linked_chunks(self, text: str):
+        text_lower = text.lower()
+
+        # Detect links to other documents or sections
+        linked_titles = []
+        references = []
+        is_amendment = False
+
+        if "bilaga" in text_lower:
+            linked_titles.append("bilaga")
+        if "pa16" in text_lower:
+            linked_titles.append("PA16")
+        if "kompletterar" in text_lower or "ändrar" in text_lower or "ersätter" in text_lower:
+            is_amendment = True
+        if "kapitel" in text_lower:
+            references.append("kapitel")
+        if "punkt" in text_lower:
+            references.append("punkt")
+
+        return linked_titles, references, is_amendment
+
+
+    def extract_chapter_title(self, text: str) -> Optional[str]:
+        match = re.search(r"\b\d+\s*kap\.\s*(.*?)\n", text, flags=re.IGNORECASE)
+        return match.group(1).strip() if match else None
+
+    def extract_paragraph_number(self, text: str) -> Optional[str]:
+        match = re.search(r"\n\s*(\d+)\s*§", text)
+        return match.group(1) if match else None
+
+    def isolate_main_text_and_footnotes(self, text: str) -> Tuple[str, str]:
+
+        """
+        Split the main content from footnotes using a horizontal line or footnote number pattern.
+        """
+        lines = text.strip().splitlines()
+        for i, line in enumerate(lines):
+            if "____" in line or re.match(r"\d{1,2}\s", line.strip()):
+                # Assume everything below is footnote
+                main_text = "\n".join(lines[:i]).strip()
+                footnotes = "\n".join(lines[i:]).strip()
+                return main_text, footnotes
+        return text, ""  # No footnotes found
+
+    def detect_visual_chapter(self, text: str) -> Optional[str]:
+        lines = text.strip().splitlines()
+        for i, line in enumerate(lines):
+            if line.strip() and 2 <= len(line.split()) <= 6:
+                prev_empty = i == 0 or not lines[i - 1].strip()
+                next_empty = i + 1 >= len(lines) or not lines[i + 1].strip()
+                is_title_like = line.strip()[0].isupper()
+                if prev_empty and next_empty and is_title_like:
+                    return line.strip()
+        return None
+
+
     def load_pdf(self, pdf_path: Path) -> List[Document]:
         logger.info(f"📄 Loading PDF: {pdf_path}")
         loader = PyPDFLoader(str(pdf_path))
         pages = loader.load()
         all_splits = []
+
+        agreement_name = pdf_path.parent.name
+        title = pdf_path.stem
+
+        current_chapter = None
+        current_paragraph = None
 
         for i, page in enumerate(pages):
             if not page.page_content.strip():
@@ -49,18 +112,84 @@ class DocumentProcessor:
 
             splits = self.text_splitter.split_documents([page])
             for split in splits:
+                full_text = split.page_content
+                main_text, footnotes = self.isolate_main_text_and_footnotes(full_text)
+                text = main_text
+
+                # Detect chapter using known format or fallback
+            chapter_matches = re.findall(r"(\d+)\s*kap\.", text, flags=re.IGNORECASE)
+            if not chapter_matches:
+                # Fallback: detect bold-style standalone line numbers
+                for line in text.splitlines():
+                    if re.match(r"^\s*\d+\s+\w+(?:\s+\w+)*\s*$", line):
+                        chapter_matches.append(line.strip().split()[0])  # Take just number part
+                        break
+
+            paragraph_matches = re.findall(r"\b(\d{1,3})\s*§\b", text)
+
+            # Chapter detection logic
+            if len(chapter_matches) > 1:
+                chapter = ", ".join(f"{c} KAP" for c in chapter_matches)
+                current_chapter = chapter_matches[-1]
+            elif chapter_matches:
+                current_chapter = chapter_matches[0]
+                chapter = f"{current_chapter} KAP"
+            else:
+                # 🔁 fallback: detect visual chapter
+                visual_chap = self.detect_visual_chapter(text)
+                chapter = visual_chap if visual_chap else (f"{current_chapter} KAP" if current_chapter else None)
+
+
+                # Paragraph logic
+                if len(paragraph_matches) > 1:
+                    paragraph = ", ".join(f"{p} §" for p in paragraph_matches)
+                    current_paragraph = paragraph_matches[-1]
+                elif paragraph_matches:
+                    para_int = int(paragraph_matches[0])
+                    if current_paragraph and para_int != int(current_paragraph) + 1:
+                        if not chapter_matches:
+                            logger.warning(
+                                f"⚠️ Paragraph jump at page {i+1} in {pdf_path.name}: "
+                                f"{current_paragraph} → {para_int} without new chapter"
+                            )
+                    current_paragraph = paragraph_matches[0]
+                    paragraph = f"{current_paragraph} §"
+                else:
+                    paragraph = f"{current_paragraph} §" if current_paragraph else None
+
+                # Detect references and amendments
+                linked_titles, references, is_amendment = self.detect_linked_chunks(text)
+
+                # 🔥 Wipe everything to avoid leaks
+                split.metadata = {}
+
+                # ✅ Set only what you want to keep
                 split.metadata.update({
+                    "agreement_name": agreement_name,
+                    "title": title,
+                    "chapter": chapter,
+                    "paragraph": paragraph,
+                    "linked_titles": linked_titles,
+                    "references": references,
+                    "is_amendment": is_amendment,
+                    "footnotes": footnotes,
                     "source": str(pdf_path.relative_to(self.agreements_dir)),
                     "file_path": str(pdf_path),
-                    "title": pdf_path.stem,
                     "page_number": i + 1,
-                    "language": lang
+                    "language": lang,
                 })
+
+
+                for k in ["producer", "creator"]:
+                    split.metadata.pop(k, None)
 
             all_splits.extend(splits)
 
         logger.info(f"🔹 Created {len(all_splits)} chunks from {pdf_path.name}")
         return all_splits
+
+
+
 
     def process_documents(self) -> Optional[FAISS]:
         if not self.agreements_dir.exists():
@@ -84,7 +213,13 @@ class DocumentProcessor:
         else:
             logger.info("✅ All agreements matched. Vectorstore already built.")
 
-        return FAISS.load_local(str(self.persist_dir), self.embeddings, allow_dangerous_deserialization=True)
+        index_file = self.persist_dir / "index.faiss"
+        if index_file.exists():
+            return FAISS.load_local(str(self.persist_dir), self.embeddings, allow_dangerous_deserialization=True)
+        else:
+            logger.warning(f"⚠️ Vectorstore missing at {index_file} — rebuilding.")
+            self.rebuild_vectorstore(found_agreements)
+            return FAISS.load_local(str(self.persist_dir), self.embeddings, allow_dangerous_deserialization=True)
 
     def rebuild_vectorstore(self, all_agreements: set):
         logger.info("🔄 Rebuilding FAISS vectorstore from PDFs...")

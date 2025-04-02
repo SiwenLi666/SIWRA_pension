@@ -98,12 +98,19 @@ class RefinerAgent:
         # 1. Reformulate query
         question =  state.get("question", "")
         messages = [
-            SystemMessage(content="""You are a helpful assistant. Reformulate the question to make it more specific or clearer.
-            OBS! be consitence with the language of the user's question. If the user's question is in Swedish, the reformulated question should be in Swedish, etc.
-            OBS! the output should be short and concise. It should also be of high quality.
-            """),
-            HumanMessage(content=f"Original question: {question}")
+            SystemMessage(content=(
+                "🎯 Du är en smart AI-agent som förbättrar pensionsrelaterade frågor så att de fungerar optimalt för vektorsökning."
+                "\n\n📌 Gör följande steg:"
+                "\n1. Identifiera det huvudsakliga ämnet i frågan (t.ex. 'efterlevandepension', 'åldersgräns', 'intjänande')."
+                "\n2. Lista också relaterade begrepp eller synonymer som kan vara användbara vid sökning."
+                "\n3. Tydliggör oklara termer – t.ex. skriv 'Avdelning II' istället för 'avd2'."
+                "\n4. Formulera en eller flera tydliga, konkreta och sökbara frågor som hjälper vektorsöket att hitta rätt paragraf eller avsnitt i dokumentet."
+                "\n5. Behåll användarens språk (svenska eller engelska)."
+                "\n6. Använd inte interna termer som 'vektordatabas'."
+            )),
+            HumanMessage(content=f"Originalfråga: {question}")
         ]
+
         reformulated = self.llm.invoke(messages).content.strip()
         logger.info(f"[refine_answer] Reformulated question: {reformulated}")
         
@@ -116,21 +123,33 @@ class RefinerAgent:
         
         # 3. Regenerate answer
         answer_prompt = [
-            SystemMessage(content="Use the following context to answer the user's question as clearly and helpfully as possible."),
-            HumanMessage(content=f"Question: {reformulated}\n\nContext:\n{context}")
+            SystemMessage(content=(
+                "Du är en svensk pensionsrådgivare. Besvara användarens fråga så tydligt som möjligt "
+                "baserat på dokumenten nedan. Var konkret, korrekt och pedagogisk.\n\n"
+                "• Svara på samma språk som frågan.\n"
+                "• Om du hittar något relevant men inte hela svaret, skriv vad du hittade - men var ärlig med vad som saknas.\n"
+                "• Gissa inte, men försök alltid hjälpa användaren vidare.\n"
+                "• Om frågan gäller ett särskilt pensionsavtal, och det framgår i kontexten, nämn det i svaret.\n"
+                "• Strukturera gärna svaret i punktform eller underrubriker om det förbättrar läsbarheten.\n"
+            )),
+            HumanMessage(content=f"Fråga: {reformulated}\n\nDokumentutdrag:\n{context}")
         ]
+        logger.warning(f"[refine_answer] Sending to LLM:\n{answer_prompt}")
+
         new_answer = self.llm.invoke(answer_prompt).content.strip()
         logger.warning(f"[refine_answer] LLM refined answer:\n{new_answer}")
         # 4. Decide route
-        route = "retry" if attempts_so_far + 1 < 2 else "give_up"
+        route = "retry" if attempts_so_far + 1 <= 3 else "give_up"
         state["draft_answer"] = new_answer
         state["retrieved_docs"] = new_docs
-        state["route"] = route
+        state["refiner_route"] = route
+
         return state
 
 
     def route_refinement(self, state):
-        return state.get("route", "give_up")
+        return state.get("refiner_route", "give_up")
+
 
 
 #------------------------------
@@ -162,7 +181,8 @@ class VerifierAgent:
         # Otherwise, do proper check
         is_sufficient = self._custom_check(question, draft_answer, retrieved_docs)
         route = "good" if is_sufficient else "bad"
-        state["route"] = route
+        state["verifier_route"] = route
+
 
         logger.warning(f"[verify_answer] LLM judged sufficiency: {route}")
         return state
@@ -171,8 +191,8 @@ class VerifierAgent:
 
 
     def route_verification(self, state):
-        # This is the function used in add_conditional_edges() for deciding next node
-        return state.get("route", "bad")
+        return state.get("verifier_route", "bad")
+
 
 
     def _custom_check(self, question, answer, retrieved_docs):
@@ -223,7 +243,7 @@ class MissingFieldsAgent:
         state["response"] = full_response
         state["state"] = AgentState.FINISHED.value
 
-        logger.warning(f"[ask_for_missing_fields] Follow-up response to user:\n{full_response}")
+        # logger.warning(f"[ask_for_missing_fields] Follow-up response to user:\n{full_response}")
         return {
             "response": state["response"],
             "status": state.get("status"),
