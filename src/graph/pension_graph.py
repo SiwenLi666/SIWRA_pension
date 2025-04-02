@@ -31,11 +31,19 @@ def create_pension_graph():
 
     # Now define transitions
     builder.add_edge("gather_query", "generate_answer")
-    builder.add_edge("generate_answer", "verify_answer")
+    builder.add_conditional_edges(
+        "generate_answer",
+        lambda state: "skip_verifier" if state.get("response_source") == "summary_json" else "needs_verification",
+        {
+            "skip_verifier": "ask_for_missing_fields",
+            "needs_verification": "verify_answer"
+        }
+    )
+
 
     # verify_answer decides: "good" → ask_for_missing_fields, "bad" → refine_answer
     builder.add_conditional_edges("verify_answer", verifier_agent.route_verification, {
-        "good": "ask_for_missing_fields",
+        "good": END,
         "bad": "refine_answer"
     })
 

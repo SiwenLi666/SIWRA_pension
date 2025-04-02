@@ -71,11 +71,13 @@ class AnswerAgent:
 
 
             state["draft_answer"] = response
+            state["response_source"] = "summary_json"
             return state
 
         except Exception as e:
             logger.error(f"❌ LLM failed to generate answer: {e}")
             state["draft_answer"] = "Tyvärr, ett fel uppstod när jag försökte besvara frågan."
+            state["response_source"] = "summary_json"
             return state
 
 
@@ -94,28 +96,44 @@ class RefinerAgent:
         attempts_so_far = self.attempts.get(conversation_id, 0)
         self.attempts[conversation_id] = attempts_so_far + 1
         logger.info(f"[refine_answer] attempt #{attempts_so_far + 1}")
+        stage = attempts_so_far + 1
+        stage_instruction = {
+            #1: "🎯 Det här är första försöket. Fokusera på de mest direkta och precisa begreppen som kan matcha exakt med dokumenttexten.",
+            2: "🧠 Försök nu omformulera frågan med lite bredare synonymer, relaterade begrepp eller alternativa tolkningar. Tänk om användaren menade något snarlikt.",
+            3: "🚨 Detta är sista försöket. Om inget fungerar, bredda kraftigt. Prova bredare termer, relaterade teman, eller blanda olika angreppssätt.",
+        }.get(stage, "")
 
         # 1. Reformulate query
         question =  state.get("question", "")
         messages = [
-            SystemMessage(content=(""" 
-Du är både pensionsrådgivare och vektorsökningsexpert. Du har två uppgifter:
+            SystemMessage(content=(f""" 
+📌 Roll
+Du är en kombination av en erfaren svensk pensionsrådgivare och en tekniskt kunnig sökspecialist. Din uppgift är att formulera professionella sökfrågor (queries) som kan användas i en vektordatabas för att hitta relevanta delar av pensionsavtal.
+{stage_instruction}
+💡 Du har totalt upp till tre försök att förbättra sökfrågan. Det här är första försöket. Var smart – satsa på de mest lovande formuleringarna, men spara extrema eller breda strategier till senare om detta misslyckas.
+🧩 R3-U Modell för frågeförbättring
+1️⃣ Roll (Användarens perspektiv)
+Identifiera vad användaren försöker göra – t.ex. förstå regler, få rätt till ersättning, veta hur en viss situation behandlas. Exemplifiera gärna: "användaren vill veta när och till vem efterlevandepension betalas ut".
 
-1.**Som pensionsrådgivare**: 
-- Tolka användarens fråga.
-- Förbättra och förtydliga den utifrån din kunskap om pensionssystemet, lagar, kollektivavtal och vedertagna begrepp.
-- Om användaren använder vardagligt språk, översätt det till termer som används i pensionsavtal (t.ex. "efterlevnadsskydd" → "efterlevandepension", "dödsfall", "familjeskydd", "återbetalningsskydd").
-- Om ett visst avtal nämns (t.ex. "PA16", "Pensionsavtal 2016"), tolka det korrekt och använd exakt det namn som finns i systemet (t.ex. "PA16").
+2️⃣ Regel (Fackspråk)
+Hitta rätt terminologi och begrepp som används i avtalen för det användaren beskriver. Byt ut vardagsspråk till formella termer som t.ex. "efterlevandeskydd", "familjepension", "kompletterande efterlevandelivränta".
 
-2 **Som FAISS-sökexpert**:
-- Formulera en sökfråga som maximerar vektorträffar mot chunks.
-- Använd metadata om möjligt, t.ex. `agreement_name="PA16"` för att filtrera endast på relevanta avtal.
-- Om frågan gäller ett särskilt kapitel eller paragraf som nämns i användarens fråga eller i ett dokumentutdrag, inkludera det i sökfrågan.
-- Formulera flera semantiskt olika men relevanta varianter av frågan för att förbättra träffsäkerheten.
+3️⃣ Resultat (Förväntat svar)
+Förutse vilket typ av svar användaren vill ha: är det en regel? ett undantag? en tillämpning? ett exempel? Anpassa dina frågor därefter.
 
-🧩 Syfte: Hjälp RetrievalAgent att få fram de mest relevanta chunksen från vektordatabasen. Formulera frågan för `similarity_search()` så optimerat som möjligt.
+4️⃣ Uttrycksspecifikation (Sökbara frågor)
+Formulera 3–5 konkreta, fokuserade queries som matchar språket i källdokumenten. obs! varje query skall ha minst 5 nyckelord (exclusive avtalsnamn)som kan beskriva en scenario som kan tänkas vara ur ursprungsfråga.
+Lägg till därefter "agreement_name" =... som metadata om avtalet är angivet. Om möjligt, rikta sökningen mot t.ex. "kapitel='Efterlevandepension'" eller använd närliggande begrepp.
 
-Svar ska endast innehålla förbättrade sökfrågor som ska användas vid vektorsökning.
+🛑 Viktiga regler
+❌ Avsluta aldrig med att hänvisa användaren till annan rådgivare eller arbetsgivare. Du är senior rådgivaren, var professionellt!
+
+✅ Om information saknas, säg det – men ge alltid vägledning om vad som vore nästa bästa steg.
+
+✅ Anta aldrig att en fråga är enkel – kontrollera alltid om det kan finnas flera delar (t.ex. olika typer av efterlevandepension).
+
+✅ Undvik att upprepa exakt samma query med små ordskillnader.
+
 
 """
             )),
@@ -123,9 +141,7 @@ Svar ska endast innehålla förbättrade sökfrågor som ska användas vid vekto
         ]
 
         reformulated = self.llm.invoke(messages).content.strip()
-        logger.info(f"[refine_answer] Reformulated question: {reformulated}")
-        
-
+        logger.warning(f"[refine_answer] Reformulated question: {reformulated}")
         
 
         # 2. Retrieve again
@@ -134,7 +150,7 @@ Svar ska endast innehålla förbättrade sökfrågor som ska användas vid vekto
         
         # 3. Regenerate answer
         answer_prompt = [
-            SystemMessage(content=(
+            SystemMessage(content=(  
                 "Du är en svensk pensionsrådgivare. Besvara användarens fråga så tydligt som möjligt "
                 "baserat på dokumenten nedan. Var konkret, korrekt och pedagogisk.\n\n"
                 "• Svara på samma språk som frågan.\n"
@@ -143,13 +159,16 @@ Svar ska endast innehålla förbättrade sökfrågor som ska användas vid vekto
                 "• Om frågan gäller ett särskilt pensionsavtal, och det framgår i kontexten, nämn det i svaret.\n"
                 "• Strukturera gärna svaret i punktform eller underrubriker om det förbättrar läsbarheten.\n"
             )),
-            HumanMessage(content=f"Fråga: {reformulated}\n\nDokumentutdrag:\n{context}")
+            HumanMessage(content=f"Originalfråga: {question}, reformerad fråga: {reformulated}\n\nDokumentutdrag:\n{context}")
         ]
-        logger.warning(f"[refine_answer] Sending to LLM:\n{answer_prompt}")
+
+        logger.info(f"[refine_answer] Sending to LLM:\n{answer_prompt}")
 
         new_answer = self.llm.invoke(answer_prompt).content.strip()
-        logger.warning(f"[refine_answer] LLM refined answer:\n{new_answer}")
+        logger.info(f"[refine_answer] LLM refined answer:\n{new_answer}")
         # 4. Decide route
+
+
         route = "retry" if attempts_so_far + 1 <= 3 else "give_up"
         state["draft_answer"] = new_answer
         state["retrieved_docs"] = new_docs
@@ -239,18 +258,18 @@ class MissingFieldsAgent:
 
                 lang = state.get("user_language", "sv")  # use reliably detected lang
                 readable_fields = [field_translations.get(f, f) for f in missing]
-                if lang == "sv":
-                    followup = (
-                        "\n\nFör att kunna ge mer personliga råd framöver, "
-                        f"skulle det hjälpa om jag kan be få lite information om {', '.join(readable_fields)}."
-                    )
-                else:
-                    followup = (
-                        "\n\nTo offer more personalized guidance, "
-                        f"it would help to know your {', '.join(readable_fields)}."
-                    )
+                # if lang == "sv":
+                #     followup = (
+                #         "\n\nFör att kunna ge mer personliga råd framöver, "
+                #         f"skulle det hjälpa om jag kan be få lite information om {', '.join(readable_fields)}."
+                #     )
+                # else:
+                #     followup = (
+                #         "\n\nTo offer more personalized guidance, "
+                #         f"it would help to know your {', '.join(readable_fields)}."
+                #     )
 
-        full_response = final_answer + followup
+        full_response = final_answer #+ followup
         state["response"] = full_response
         state["state"] = AgentState.FINISHED.value
 
