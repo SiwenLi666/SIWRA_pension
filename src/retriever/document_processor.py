@@ -116,31 +116,28 @@ class DocumentProcessor:
                 main_text, footnotes = self.isolate_main_text_and_footnotes(full_text)
                 text = main_text
 
-                # Detect chapter using known format or fallback
-            chapter_matches = re.findall(r"(\d+)\s*kap\.", text, flags=re.IGNORECASE)
-            if not chapter_matches:
-                # Fallback: detect bold-style standalone line numbers
-                for line in text.splitlines():
-                    if re.match(r"^\s*\d+\s+\w+(?:\s+\w+)*\s*$", line):
-                        chapter_matches.append(line.strip().split()[0])  # Take just number part
-                        break
+                # Kapitel och paragraf
+                chapter_matches = re.findall(r"(\d+)\s*kap\.", text, flags=re.IGNORECASE)
+                if not chapter_matches:
+                    for line in text.splitlines():
+                        if re.match(r"^\s*\d+\s+\w+(?:\s+\w+)*\s*$", line):
+                            chapter_matches.append(line.strip().split()[0])
+                            break
 
-            paragraph_matches = re.findall(r"\b(\d{1,3})\s*§\b", text)
+                paragraph_matches = re.findall(r"\b(\d{1,3})\s*§\b", text)
 
-            # Chapter detection logic
-            if len(chapter_matches) > 1:
-                chapter = ", ".join(f"{c} KAP" for c in chapter_matches)
-                current_chapter = chapter_matches[-1]
-            elif chapter_matches:
-                current_chapter = chapter_matches[0]
-                chapter = f"{current_chapter} KAP"
-            else:
-                # 🔁 fallback: detect visual chapter
-                visual_chap = self.detect_visual_chapter(text)
-                chapter = visual_chap if visual_chap else (f"{current_chapter} KAP" if current_chapter else None)
+                # Kapitel-logik
+                if len(chapter_matches) > 1:
+                    chapter = ", ".join(f"{c} KAP" for c in chapter_matches)
+                    current_chapter = chapter_matches[-1]
+                elif chapter_matches:
+                    current_chapter = chapter_matches[0]
+                    chapter = f"{current_chapter} KAP"
+                else:
+                    visual_chap = self.detect_visual_chapter(text)
+                    chapter = visual_chap if visual_chap else (f"{current_chapter} KAP" if current_chapter else None)
 
-
-                # Paragraph logic
+                # Paragraf-logik
                 if len(paragraph_matches) > 1:
                     paragraph = ", ".join(f"{p} §" for p in paragraph_matches)
                     current_paragraph = paragraph_matches[-1]
@@ -157,13 +154,10 @@ class DocumentProcessor:
                 else:
                     paragraph = f"{current_paragraph} §" if current_paragraph else None
 
-                # Detect references and amendments
+                # Referenser och ändringar
                 linked_titles, references, is_amendment = self.detect_linked_chunks(text)
 
-                # 🔥 Wipe everything to avoid leaks
-                split.metadata = {}
-
-                # ✅ Set only what you want to keep
+                # Metadata
                 split.metadata.update({
                     "agreement_name": agreement_name,
                     "title": title,
@@ -179,14 +173,15 @@ class DocumentProcessor:
                     "language": lang,
                 })
 
-
-                for k in ["producer", "creator"]:
+                # Rensa onödiga fält
+                for k in ["producer", "creator", "title"]:
                     split.metadata.pop(k, None)
 
             all_splits.extend(splits)
 
         logger.info(f"🔹 Created {len(all_splits)} chunks from {pdf_path.name}")
         return all_splits
+
 
 
 
