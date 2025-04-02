@@ -155,19 +155,51 @@
         }
 
         function addMessage(text, sender, lang) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
-            messageDiv.textContent = text;
-            
-            // Add language indicator
-            const langIndicator = document.createElement('span');
-            langIndicator.className = 'language-indicator';
-            langIndicator.textContent = lang.toUpperCase();
-            messageDiv.appendChild(langIndicator);
-            
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message`;
+
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+
+    // 🧠 Attempt to pair lines like ["1.", "Content", "2.", "Next"] into ["1. Content", "2. Next"]
+    const numberedChunks = [];
+    for (let i = 0; i < lines.length; i++) {
+        const current = lines[i];
+        const next = lines[i + 1] || '';
+        if (/^\d+\.$/.test(current) && next) {
+            numberedChunks.push(`${current} ${next}`);
+            i++; // skip next
+        } else if (/^\d+\.\s+/.test(current)) {
+            numberedChunks.push(current);
         }
+    }
+
+    const isCleanNumberedList = numberedChunks.length >= 2 && numberedChunks.every(line => /^\d+\.\s+/.test(line));
+    if (isCleanNumberedList) {
+        const listItems = numberedChunks
+            .map(line => line.replace(/^\d+\.\s*/, '').trim())
+            .map(content => `<li>${content}</li>`)
+            .join('');
+        messageDiv.innerHTML = `<p>Jag har information om följande avtal:</p><ol>${listItems}</ol>`;
+    } else {
+        // fallback: preserve general formatting
+        const safeHtml = text
+            .split('\n\n').map(p => `<p>${p.trim()}</p>`).join('')
+            .replace(/\n/g, '<br>');
+        messageDiv.innerHTML = safeHtml;
+    }
+
+    const langIndicator = document.createElement('span');
+    langIndicator.className = 'language-indicator';
+    langIndicator.textContent = lang.toUpperCase();
+    messageDiv.appendChild(langIndicator);
+
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+
+
+
 
         // Add initial welcome message
         addMessage('Hej! Jag är din pensionsrådgivare. Hur kan jag hjälpa dig?', 'bot', 'sv');

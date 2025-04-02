@@ -16,8 +16,11 @@ from src.graph.state import GraphState
 from src.retriever.document_processor import DocumentProcessor
 from src.agents.advice_agents import PensionAnalystAgent
 from src.graph.state import AgentState
-
 from src.utils.config import BASE_DIR  
+import langdetect
+
+
+
 
 static_dir = Path(BASE_DIR) / "static"
 
@@ -30,6 +33,13 @@ processor = DocumentProcessor()
 analyst_agent = PensionAnalystAgent(processor)
 processor.analyst_agent = analyst_agent
 
+def detect_language(text: str) -> str:
+    try:
+        lang = langdetect.detect(text)
+        return "sv" if lang == "sv" else "en"
+    except:
+        return "en"
+
 class PensionAdvisorGraph:
     def __init__(self):
         self.graph = create_pension_graph()
@@ -40,6 +50,7 @@ class PensionAdvisorGraph:
 
         state_dict = {
             "question": message.strip(),
+            "user_language": detect_language(message),
             "state": AgentState.GATHERING_INFO.value,
             "conversation_id": str(uuid.uuid4()),
             "conversation_history": [],

@@ -32,14 +32,15 @@ class AnswerAgent:
             return state
 
 
-        all_summaries = []
+        structured_summary = []
         for entry in summary_data.get("agreements", []):
-            for doc in entry.get("documents", []):
-                text = doc.get("summary", "")
-                if text:
-                    all_summaries.append(text)
+            agreement_name = entry.get("name", "Okänt avtal")
+            docs = entry.get("documents", [])
+            doc_summaries = [doc.get("summary", "") for doc in docs if doc.get("summary")]
+            structured_summary.append(f"Avtal: {agreement_name}\n" + "\n".join(f"- {s}" for s in doc_summaries))
 
-        if not all_summaries:
+
+        if not structured_summary:
             logger.warning("⚠️ No summaries found in summary.json")
             state["draft_answer"] = "Tyvärr, inga summeringar fanns tillgängliga."
             return state
@@ -54,15 +55,17 @@ class AnswerAgent:
                 "Gissa inte. Hitta ett tydligt matchande svar eller säg 'nej'."
             )),
             HumanMessage(content=(
-                f"Här är en fråga: '{question}'\n\n"
-                f"Här är summeringar av olika dokument/avtal:\n\n{chr(10).join(all_summaries)}\n\n"
-                "Om du kan besvara frågan baserat på summeringarna ovan, gör det."
-                " Om det inte finns tillräcklig information för att ge ett meningsfullt svar, svara exakt: 'nej'."
+                f"Fråga: '{question}'\n\n"
+                "Här är informationen du kan använda, grupperad per avtal:\n\n" +
+                "\n\n".join(structured_summary) +
+                "\n\nOm användaren frågar om vilka avtal du har, nämn endast avtalsnamnen (t.ex. PA16, SKR2023), inte alla dokument."
+                "Om du inte hittar ett tydligt svar i summeringarna, svara exakt: 'nej'. inget annat!"
             ))
         ]
 
         try:
             response = self.llm.invoke(prompt).content.strip()
+            response = response.replace(". ", ".\n")  # crude line-breaks
             logger.debug("[generate_answer] Generating answer...")
             logger.warning(f"[generate_answer] LLM draft answer:\n{response}")
 
@@ -95,7 +98,10 @@ class RefinerAgent:
         # 1. Reformulate query
         question =  state.get("question", "")
         messages = [
-            SystemMessage(content="You are a helpful assistant. Reformulate the question to make it more specific or clearer."),
+            SystemMessage(content="""You are a helpful assistant. Reformulate the question to make it more specific or clearer.
+            OBS! be consitence with the language of the user's question. If the user's question is in Swedish, the reformulated question should be in Swedish, etc.
+            OBS! the output should be short and concise. It should also be of high quality.
+            """),
             HumanMessage(content=f"Original question: {question}")
         ]
         reformulated = self.llm.invoke(messages).content.strip()
@@ -178,40 +184,31 @@ class VerifierAgent:
 
 class MissingFieldsAgent:
     def ask(self, state):
-        """
-        1) We have a final 'draft_answer'
-        2) Check which user profile fields are missing
-        3) Append a polite question about them to the final answer
-        4) Return final 'response' to user
-        """
         state["status"] = "📨 Formulerar slutgiltigt svar till användaren..."
-        user_profile = state.get("user_profile", {})
-        required_fields = UserProfile.required_fields()
-        missing = [
-            f for f in required_fields 
-            if f not in user_profile or user_profile[f] is None
-        ]
 
-        # Merge final answer + optional "missing fields" prompt
         final_answer = state.get("draft_answer", "Tyvärr har jag inget svar.")
-        if missing:
-            logger.info("[ask_for_missing_fields] Adding follow-up question for missing fields.")
+        followup = ""
 
-            field_translations = {
-                "age": "din ålder",
-                "current_salary": "din nuvarande lön",
-                "employment_type": "vilken typ av anställning du har",
-                "years_of_service": "hur länge du har arbetat",
-                "risk_tolerance": "hur stor risk du är villig att ta",
-                "family_situation": "din familjesituation"
-            }
-
-            # Hitta användarens språk
-            user_lang = "sv" if "å" in state.get("question", "").lower() else "en"
+        if state.get("response_source") != "summary_json":
+            user_profile = state.get("user_profile", {})
+            required_fields = UserProfile.required_fields()
+            missing = [f for f in required_fields if f not in user_profile or user_profile[f] is None]
 
             if missing:
+                logger.info("[ask_for_missing_fields] Adding follow-up question for missing fields.")
+
+                field_translations = {
+                    "age": "din ålder",
+                    "current_salary": "din nuvarande lön",
+                    "employment_type": "vilken typ av anställning du har",
+                    "years_of_service": "hur länge du har arbetat",
+                    "risk_tolerance": "hur stor risk du är villig att ta",
+                    "family_situation": "din familjesituation"
+                }
+
+                lang = state.get("user_language", "sv")  # use reliably detected lang
                 readable_fields = [field_translations.get(f, f) for f in missing]
-                if user_lang == "sv":
+                if lang == "sv":
                     followup = (
                         "\n\nFör att kunna ge mer personliga råd framöver, "
                         f"skulle det hjälpa om jag kan be få lite information om {', '.join(readable_fields)}."
@@ -221,18 +218,11 @@ class MissingFieldsAgent:
                         "\n\nTo offer more personalized guidance, "
                         f"it would help to know your {', '.join(readable_fields)}."
                     )
-            else:
-                followup = ""
-
-        else:
-            logger.info("[ask_for_missing_fields] No missing fields to ask about.")
-            followup = ""
 
         full_response = final_answer + followup
-
-        # Return the final conversation outcome
         state["response"] = full_response
         state["state"] = AgentState.FINISHED.value
+
         logger.warning(f"[ask_for_missing_fields] Follow-up response to user:\n{full_response}")
         return {
             "response": state["response"],
@@ -243,6 +233,5 @@ class MissingFieldsAgent:
             "conversation_history": state.get("conversation_history", []),
             "state": state.get("state", AgentState.FINISHED.value),
         }
-
 
 
