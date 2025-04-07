@@ -43,3 +43,18 @@ class RetrieverTool:
         except Exception as e:
             logger.error(f"❌ Retrieval error: {str(e)}")
             return []
+
+
+class BM25Retriever:
+    def __init__(self, chunk_data_path):
+        with open(chunk_data_path, encoding="utf-8") as f:
+            self.data = json.load(f)
+        self.documents = [entry["content"] for entry in self.data]
+        self.tokenized_docs = [doc.lower().split() for doc in self.documents]
+        self.bm25 = BM25Okapi(self.tokenized_docs)
+
+    def retrieve(self, query, top_k=5):
+        tokenized_query = query.lower().split()
+        scores = self.bm25.get_scores(tokenized_query)
+        ranked = sorted(zip(self.data, scores), key=lambda x: x[1], reverse=True)
+        return ranked[:top_k]

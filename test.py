@@ -8,16 +8,7 @@ embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 faiss_index = FAISS.load_local(vectorstore_path, embeddings, allow_dangerous_deserialization=True)
 
 # Hardcoded test query
-query = """ Vilka regler finns för efterlevandepension i Pensionsavtal 2016 (PA16)?
-
-FAISS sökfrågor:
-1. `regler för efterlevandepension i PA16`
-2. `efterlevandepension i Pensionsavtal 2016`
-3. `bestämmelser om efterlevandepension i Pensionsavtal 2016`
-4. `vad säger PA16 om efterlevandepension`
-5. `efterlevandepension regelverk i Pensionsavtal 2016`
-
-Metadata: `agreement_name="PA16"`
+query = """Vad säger PA16 om efterlevandepension och utbetalning till efterlevande?
 
 
 """
