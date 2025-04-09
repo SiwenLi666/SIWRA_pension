@@ -1,0 +1,156 @@
+# Pension Advisor RAG System Functionality Summary
+Date: April 9, 2025
+
+## Core Features
+
+1. **Hybrid Retrieval System**
+   - Combined BM25 and vector search for improved document retrieval
+   - Configurable weighting between keyword and semantic search (currently 40% BM25, 60% vector)
+   - Performance metrics logging for retrieval operations
+
+2. **Document Processing**
+   - Enhanced metadata extraction for acronyms and definitions
+   - Structured extraction of transitional provisions
+   - Automatic creation of document chunks for efficient retrieval
+
+3. **Answer Generation**
+   - Answer verification to prevent empty or unhelpful responses
+   - Structured answer templates for different question types
+   - Post-processing to ensure answers include all requested information
+   - Enhanced handling of comparison questions
+   - Confidence scoring for generated answers
+
+4. **User Experience**
+   - User feedback mechanism for rating answer quality
+   - Conversation context management for multi-turn interactions
+   - Follow-up question suggestions based on conversation history
+   - Multi-language support (primarily Swedish and English)
+
+5. **Agent Architecture**
+   - LangGraph-based agent workflow
+   - Specialized agents for different tasks:
+     - AnswerAgent: Generates initial answers
+     - RefinerAgent: Improves and refines answers
+     - MissingFieldsAgent: Handles incomplete queries
+   - State management for tracking conversation flow
+
+## Known Issues and Bugs
+
+1. **Limited Agreement Coverage**
+   - Currently only PA16 and SKR2023 agreements are properly embedded
+   - References to other agreements (ITP1, ITP2, SAF-LO) may not be accurate
+   - Need to add more pension agreements to the document database
+
+2. **Calculation Reliability Issues**
+   - System provides generic responses to calculation questions without requesting necessary data
+   - Should behave like a human advisor and ask for specific personal data before providing calculations
+   - Example: When asked "Hur mycket kan jag förvänta mig att få i pension?", system gives generic information instead of requesting age, income, etc.
+
+3. **Feedback Mechanism Broken**
+   - The feedback buttons ("Var detta svaret hjälpsamt?") are not functioning correctly
+   - Clicks on feedback options do not register properly
+
+4. **Port Binding Conflicts**
+   - Application may fail to start if port 9090 is already in use
+   - Requires manual termination of existing processes using the port
+
+## Step-by-Step Testing Guide
+
+### Getting Started
+
+1. **Launch the Application**
+   - Open a terminal/command prompt
+   - Navigate to the project directory: `D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured`
+   - Activate the virtual environment: `.\venv\Scripts\activate`
+   - Run the application: `python main.py`
+   - Wait for the message: "Uvicorn running on http://localhost:9090"
+   - Open your web browser and navigate to: http://localhost:9090
+
+2. **Select Language**
+   - The system automatically detects the language you use
+   - You can start with either Swedish or English
+   - Example Swedish greeting: "Hej, jag behöver hjälp med min pension"
+   - Example English greeting: "Hello, I need help with my pension"
+
+### Testing Question Answering
+
+1. **Basic Information Queries**
+   - Ask about general pension concepts:
+     - "Vad är PA16?"
+     - "Hur fungerar efterlevandeskydd i PA16?"
+     - "När kan jag gå i pension enligt PA16?"
+   - The system should provide relevant information from the embedded documents
+
+2. **Follow-up Questions**
+   - After receiving an answer, use the suggested follow-up questions that appear below the response
+   - Click on any of the suggested questions to continue the conversation
+   - Or ask your own follow-up question related to the previous topic
+
+3. **Agreement Comparison**
+   - Ask comparison questions between agreements:
+     - "Vad är skillnaden mellan PA16 Avdelning 1 och Avdelning 2?"
+   - Note: Due to limited agreement coverage, comparisons with non-embedded agreements may be inaccurate
+
+### Testing Calculation Features
+
+1. **Request a Basic Calculation**
+   - Ask a calculation question: "Hur mycket pension kan jag få om jag går i pension vid 65?"
+   - Note: The system should ask for more information but currently may provide generic answers
+   - **Expected behavior (not yet implemented)**: System should ask for your current age, income, and other relevant details
+
+2. **Early Retirement Impact**
+   - Ask: "Hur påverkas min pension om jag går i pension vid 63 istället för 65?"
+   - Again, the system should request personal details before providing calculations
+
+3. **Retirement Scenarios**
+   - Ask: "Kan du jämföra min pension om jag går i pension vid 65 jämfört med 67?"
+   - The system should provide a comparison of the scenarios
+
+### Testing Interactive Features
+
+1. **Providing Feedback**
+   - After receiving an answer, look for the feedback question: "Var detta svaret hjälpsamt?"
+   - Click on one of the feedback options
+   - Note: This feature is currently not working correctly
+
+2. **Viewing Conversation History**
+   - The conversation history is displayed in the chat interface
+   - Previous questions and answers are maintained throughout the session
+
+3. **Changing Topics**
+   - Start a new topic by asking an unrelated question
+   - The system should recognize the topic change and respond appropriately
+
+### Testing Language Support
+
+1. **Switch Languages Mid-Conversation**
+   - Start in Swedish, then switch to English (or vice versa)
+   - Example: Start with "Vad är PA16?" then follow up with "Can you explain this in English?"
+   - The system should detect the language change and respond accordingly
+
+## Implementation Status
+
+- **Completed Phases**:
+  - Phase 1.1: Hybrid retrieval system
+  - Phase 3.1: Answer verification
+  - Phase 3.3: Answer post-processing
+  - Phase 4.3: Follow-up suggestions
+
+- **In Progress**:
+  - Performance dashboard
+  - Question categorization
+  - Improved calculation agent with proper data collection
+
+- **Planned**:
+  - User preferences
+  - Enhanced visualization
+  - Additional agreement embeddings
+  - Fix for feedback mechanism
+
+## Development Priorities
+
+1. Fix the calculation agent to request necessary personal data before providing calculations
+2. Add more pension agreements to the document database
+3. Repair the feedback mechanism
+4. Implement proper error handling for port conflicts
+5. Enhance the user interface with clearer instructions and guidance
