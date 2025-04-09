@@ -220,34 +220,68 @@
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}-message`;
 
-    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    // Check if the text contains HTML tags (specifically our reference list)
+    const containsHtml = /<\/?[a-z][\s\S]*>/i.test(text);
 
-    // 🧠 Attempt to pair lines like ["1.", "Content", "2.", "Next"] into ["1. Content", "2. Next"]
-    const numberedChunks = [];
-    for (let i = 0; i < lines.length; i++) {
-        const current = lines[i];
-        const next = lines[i + 1] || '';
-        if (/^\d+\.$/.test(current) && next) {
-            numberedChunks.push(`${current} ${next}`);
-            i++; // skip next
-        } else if (/^\d+\.\s+/.test(current)) {
-            numberedChunks.push(current);
+    if (containsHtml) {
+        // If it contains HTML, use it directly but safely
+        messageDiv.innerHTML = text;
+    } else {
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+
+        // 🧠 Attempt to pair lines like ["1.", "Content", "2.", "Next"] into ["1. Content", "2. Next"]
+        const numberedChunks = [];
+        for (let i = 0; i < lines.length; i++) {
+            const current = lines[i];
+            const next = lines[i + 1] || '';
+            if (/^\d+\.$/.test(current) && next) {
+                numberedChunks.push(`${current} ${next}`);
+                i++; // skip next
+            } else if (/^\d+\.\s+/.test(current)) {
+                numberedChunks.push(current);
+            }
+        }
+
+        const isCleanNumberedList = numberedChunks.length >= 2 && numberedChunks.every(line => /^\d+\.\s+/.test(line));
+        if (isCleanNumberedList) {
+            const listItems = numberedChunks
+                .map(line => line.replace(/^\d+\.\s*/, '').trim())
+                .map(content => `<li>${content}</li>`)
+                .join('');
+            messageDiv.innerHTML = `<p>Jag har information om följande avtal:</p><ol>${listItems}</ol>`;
+        } else {
+            // Process references in the format [1], [2], etc.
+            let processedText = text;
+            const referencePattern = /\[(\d+)\]/g;
+            processedText = processedText.replace(referencePattern, '<sup class="reference">[$1]</sup>');
+            
+            // fallback: preserve general formatting
+            const safeHtml = processedText
+                .split('\n\n').map(p => `<p>${p.trim()}</p>`).join('')
+                .replace(/\n/g, '<br>');
+            messageDiv.innerHTML = safeHtml;
         }
     }
 
-    const isCleanNumberedList = numberedChunks.length >= 2 && numberedChunks.every(line => /^\d+\.\s+/.test(line));
-    if (isCleanNumberedList) {
-        const listItems = numberedChunks
-            .map(line => line.replace(/^\d+\.\s*/, '').trim())
-            .map(content => `<li>${content}</li>`)
-            .join('');
-        messageDiv.innerHTML = `<p>Jag har information om följande avtal:</p><ol>${listItems}</ol>`;
-    } else {
-        // fallback: preserve general formatting
-        const safeHtml = text
-            .split('\n\n').map(p => `<p>${p.trim()}</p>`).join('')
-            .replace(/\n/g, '<br>');
-        messageDiv.innerHTML = safeHtml;
+    // Add CSS for reference styling
+    if (!document.getElementById('reference-styles')) {
+        const styleElement = document.createElement('style');
+        styleElement.id = 'reference-styles';
+        styleElement.textContent = `
+            .reference {
+                color: #0066cc;
+                cursor: pointer;
+                font-weight: bold;
+            }
+            .reference-list {
+                margin-top: 10px;
+                padding: 10px;
+                background-color: #f9f9f9;
+                border-radius: 5px;
+                border-left: 3px solid #0066cc;
+            }
+        `;
+        document.head.appendChild(styleElement);
     }
 
     const langIndicator = document.createElement('span');

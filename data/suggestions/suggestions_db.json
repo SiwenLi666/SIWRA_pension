@@ -239,5 +239,462 @@
     "language": "sv",
     "timestamp": "2025-04-09T19:47:09.057077",
     "used_suggestions": []
+  },
+  "1db05327-472b-4c18-95f1-1d1c3ac43ea5": {
+    "conversation_id": "conv_d470cda9_20250409155627",
+    "question": "Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+    "answer": "Förbättrat svar: \n\nFör att beräkna din framtida pension behöver vi ta hänsyn till flera faktorer, inklusive din pensionsgrundande lön, pensionsavgifter, pensionspremier samt eventuella särskilda pensioner som ålderspension obligatorisk och ålderspension flex. \n\nOm du som 45-åring tjänar 35000 kr i månaden, kommer din pensionsgrundande lön, pensionsavgifter och pensionspremier att beräknas utifrån denna lön. Din pensionsgrundande lön begränsas till högst 30 inkomstbasbelopp delat med två per halvt kalenderår. Pensionsavgiften är 6 procent på den pensionsgrundande lönen till och med ett gränsvärde som för ett halvt kalenderår uppgår till 7,5 inkomstbasbelopp delat med två. \n\nFör ålderspension obligatorisk är premien 2,0 procent av den pensionsgrundande lönen per månad på lönedelar upp till och med en månadslön som motsvarar 7,5 inkomstbasbelopp per år och 10 procent per månad på de lönedelar av den pensionsgrundande lönen som överstiger en månadslön som motsvarar 7,5 inkomstbasbelopp per år. För ålderspension flex är premien 1,5 procent av den pensionsgrundande lönen per månad.\n\nDitt specifika pensionsbelopp kan dock variera beroende på flera variabler, till exempel hur länge du fortsätter att arbeta och bidra till pensionssystemet, och när du väljer att ta ut din pension. Tyvärr, utan specifik information om dessa variabler, kan vi inte ge en exakt beräkning av din förväntade pension.\n\nDessutom påverkas din pension av eventuell ledighet utan rätt till förmåner, till exempel vid fackligt förtroendeuppdrag. Om du har ledighet till följd av sjukdom, arbetsskada, föräldraledighet eller graviditet med rätt till graviditetspenning, beräknas den pensionsgrundande lönen med bortseende från det löneavdrag som föranletts av ledigheten. \n\nFör att få en mer exakt beräkning av din framtida pension rekommenderar vi att du kontaktar din pensionsförvaltare eller använder en online pensionskalkylator.\n\n---\n\n**Tillförlitlighet: Hög (75%)**\n\n\n        \n---\n\n### Var detta svaret hjälpsamt?\n\n<div style=\"display: flex; gap: 10px; margin-top: 10px;\">\n  <button onclick=\"submitFeedback('positive')\" style=\"padding: 5px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;\">\n    👍 Ja\n  </button>\n  <button onclick=\"submitFeedback('negative')\" style=\"padding: 5px 15px; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;\">\n    👎 Nej\n  </button>\n</div>\n\n<div id=\"feedback-form\" style=\"display: none; margin-top: 10px;\">\n  <textarea id=\"additional-feedback\" placeholder=\"Berätta gärna varför (valfritt)\" style=\"width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ddd;\"></textarea>\n  <button onclick=\"submitAdditionalFeedback()\" style=\"padding: 5px 15px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;\">\n    Skicka\n  </button>\n</div>\n\n<div id=\"feedback-thank-you\" style=\"display: none; margin-top: 10px; padding: 10px; background-color: #e7f3fe; border-radius: 4px;\">\n  Tack för din feedback! Den hjälper oss att förbättra systemet.\n</div>\n\n<script>\n  function submitFeedback(type) {\n    // Show the additional feedback form\n    document.getElementById('feedback-form').style.display = 'block';\n    \n    // Store the feedback type\n    window.feedbackType = type;\n    \n    // Disable the feedback buttons\n    const buttons = document.querySelectorAll('button');\n    buttons[0].disabled = true;\n    buttons[1].disabled = true;\n    \n    // Send the initial feedback\n    fetch('/api/feedback', {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n      },\n      body: JSON.stringify({\n        question_id: 'q_d6408cee_20250409200359',\n        feedback: type,\n        question: 'Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?',\n        answer: 'Förbättrat svar: \n\nFör att beräkna din framtida pension behöver vi ta hänsyn till flera faktorer, inklusive din pensionsgrundande lön, pensionsavgifter, pensionspremier samt eventuella särskilda pensioner som ålderspension obligatorisk och ålderspension flex. \n\nOm du som 45-åring tjänar 35000 kr i månaden, kommer din pensionsgrundande lön, pensionsavgifter och pensionspremier att beräknas utifrån denna lön. Din pensionsgrundande lön begränsas till högst 30 inkomstbasbelopp delat med två per halvt kalenderår. Pensionsavgiften är 6 procent på den pensionsgrundande lönen till och med ett gränsvärde som för ett halvt kalenderår uppgår till 7,5 inkomstbasbelopp delat med två. \n\nFör ålderspension obligatorisk är premien 2,0 procent av den pensionsgrundande lönen per månad på lönedelar upp till och med en månadslön som motsvarar 7,5 inkomstbasbelopp per år och 10 procent per månad på de lönedelar av den pensionsgrundande lönen som överstiger en månadslön som motsvarar 7,5 inkomstbasbelopp per år. För ålderspension flex är premien 1,5 procent av den pensionsgrundande lönen per månad.\n\nDitt specifika pensionsbelopp kan dock variera beroende på flera variabler, till exempel hur länge du fortsätter att arbeta och bidra till pensionssystemet, och när du väljer att ta ut din pension. Tyvärr, utan specifik information om dessa variabler, kan vi inte ge en exakt beräkning av din förväntade pension.\n\nDessutom påverkas din pension av eventuell ledighet utan rätt till förmåner, till exempel vid fackligt förtroendeuppdrag. Om du har ledighet till följd av sjukdom, arbetsskada, föräldraledighet eller graviditet med rätt till graviditetspenning, beräknas den pensionsgrundande lönen med bortseende från det löneavdrag som föranletts av ledigheten. \n\nFör att få en mer exakt beräkning av din framtida pension rekommenderar vi att du kontaktar din pensionsförvaltare eller använder en online pensionskalkylator.\n\n---\n\n**Tillförlitlighet: Hög (75%)**\n\n',\n        additional_comments: ''\n      }),\n    });\n  }\n  \n  function submitAdditionalFeedback() {\n    // Get the additional feedback\n    const additionalFeedback = document.getElementById('additional-feedback').value;\n    \n    // Hide the feedback form\n    document.getElementById('feedback-form').style.display = 'none';\n    \n    // Show the thank you message\n    document.getElementById('feedback-thank-you').style.display = 'block';\n    \n    // Send the additional feedback\n    fetch('/api/feedback', {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n      },\n      body: JSON.stringify({\n        question_id: 'q_d6408cee_20250409200359',\n        feedback: window.feedbackType,\n        question: 'Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?',\n        answer: 'Förbättrat svar: \n\nFör att beräkna din framtida pension behöver vi ta hänsyn till flera faktorer, inklusive din pensionsgrundande lön, pensionsavgifter, pensionspremier samt eventuella särskilda pensioner som ålderspension obligatorisk och ålderspension flex. \n\nOm du som 45-åring tjänar 35000 kr i månaden, kommer din pensionsgrundande lön, pensionsavgifter och pensionspremier att beräknas utifrån denna lön. Din pensionsgrundande lön begränsas till högst 30 inkomstbasbelopp delat med två per halvt kalenderår. Pensionsavgiften är 6 procent på den pensionsgrundande lönen till och med ett gränsvärde som för ett halvt kalenderår uppgår till 7,5 inkomstbasbelopp delat med två. \n\nFör ålderspension obligatorisk är premien 2,0 procent av den pensionsgrundande lönen per månad på lönedelar upp till och med en månadslön som motsvarar 7,5 inkomstbasbelopp per år och 10 procent per månad på de lönedelar av den pensionsgrundande lönen som överstiger en månadslön som motsvarar 7,5 inkomstbasbelopp per år. För ålderspension flex är premien 1,5 procent av den pensionsgrundande lönen per månad.\n\nDitt specifika pensionsbelopp kan dock variera beroende på flera variabler, till exempel hur länge du fortsätter att arbeta och bidra till pensionssystemet, och när du väljer att ta ut din pension. Tyvärr, utan specifik information om dessa variabler, kan vi inte ge en exakt beräkning av din förväntade pension.\n\nDessutom påverkas din pension av eventuell ledighet utan rätt till förmåner, till exempel vid fackligt förtroendeuppdrag. Om du har ledighet till följd av sjukdom, arbetsskada, föräldraledighet eller graviditet med rätt till graviditetspenning, beräknas den pensionsgrundande lönen med bortseende från det löneavdrag som föranletts av ledigheten. \n\nFör att få en mer exakt beräkning av din framtida pension rekommenderar vi att du kontaktar din pensionsförvaltare eller använder en online pensionskalkylator.\n\n---\n\n**Tillförlitlighet: Hög (75%)**\n\n',\n        additional_comments: additionalFeedback\n      }),\n    });\n  }\n</script>",
+    "suggestions": [
+      "Hur indexeras pensionen över tid?",
+      "Hur mycket kan jag förvänta mig att få i pension?",
+      "Hur beräknas min pensionsgrundande inkomst?"
+    ],
+    "topics": [
+      "eligibility",
+      "benefits",
+      "application",
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T20:03:59.134816",
+    "used_suggestions": []
+  },
+  "372cbf5b-8ed4-47f5-97a5-1a3f4f2a2203": {
+    "conversation_id": "conv_d470cda9_20250409155627",
+    "question": "Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+    "answer": "Förbättrat svar: \n\nBeräkningen av din pension baseras på flera faktorer, inklusive din lön, din ålder, hur länge du planerar att arbeta, eventuella extra inbetalningar till din pensionsfond, tidigare insättningar till pensionsfonden, och om du är anställd inom det statliga avtalsområdet eller inte. \n\nOm du har en lön på 35000 kr och är 45 år gammal, kommer din pension att beräknas baserat på dessa faktorer samt en pensionsavgift på 6 procent på den pensionsgrundande lönen upp till ett gränsvärde som för ett halvt kalenderår uppgår till 7,5 inkomstbasbelopp delat med två. \n\nDet är viktigt att notera att din pensionsgrundande lön beräknas per halvt kalenderår och begränsas till högst 30 inkomstbasbelopp delat med två. Detta innebär att det finns ett maximalt belopp som kan räknas som din lön när din pension beräknas.\n\nTyvärr, utan ytterligare information om hur länge du planerar att arbeta, eventuella andra pensionsplaner eller sparande du har, eventuella extra inbetalningar du planerar att göra till din pensionsfond, tidigare insättningar till pensionsfonden, och om du är anställd inom det statliga avtalsområdet eller inte, kan vi inte ge en exakt siffra för din pension.\n\nOm du är anställd inom det statliga avtalsområdet och inte omfattas av några särskilda pensionsbestämmelser, gäller pensionsbestämmelserna för dig om du är född 1987 eller tidigare. Om du omfattas av särskilda pensionsbestämmelser eller om du har ett särskilt avtal med din arbetsgivare, kan din pension beräknas annorlunda. \n\nFör att få en mer exakt beräkning av din pension rekommenderar vi att du kontaktar din pensionsfond eller en pensionsrådgivare.\n\n---\n\n**Tillförlitlighet: God (60%)**\n\n*Faktorer som påverkar tillförlitligheten:*\n\n- Kontextrelevans: 0%\n- Fullständighet: 50%\n\n        \n---\n\n### Var detta svaret hjälpsamt?\n\n<div style=\"display: flex; gap: 10px; margin-top: 10px;\">\n  <button onclick=\"submitFeedback('positive')\" style=\"padding: 5px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;\">\n    👍 Ja\n  </button>\n  <button onclick=\"submitFeedback('negative')\" style=\"padding: 5px 15px; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;\">\n    👎 Nej\n  </button>\n</div>\n\n<div id=\"feedback-form\" style=\"display: none; margin-top: 10px;\">\n  <textarea id=\"additional-feedback\" placeholder=\"Berätta gärna varför (valfritt)\" style=\"width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ddd;\"></textarea>\n  <button onclick=\"submitAdditionalFeedback()\" style=\"padding: 5px 15px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;\">\n    Skicka\n  </button>\n</div>\n\n<div id=\"feedback-thank-you\" style=\"display: none; margin-top: 10px; padding: 10px; background-color: #e7f3fe; border-radius: 4px;\">\n  Tack för din feedback! Den hjälper oss att förbättra systemet.\n</div>\n\n<script>\n  function submitFeedback(type) {\n    // Show the additional feedback form\n    document.getElementById('feedback-form').style.display = 'block';\n    \n    // Store the feedback type\n    window.feedbackType = type;\n    \n    // Disable the feedback buttons\n    const buttons = document.querySelectorAll('button');\n    buttons[0].disabled = true;\n    buttons[1].disabled = true;\n    \n    // Send the initial feedback\n    fetch('/api/feedback', {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n      },\n      body: JSON.stringify({\n        question_id: 'q_4711e747_20250409201728',\n        feedback: type,\n        question: 'Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?',\n        answer: 'Förbättrat svar: \n\nBeräkningen av din pension baseras på flera faktorer, inklusive din lön, din ålder, hur länge du planerar att arbeta, eventuella extra inbetalningar till din pensionsfond, tidigare insättningar till pensionsfonden, och om du är anställd inom det statliga avtalsområdet eller inte. \n\nOm du har en lön på 35000 kr och är 45 år gammal, kommer din pension att beräknas baserat på dessa faktorer samt en pensionsavgift på 6 procent på den pensionsgrundande lönen upp till ett gränsvärde som för ett halvt kalenderår uppgår till 7,5 inkomstbasbelopp delat med två. \n\nDet är viktigt att notera att din pensionsgrundande lön beräknas per halvt kalenderår och begränsas till högst 30 inkomstbasbelopp delat med två. Detta innebär att det finns ett maximalt belopp som kan räknas som din lön när din pension beräknas.\n\nTyvärr, utan ytterligare information om hur länge du planerar att arbeta, eventuella andra pensionsplaner eller sparande du har, eventuella extra inbetalningar du planerar att göra till din pensionsfond, tidigare insättningar till pensionsfonden, och om du är anställd inom det statliga avtalsområdet eller inte, kan vi inte ge en exakt siffra för din pension.\n\nOm du är anställd inom det statliga avtalsområdet och inte omfattas av några särskilda pensionsbestämmelser, gäller pensionsbestämmelserna för dig om du är född 1987 eller tidigare. Om du omfattas av särskilda pensionsbestämmelser eller om du har ett särskilt avtal med din arbetsgivare, kan din pension beräknas annorlunda. \n\nFör att få en mer exakt beräkning av din pension rekommenderar vi att du kontaktar din pensionsfond eller en pensionsrådgivare.\n\n---\n\n**Tillförlitlighet: God (60%)**\n\n*Faktorer som påverkar tillförlitligheten:*\n\n- Kontextrelevans: 0%\n- Fullständighet: 50%\n',\n        additional_comments: ''\n      }),\n    });\n  }\n  \n  function submitAdditionalFeedback() {\n    // Get the additional feedback\n    const additionalFeedback = document.getElementById('additional-feedback').value;\n    \n    // Hide the feedback form\n    document.getElementById('feedback-form').style.display = 'none';\n    \n    // Show the thank you message\n    document.getElementById('feedback-thank-you').style.display = 'block';\n    \n    // Send the additional feedback\n    fetch('/api/feedback', {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n      },\n      body: JSON.stringify({\n        question_id: 'q_4711e747_20250409201728',\n        feedback: window.feedbackType,\n        question: 'Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?',\n        answer: 'Förbättrat svar: \n\nBeräkningen av din pension baseras på flera faktorer, inklusive din lön, din ålder, hur länge du planerar att arbeta, eventuella extra inbetalningar till din pensionsfond, tidigare insättningar till pensionsfonden, och om du är anställd inom det statliga avtalsområdet eller inte. \n\nOm du har en lön på 35000 kr och är 45 år gammal, kommer din pension att beräknas baserat på dessa faktorer samt en pensionsavgift på 6 procent på den pensionsgrundande lönen upp till ett gränsvärde som för ett halvt kalenderår uppgår till 7,5 inkomstbasbelopp delat med två. \n\nDet är viktigt att notera att din pensionsgrundande lön beräknas per halvt kalenderår och begränsas till högst 30 inkomstbasbelopp delat med två. Detta innebär att det finns ett maximalt belopp som kan räknas som din lön när din pension beräknas.\n\nTyvärr, utan ytterligare information om hur länge du planerar att arbeta, eventuella andra pensionsplaner eller sparande du har, eventuella extra inbetalningar du planerar att göra till din pensionsfond, tidigare insättningar till pensionsfonden, och om du är anställd inom det statliga avtalsområdet eller inte, kan vi inte ge en exakt siffra för din pension.\n\nOm du är anställd inom det statliga avtalsområdet och inte omfattas av några särskilda pensionsbestämmelser, gäller pensionsbestämmelserna för dig om du är född 1987 eller tidigare. Om du omfattas av särskilda pensionsbestämmelser eller om du har ett särskilt avtal med din arbetsgivare, kan din pension beräknas annorlunda. \n\nFör att få en mer exakt beräkning av din pension rekommenderar vi att du kontaktar din pensionsfond eller en pensionsrådgivare.\n\n---\n\n**Tillförlitlighet: God (60%)**\n\n*Faktorer som påverkar tillförlitligheten:*\n\n- Kontextrelevans: 0%\n- Fullständighet: 50%\n',\n        additional_comments: additionalFeedback\n      }),\n    });\n  }\n</script>",
+    "suggestions": [
+      "Vilka dokument behöver jag för att ansöka?",
+      "Finns det ett tak för pensionsutbetalningar?",
+      "När bör jag ansöka om pension?"
+    ],
+    "topics": [
+      "eligibility",
+      "benefits",
+      "application",
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T20:17:28.500573",
+    "used_suggestions": []
+  },
+  "45019d82-ab20-473a-a207-889ddb640b92": {
+    "conversation_id": "conv_d470cda9_20250409155627",
+    "question": "Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+    "answer": "Tyvärr har jag inget svar.\n\nFör att kunna ge mer personliga råd och beräkningar, behöver jag information om din nuvarande lön, vilken typ av anställning du har, hur länge du har arbetat, hur stor risk du är villig att ta, din familjesituation. Kan du vänligen dela med dig av denna information så att jag kan ge dig ett mer exakt svar?",
+    "suggestions": [
+      "Kan jag få en uppskattning av min framtida pension?",
+      "Hur beräknas min pension?",
+      "Vilka faktorer påverkar beräkningen?"
+    ],
+    "topics": [
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T21:24:20.927575",
+    "used_suggestions": []
+  },
+  "c3f87b9b-dbfe-4763-ac2d-3350e208a63e": {
+    "conversation_id": "conv_d470cda9_20250409155627",
+    "question": "Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+    "answer": "Tyvärr har jag inget svar.\n\nFör att kunna ge mer personliga råd och beräkningar, behöver jag information om din nuvarande lön, vilken typ av anställning du har, hur länge du har arbetat, hur stor risk du är villig att ta, din familjesituation. Kan du vänligen dela med dig av denna information så att jag kan ge dig ett mer exakt svar?",
+    "suggestions": [
+      "Hur beräknas min pension?",
+      "Vilka faktorer påverkar beräkningen?",
+      "Kan jag få en uppskattning av min framtida pension?"
+    ],
+    "topics": [
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T21:29:37.114176",
+    "used_suggestions": []
+  },
+  "b76b4b08-da06-44d2-87a1-85f20569da52": {
+    "conversation_id": "conv_d470cda9_20250409155627",
+    "question": "Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+    "answer": "Tyvärr har jag inget svar.\n\nFör att kunna ge mer personliga råd och beräkningar, behöver jag information om din nuvarande lön, vilken typ av anställning du har, hur länge du har arbetat, hur stor risk du är villig att ta, din familjesituation. Kan du vänligen dela med dig av denna information så att jag kan ge dig ett mer exakt svar?",
+    "suggestions": [
+      "Kan jag få en uppskattning av min framtida pension?",
+      "Vilka faktorer påverkar beräkningen?",
+      "Hur beräknas min pension?"
+    ],
+    "topics": [
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T21:30:08.950407",
+    "used_suggestions": []
+  },
+  "bd3da5ec-f02c-490b-9458-d113a7abf16d": {
+    "conversation_id": "conv_d470cda9_20250409155627",
+    "question": "Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+    "answer": "Tyvärr har jag inget svar.\n\nFör att kunna ge mer personliga råd och beräkningar, behöver jag information om din nuvarande lön, vilken typ av anställning du har, hur länge du har arbetat, hur stor risk du är villig att ta, din familjesituation. Kan du vänligen dela med dig av denna information så att jag kan ge dig ett mer exakt svar?",
+    "suggestions": [
+      "Vilka faktorer påverkar beräkningen?",
+      "Kan jag få en uppskattning av min framtida pension?",
+      "Hur beräknas min pension?"
+    ],
+    "topics": [
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T21:38:53.446719",
+    "used_suggestions": []
+  },
+  "e05e1ceb-6919-437a-a21e-fc38b1fbb182": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+    "answer": "Baserat på din månadslön på 35000 kr och din ålder på 45 år, uppskattar jag att din månatliga pension vid 65 års ålder blir cirka 9188 kr. Detta baseras på en månatlig avsättning på ungefär 6125 kr.",
+    "suggestions": [
+      "Vilka ålderskrav gäller för denna pension?",
+      "Hur beräknas min pensionsgrundande inkomst?",
+      "Påverkar deltidsarbete min pension?"
+    ],
+    "topics": [
+      "eligibility"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:21:29.952498",
+    "used_suggestions": []
+  },
+  "b4c50b64-3748-4cab-9322-dfb1213585e2": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Hur beräknas min pensionsgrundande inkomst?",
+    "answer": "För att beräkna din pension behöver jag veta din månadslön. Kan du ange hur mycket du tjänar per månad?",
+    "suggestions": [
+      "Vilka faktorer påverkar beräkningen?",
+      "Kan jag få en uppskattning av min framtida pension?",
+      "Hur beräknas min pension?"
+    ],
+    "topics": [
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:21:48.009308",
+    "used_suggestions": []
+  },
+  "97e1ff54-9e9f-4f04-a781-c86f258e362a": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "40000 sek",
+    "answer": "För att beräkna din pension behöver jag veta din månadslön. Kan du ange hur mycket du tjänar per månad?",
+    "suggestions": [
+      "How is my pension calculated?",
+      "What factors affect the calculation?",
+      "Can I get an estimate of my future pension?"
+    ],
+    "topics": [
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "en",
+    "timestamp": "2025-04-09T23:22:01.167175",
+    "used_suggestions": []
+  },
+  "bddd0b96-94cc-4169-9b9a-33a738963935": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Hur länge kan en yrkesofficerare skjuta upp sin pension enligt överenskommelsen?",
+    "answer": "För att beräkna din pension behöver jag veta din månadslön. Kan du ange hur mycket du tjänar per månad?",
+    "suggestions": [
+      "Hur beräknas min pension?",
+      "Kan jag få en uppskattning av min framtida pension?",
+      "Vilka faktorer påverkar beräkningen?"
+    ],
+    "topics": [
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:24:40.237311",
+    "used_suggestions": []
+  },
+  "1e282b98-bf65-4a77-acb2-62eac26960f1": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Hur länge kan en yrkesofficerare skjuta upp sin pension enligt överenskommelsen?",
+    "answer": "För att beräkna din pension behöver jag veta din månadslön. Kan du ange hur mycket du tjänar per månad?",
+    "suggestions": [
+      "Kan jag få en uppskattning av min framtida pension?",
+      "Vilka faktorer påverkar beräkningen?",
+      "Hur beräknas min pension?"
+    ],
+    "topics": [
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:26:57.551361",
+    "used_suggestions": []
+  },
+  "4449222f-89c1-4582-9039-e848270421e3": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Vilka övergångsbestämmelser gäller för arbetstagare födda 1965 eller tidigare",
+    "answer": "Tyvärr kan jag inte svara på den frågan just nu.",
+    "suggestions": [
+      "Påverkar deltidsarbete min pension?",
+      "Hur beräknas min pensionsgrundande inkomst?",
+      "Vilka ålderskrav gäller för denna pension?"
+    ],
+    "topics": [
+      "eligibility"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:35:19.017879",
+    "used_suggestions": []
+  },
+  "7232b9c2-062e-46d0-aed2-29c26e77f82a": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+    "answer": "Baserat på din månadslön på 35000 kr och din ålder på 45 år, uppskattar jag att din månatliga pension vid 65 års ålder blir cirka 9188 kr.\n\n**Så här beräknades pensionen:**\n1. Månatlig avsättning: 35000 kr × 17.5% = 6125 kr\n2. Årlig avsättning: 6125 kr × 12 månader = 73500 kr\n3. Antal år till pension: 65 - 45 = 20 år\n4. Tillväxtfaktor: 1.5 (baserat på 3% årlig tillväxt)\n5. Totalt pensionskapital: 6125 kr × 12 månader × 20 år × 1.5 = 2205000 kr\n6. Månatlig pension: 2205000 kr ÷ (20 år × 12 månader) = 9188 kr\n\nObservera att detta är en förenklad beräkning. Din faktiska pension påverkas av flera faktorer som avtalspension, premiepension, inkomstpension, och eventuellt privat pensionssparande.",
+    "suggestions": [
+      "Kan jag få en uppskattning av min framtida pension?",
+      "Hur beräknas min pension?",
+      "Påverkar deltidsarbete min pension?"
+    ],
+    "topics": [
+      "eligibility",
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:36:06.415215",
+    "used_suggestions": []
+  },
+  "8bb11f90-0776-4baf-a1de-6aeefe1fe55f": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "det du räknar ut är väl om jag börjar jobb nu va?",
+    "answer": "Tyvärr kan jag inte svara på den frågan just nu.",
+    "suggestions": [
+      "Hur beräknas min pensionsgrundande inkomst?",
+      "Påverkar deltidsarbete min pension?",
+      "Vilka ålderskrav gäller för denna pension?"
+    ],
+    "topics": [
+      "eligibility"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:37:30.948307",
+    "used_suggestions": []
+  },
+  "23a1aa17-e378-4d12-b5d8-b76dee70473f": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "vilka avtal har du kolla på just nu?",
+    "answer": "Tyvärr kan jag inte svara på den frågan just nu.",
+    "suggestions": [
+      "Vilka ålderskrav gäller för denna pension?",
+      "Hur beräknas min pensionsgrundande inkomst?",
+      "Påverkar deltidsarbete min pension?"
+    ],
+    "topics": [
+      "eligibility"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:38:36.266284",
+    "used_suggestions": []
+  },
+  "f649e0d0-069d-439e-9704-a1907147c512": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Vilka övergångsbestämmelser gäller för arbetstagare födda 1965 eller tidigare?\"",
+    "answer": "ion vid en tidigare ålder än 65 år enligt övergångsbestämmelser till PA-91 F som \nhänvisar till PA-91 gäller sagda övergångsbestämmelser. \n \nDen förmånsbestämda ålderspensionen enligt föregående stycke beräknas för tid \nfr.o.m. den månad arbetstagaren fyller 65 år enligt punkt 2 ovan samt för tid före \nden månaden enligt 18 § PA 91. \n \n9 § Övergångsbestämmelser för anställda vid Högskolan i Jönkö-\nping98 \n1. Fortsatt tillämpning av tidigare pensionsavtal \nFör arbetstagare födda 1945 eller tidigare ska tidigare bestämmelser i PA-91 F \nfortsätta att tillämpas. \n \nFör arbetstagare som avgått med pensionsförmån enligt vid avgången gällande \npensionsavtal gäller att bestämmelserna i det avtalet ska fortsätta att tillämpas. 93 Efterlevandepension utges även för arbetstagare födda 1965 eller tidigare och som före 63 års ålder har på-\ngående utbetalning av ålderspension, eller den som har en pågående utbetalning av ålderspension med 60 el-\nler 61 års ålder för beräkning av målpension, eller...",
+    "suggestions": [
+      "Hur mycket kan jag förvänta mig att få i pension?",
+      "Hur indexeras pensionen över tid?",
+      "Påverkar deltidsarbete min pension?"
+    ],
+    "topics": [
+      "eligibility",
+      "benefits",
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:43:56.757335",
+    "used_suggestions": []
+  },
+  "0f6d5a3f-2ee4-43eb-b31a-955f39cbcb67": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "\"Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+    "answer": "Baserat på din månadslön på 35000 kr och din ålder på 45 år, uppskattar jag att din månatliga pension vid 65 års ålder blir cirka 9188 kr.\n\n**Så här beräknades pensionen:**\n1. Månatlig avsättning: 35000 kr × 17.5% = 6125 kr\n2. Årlig avsättning: 6125 kr × 12 månader = 73500 kr\n3. Antal år till pension: 65 - 45 = 20 år\n4. Tillväxtfaktor: 1.5 (baserat på 3% årlig tillväxt)\n5. Totalt pensionskapital: 6125 kr × 12 månader × 20 år × 1.5 = 2205000 kr\n6. Månatlig pension: 2205000 kr ÷ (20 år × 12 månader) = 9188 kr\n\nObservera att detta är en förenklad beräkning. Din faktiska pension påverkas av flera faktorer som avtalspension, premiepension, inkomstpension, och eventuellt privat pensionssparande.",
+    "suggestions": [
+      "Vilka ålderskrav gäller för denna pension?",
+      "Påverkar deltidsarbete min pension?",
+      "Vilka faktorer påverkar beräkningen?"
+    ],
+    "topics": [
+      "eligibility",
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:45:38.689041",
+    "used_suggestions": []
+  },
+  "2cc11264-549a-4d07-9005-efa21a01e317": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Det du räknar ut är väl om jag börjar jobb nu va?",
+    "answer": "som ska tillämpas. \nSärskild avtalspension kan betalas ut längst in till dess att arbetstagaren fyllt i  \n32 a § LAS angiven ålder. Särskild avtalspension betalas i vart fall ut till och \nmed kalendermånaden innan arbetstagaren fyller 66 år eller den tidigare \nkalendermånad då intjänad pension hos arbetsgivaren börjar betalas ut. Om inte \narbetsgivare och arbetstagare kommer överens om annat upphör partiell särskild \navtalspension om sysselsättningsgraden i anställningen ändras eller anställ-\nningen upphör på arbetstagarens initiativ. \n§ 13   Pensionsnämnd14 \nEn pensionsnämnd ska finnas med uppgift att lämna utlåtande avseende tolkning \noch tillämpning av bestämmelserna i detta avtal på begäran av part, KKP, \n \n13 Ändrad lydelse genom förhandlingsprotokoll tecknat den 2023-10-18. 97 \n \n \nÖverenskommelse om ändringar i AKAP-KR och \nKAP-KL  \nParter \nArbetsgivarsidan \nSveriges Kommuner och Regioner (SKR) och Sobona – Kommunala \nFöretagens Arbetsgivarorganisation (Sobona) \nArbetstagarsi...",
+    "suggestions": [
+      "Påverkar deltidsarbete min pension?",
+      "Vilka ålderskrav gäller för denna pension?",
+      "Hur beräknas min pensionsgrundande inkomst?"
+    ],
+    "topics": [
+      "eligibility"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:45:54.017035",
+    "used_suggestions": []
+  },
+  "73ed3fa3-fb3c-4c19-b205-2f1219866b91": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Vilka avtal har du kolla på just nu?",
+    "answer": "Jag har information om följande pensionsavtal: PA16 (för statligt anställda) och SKR2023 (för kommunalt anställda).",
+    "suggestions": [
+      "Påverkar deltidsarbete min pension?",
+      "Vilka ålderskrav gäller för denna pension?",
+      "Hur beräknas min pensionsgrundande inkomst?"
+    ],
+    "topics": [
+      "eligibility"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:46:05.972849",
+    "used_suggestions": []
+  },
+  "da37933f-0717-4f45-ad6a-d7b0a2903e4b": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "hur många kapitel finns det i PA16?",
+    "answer": "regelverk finns ytterligare bestämmelser om hur flyttavgift får tas ut av den \navgivande försäkringsgivaren. \n \n52 Tillkom genom förhandlingsprotokoll tecknat den 2013-12-17, ändrad lydelse genom förhandlingsprotokoll \ntecknat den 2017-04-27. 101 \n \nEn ny § 1 a tillförs med innehållet att arbetstagare som har kvalificerat sig för \nförmånen har möjlighet att träffa överenskommelse med arbetsgivaren om att \navstå från sin rätt att ta ut särskild avtalspension för en arbetstagare inom \nräddningstjänsten.  \nSe bilaga 1 till detta förhandlingsprotokoll. \n§ 3   Ändringar i KollektivAvtalad Pension (KAP-KL) \nKapitel VIII § 33, Rätt till särskild avtalspension för arbetstagare inom \nräddningstjänsten, tillförs en ny punkt a) (med följdändringar i numrering av \nföljande punkter) avseende omfattning.  \nEn ny § 33 a) tillförs kapitel VIII, med innehållet att för arbetstagare som har \nkvalificerat sig för förmånen finns möjlighet att träffa överenskommelse med \narbetsgivaren om att avstå från s...",
+    "suggestions": [
+      "Påverkar deltidsarbete min pension?",
+      "Vilka ålderskrav gäller för denna pension?",
+      "Hur beräknas min pensionsgrundande inkomst?"
+    ],
+    "topics": [
+      "eligibility"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:46:43.575335",
+    "used_suggestions": []
+  },
+  "738f1a3f-f01d-4c57-b672-0a5f2d65a9df": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "vilka avtal har du kolla på just nu?",
+    "answer": "För tillfället har jag information om två huvudsakliga pensionsavtal: PA16, som gäller för dig om du är statligt anställd, och SKR2023, som är relevant om du arbetar inom kommunal sektor.",
+    "suggestions": [],
+    "topics": [
+      "information"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:55:06.897658",
+    "used_suggestions": []
+  },
+  "dc690434-a86b-4538-b508-69faf28c5651": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+    "answer": "Utifrån din nuvarande ålder på 45 år och en månadslön på 35000 kr, kan vi uppskatta att din månatliga pension vid 65 års ålder kommer att vara omkring 9188 kr. \n\nHär är en förenklad beräkning av hur vi kom fram till detta belopp:\n1. Din månatliga avsättning till pensionen beräknas genom att ta 17.5% av din månadslön, vilket blir 6125 kr.\n2. Din årliga avsättning blir då 6125 kr multiplicerat med 12 månader, vilket ger 73500 kr.\n3. Antalet år kvar till din pension är 20 år (65 - 45 år).\n4. Vi antar en tillväxtfaktor på 1.5, baserat på en årlig tillväxt på 3%.\n5. Ditt totala pensionskapital beräknas då till 6125 kr x 12 månader x 20 år x 1.5, vilket ger 2205000 kr.\n6. Din uppskattade månatliga pension blir då 2205000 kr delat med (20 år x 12 månader), vilket ger 9188 kr.\n\nObservera att detta är en förenklad beräkning och din faktiska pension kan påverkas av flera faktorer, inklusive avtalspension, premiepension, inkomstpension och eventuellt privat pensionssparande.",
+    "suggestions": [
+      "Kan jag få en uppskattning av min framtida pension?",
+      "Vilka faktorer påverkar beräkningen?",
+      "Hur beräknas min pension?"
+    ],
+    "topics": [
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:55:37.664350",
+    "used_suggestions": []
+  },
+  "56520058-0506-4113-a78f-9580a76ee94d": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Kan jag få en uppskattning av min framtida pension?",
+    "answer": "Tyvärr, utan mer specifik information kan jag inte ge en exakt uppskattning av din framtida pension. För att få en mer detaljerad beräkning rekommenderar jag att du kontaktar ditt försäkringsbolag direkt eller använder en pensionskalkylator. Dessa finns ofta tillgängliga på försäkringsbolagens webbplatser.",
+    "suggestions": [
+      "Vilka faktorer påverkar beräkningen?",
+      "Kan jag få en uppskattning av min framtida pension?",
+      "Hur beräknas min pension?"
+    ],
+    "topics": [
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:56:08.329522",
+    "used_suggestions": []
+  },
+  "5bb61f94-aa81-4787-bd47-d71d773b8315": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Hur beräknas min pension?",
+    "answer": "Din pension beräknas utifrån den lön du har tjänat in under din arbetslivstid, i förhållande till antalet dagar du har arbetat under denna period. Om din fasta lön vid något tillfälle har överstigit 62,5 procent av inkomstbasbeloppet (IBB), justeras detta gränsvärde proportionellt i förhållande till din anställningstid. Det är viktigt att notera att alla anställningar hos samma arbetsgivare under en beräkningsperiod räknas som en enda anställning. Dessutom beräknas gränsvärdet om 7,5 IBB proportionellt om du har haft en eller flera anställningar som varat sammanhängande i minst tre månader under beräkningsperioden.",
+    "suggestions": [
+      "Kan jag få en uppskattning av min framtida pension?",
+      "Vilka faktorer påverkar beräkningen?",
+      "Hur beräknas min pension?"
+    ],
+    "topics": [
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T23:56:40.442609",
+    "used_suggestions": []
+  },
+  "8c541233-1d7b-4b2a-853e-c88977a1abe4": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Hur beräknas min pension?",
+    "answer": "Din pension beräknas utifrån din inkomst under arbetslivet. Detta görs genom att ta hänsyn till din lön i förhållande till antalet dagar du har arbetat under den period som beräkningen baseras på. Om din fasta lön vid något tillfälle har överstigit 62,5 procent av inkomstbasbeloppet (IBB), justeras gränsvärdet proportionerligt i förhållande till din anställningstid. Det är viktigt att notera att alla anställningar hos samma arbetsgivare under en beräkningsperiod räknas som en anställning. Om du har haft en eller flera anställningar som varat sammanhängande i minst tre månader under beräkningsperioden, justeras gränsvärdet om 7,5 IBB proportionerligt.",
+    "suggestions": [
+      "Hur beräknas min pension?",
+      "Kan jag få en uppskattning av min framtida pension?",
+      "Vilka faktorer påverkar beräkningen?"
+    ],
+    "topics": [
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-10T00:06:40.556110",
+    "used_suggestions": []
+  },
+  "7ee55eed-e13d-4dd7-b42a-532459e71634": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Vilka ändringar i pensionsutbetalningar kommer att gälla från och med 1 januari 2025",
+    "answer": "Från och med 1 januari 2025 kommer det att införas nya regler för pensionsutbetalningar enligt statliga tjänstepensionsbestämmelser. Dessa förändringar innebär att du som pensionär kommer att kunna göra uppehåll i utbetalningen av din premiebestämda ålderspension och även komma överens om en längre utbetalningstid. Båda dessa alternativ kommer att vara kostnadsfria för dig.\n\nLagändringen kommer även att tillåta uppehåll i utbetalningen av efterlevandepension. Om din försäkringsgivare bedömer att återbetalningsskyddet inom din premiebestämda pension kan betraktas som en efterlevandepension, kommer du att ha rätt att göra uppehåll i utbetalningen och ändra utbetalningstiden inom ramen för försäkringens villkor.\n\nDu kommer också att kunna välja att förlänga utbetalningstiden för din premiebestämda ålderspension som redan är under utbetalning.\n\nDessa nya regler kommer att gälla för statliga tjänstepensionsbestämmelser från och med 1 januari 2025 och framåt. Din försäkringsgivare ska tillämpa de nya reglerna senast från och med 1 januari 2026 och de kommer att omfatta ålderspensioner som betalas ut under minst fem år.",
+    "suggestions": [],
+    "topics": [
+      "information"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-10T00:07:45.382547",
+    "used_suggestions": []
+  },
+  "35a01406-df29-4430-94bb-2d4e58883647": {
+    "conversation_id": "conv_76592d79_20250409232129",
+    "question": "Vilka ändringar i pensionsutbetalningar kommer att gälla från och med 1 januari 2025",
+    "answer": "Från och med 1 januari 2025 kommer det att införas nya regler för utbetalning av premiebestämda ålderspensioner enligt statliga tjänstepensionsbestämmelser. Dessa ändringar innebär att det blir möjligt att under utbetalningens gång komma överens om en förlängd utbetalningstid och att göra uppehåll i utbetalningen. Både uppehåll och ändring av utbetalningstid ska vara kostnadsfria för den försäkrade. \n\nDessa nya regler gäller från och med 1 januari 2025 och framåt. Försäkringsgivare ska börja tillämpa dessa ändrade bestämmelser senast från och med 1 januari 2026. De berör ålderspensioner som betalas ut under minst fem år.\n\nDen nya lagstiftningen tillåter också uppehåll i utbetalningen av efterlevandepension. Försäkringsgivare som bedömer att återbetalningsskydd inom ramen för premiebestämd pension kan betraktas som en efterlevandepension, har rätt att tillåta både uppehåll och ändrad utbetalningstid inom ramen för försäkringens villkor.\n\nEn försäkrad person kommer även att kunna välja att förlänga utbetalningstiden för premiebestämda ålderspensioner som redan är under utbetalning.",
+    "suggestions": [],
+    "topics": [
+      "information"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-10T00:12:05.168843",
+    "used_suggestions": []
   }
 }

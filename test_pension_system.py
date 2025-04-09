@@ -24,7 +24,8 @@ logger = logging.getLogger("pension_system_test")
 
 # Import system components
 from src.graph.pension_graph import create_pension_graph
-from src.agents.answering_agents import AnswerAgent, RefinerAgent, MissingFieldsAgent
+# Removed import of legacy agents as part of refactoring
+from src.agents.tool_using_agent import ToolUsingPensionAgent
 from src.retriever.document_processor import DocumentProcessor
 from src.retriever.retriever_tool import RetrieverTool
 from src.utils.config import BASE_DIR, VECTORSTORE_DIR

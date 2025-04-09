@@ -128,42 +128,75 @@ class CalculationAgent:
             ]
         }
     
-    def detect_calculation_intent(self, query: str) -> Tuple[bool, str, float]:
-        """
-        Detect if a query contains a calculation intent.
+    def detect_calculation_intent(self, question: str) -> Tuple[bool, str, float]:
+        """Detect if the question is asking for a calculation.
         
         Args:
-            query: User query.
+            question: The user's question
             
         Returns:
-            Tuple[bool, str, float]: (is_calculation, calculation_type, confidence)
+            Tuple of (is_calculation, calculation_type, confidence)
         """
-        query = query.lower()
-        best_match = (False, "", 0.0)
+        # Log the input for debugging
+        logger.info(f"DEBUG: detect_calculation_intent - Analyzing question: '{question}'")
         
-        # Count how many patterns match for each calculation type
-        for calc_type, patterns in self.calculation_intents.items():
-            matches = 0
-            for pattern in patterns:
-                if re.search(pattern, query, re.IGNORECASE):
-                    matches += 1
-            
-            if matches > 0:
-                # Calculate confidence based on number of matches
-                # More matches = higher confidence
-                confidence = min(0.7 + (matches * 0.1), 0.95)  # Cap at 0.95
-                
-                # Update best match if this is better
-                if confidence > best_match[2]:
-                    best_match = (True, calc_type, confidence)
+        # For MVP: Simple pattern matching for common calculation questions
+        retirement_patterns = [
+            r"(hur mycket|hur stor) .* pension",
+            r"(beräkna|räkna) .* pension",
+            r"(hur mycket|hur stor) .* få .* pension",
+            r"(hur mycket|hur stor) .* bli .* pension",
+            r"(hur mycket|hur stor) .* pensionsbelopp",
+            r"(vad|hur) .* pension .* bli",
+            r"(vad|hur) .* få .* pension",
+            r"pension .* (beräkna|räkna)",
+            r"pension .* (hur mycket|hur stor)",
+            r"(beräkna|räkna) .* (få|bli)",
+        ]
         
-        # Log the detection result
-        if best_match[0]:
-            logger.info(f"Detected calculation intent: {best_match[1]} with confidence {best_match[2]}")
-        else:
-            logger.info("No calculation intent detected")
-            
-        return best_match
+        contribution_patterns = [
+            r"(hur mycket|hur stor) .* avsättning",
+            r"(beräkna|räkna) .* avsättning",
+            r"(hur mycket|hur stor) .* pensionsavsättning",
+            r"(hur mycket|hur stor) .* sätta av .* pension",
+            r"(hur mycket|hur stor) .* betala .* pension",
+            r"(vad|hur) .* avsättning .* bli",
+            r"(vad|hur) .* betala .* pension",
+            r"avsättning .* (beräkna|räkna)",
+            r"(sätta av|betala) .* pension",
+        ]
+        
+        # Simple keyword check as backup
+        calculation_keywords = [
+            "beräkna", "räkna", "pension", "pensionsbelopp", "pensionsavsättning",
+            "hur mycket", "hur stor", "lön", "månadslön", "ålder", "avkastning"
+        ]
+        
+        # Count keywords in the question
+        keyword_count = sum(1 for keyword in calculation_keywords if keyword.lower() in question.lower())
+        logger.info(f"DEBUG: detect_calculation_intent - Found {keyword_count} calculation keywords")
+        
+        # Check for retirement estimate patterns
+        for pattern in retirement_patterns:
+            if re.search(pattern, question.lower()):
+                logger.info(f"DEBUG: detect_calculation_intent - Matched retirement pattern: {pattern}")
+                return True, "retirement_estimate", 0.9
+        
+        # Check for contribution calculation patterns
+        for pattern in contribution_patterns:
+            if re.search(pattern, question.lower()):
+                logger.info(f"DEBUG: detect_calculation_intent - Matched contribution pattern: {pattern}")
+                return True, "contribution_calculation", 0.9
+        
+        # If no pattern matches but we have enough keywords, consider it a calculation
+        if keyword_count >= 2:
+            logger.info(f"DEBUG: detect_calculation_intent - Detected calculation based on {keyword_count} keywords")
+            # Default to retirement estimate for now
+            return True, "retirement_estimate", 0.7
+        
+        # If no pattern matches and not enough keywords, it's not a calculation question
+        logger.info("DEBUG: detect_calculation_intent - Not a calculation question")
+        return False, "", 0.0
     
     def extract_parameters(self, query: str, agreement: str) -> Dict[str, Any]:
         """
@@ -171,55 +204,214 @@ class CalculationAgent:
         
         Args:
             query: User query.
-            agreement: Pension agreement type.
+            agreement: Selected pension agreement.
             
         Returns:
             Dict[str, Any]: Extracted parameters.
         """
         parameters = {}
         
-        # Extract parameters using patterns
-        for param_name, patterns in self.parameter_patterns.items():
-            for pattern in patterns:
-                matches = re.search(pattern, query, re.IGNORECASE)
-                if matches:
-                    # Extract value
-                    value = matches.group(1)
-                    
-                    # Remove spaces between digits (common in Swedish number formatting)
-                    value = re.sub(r'(\d)\s+(\d)', r'\1\2', value)
-                    
-                    # Handle Swedish number format (comma as decimal separator)
-                    if ',' in value and '.' not in value:
-                        value = value.replace(',', '.')
-                    elif ',' in value and '.' in value:
-                        # If both comma and period exist, assume comma is thousand separator
-                        value = value.replace(',', '')
-                    
-                    try:
-                        if param_name in ["monthly_salary", "return_rate"]:
-                            parameters[param_name] = float(value)
-                        else:
-                            parameters[param_name] = int(float(value))
-                        
-                        # Log the extracted parameter
-                        logger.info(f"Extracted {param_name}: {parameters[param_name]}")
-                    except ValueError as e:
-                        logger.error(f"Error converting {param_name} value '{value}': {e}")
-                    
-                    # Break once we've found a match for this parameter
+        # Log the query for debugging
+        logger.info(f"DEBUG: extract_parameters - Analyzing query: '{query}'")
+        
+        # Extract age
+        age_patterns = [
+            r"jag är (\d+) år",
+            r"(\d+) år gammal",
+            r"ålder.{1,10}(\d+)",
+            r"(\d+).{1,10}ålder",
+            r"jag är (\d+)",  # More flexible pattern
+            r"min ålder är (\d+)",
+        ]
+        
+        for pattern in age_patterns:
+            match = re.search(pattern, query, re.IGNORECASE)
+            if match:
+                try:
+                    age = int(match.group(1))
+                    parameters["age"] = age
+                    logger.info(f"DEBUG: extract_parameters - Extracted age: {age}")
                     break
+                except (ValueError, IndexError):
+                    pass
         
-        # Convert return rate from percentage to decimal if present
-        if "return_rate" in parameters:
-            parameters["return_rate"] = parameters["return_rate"] / 100
+        # Extract monthly salary
+        salary_patterns = [
+            r"lön.{1,15}(\d[\d\s]*)[\s]*kr",
+            r"(\d[\d\s]*)[\s]*kr.{1,15}lön",
+            r"månadslön.{1,15}(\d[\d\s]*)[\s]*kr",
+            r"(\d[\d\s]*)[\s]*kr.{1,15}månadslön",
+            r"tjänar.{1,15}(\d[\d\s]*)[\s]*kr",
+            r"inkomst.{1,15}(\d[\d\s]*)[\s]*kr",
+            r"lön.{1,15}(\d[\d\s]*)",  # More flexible pattern
+            r"månadslön.{1,15}(\d[\d\s]*)",
+            r"tjänar.{1,15}(\d[\d\s]*)",
+            r"inkomst.{1,15}(\d[\d\s]*)",
+        ]
         
-        # Set default retirement age if years_until_retirement is not provided
-        if "age" in parameters and "years_until_retirement" not in parameters:
-            # Default retirement age is 65
-            parameters["years_until_retirement"] = 65 - parameters["age"]
+        for pattern in salary_patterns:
+            match = re.search(pattern, query, re.IGNORECASE)
+            if match:
+                try:
+                    # Remove spaces and convert to integer
+                    salary_str = match.group(1).replace(" ", "")
+                    salary = int(salary_str)
+                    parameters["monthly_salary"] = salary
+                    logger.info(f"DEBUG: extract_parameters - Extracted monthly_salary: {salary}")
+                    break
+                except (ValueError, IndexError):
+                    pass
         
+        # Extract retirement age (if specified)
+        retirement_age_patterns = [
+            r"gå i pension vid (\d+)",
+            r"pensionera mig vid (\d+)",
+            r"pensionsålder.{1,10}(\d+)",
+            r"(\d+).{1,10}pensionsålder",
+            r"pension vid (\d+)",  # More flexible pattern
+            r"vid (\d+) års ålder",
+        ]
+        
+        for pattern in retirement_age_patterns:
+            match = re.search(pattern, query, re.IGNORECASE)
+            if match:
+                try:
+                    retirement_age = int(match.group(1))
+                    parameters["retirement_age"] = retirement_age
+                    logger.info(f"DEBUG: extract_parameters - Extracted retirement_age: {retirement_age}")
+                    break
+                except (ValueError, IndexError):
+                    pass
+        
+        # Extract years of service (if specified)
+        service_patterns = [
+            r"arbetat i (\d+) år",
+            r"jobbat i (\d+) år",
+            r"(\d+) års tjänst",
+            r"(\d+) år i tjänst",
+            r"(\d+) år på jobbet",
+        ]
+        
+        for pattern in service_patterns:
+            match = re.search(pattern, query, re.IGNORECASE)
+            if match:
+                try:
+                    years = int(match.group(1))
+                    parameters["years_of_service"] = years
+                    logger.info(f"DEBUG: extract_parameters - Extracted years_of_service: {years}")
+                    break
+                except (ValueError, IndexError):
+                    pass
+        
+        # Handle direct number mentions that might be salary or age
+        if "monthly_salary" not in parameters:
+            # Try to find standalone numbers that might be salary
+            salary_match = re.search(r"\b(\d{4,6})\b", query)
+            if salary_match:
+                try:
+                    potential_salary = int(salary_match.group(1))
+                    # If it's in a reasonable salary range (4000-100000 kr)
+                    if 4000 <= potential_salary <= 100000:
+                        parameters["monthly_salary"] = potential_salary
+                        logger.info(f"DEBUG: extract_parameters - Extracted potential monthly_salary: {potential_salary}")
+                except (ValueError, IndexError):
+                    pass
+        
+        # Set agreement if specified
+        if agreement:
+            parameters["agreement"] = agreement
+            logger.info(f"DEBUG: extract_parameters - Using agreement: {agreement}")
+        
+        logger.info(f"DEBUG: extract_parameters - Final extracted parameters: {parameters}")
         return parameters
+    
+    def get_required_parameters(self, calculation_type: str, agreement: str = "") -> List[str]:
+        """Get the required parameters for a specific calculation type.
+        
+        Args:
+            calculation_type: Type of calculation
+            agreement: The pension agreement to use
+            
+        Returns:
+            List of required parameter names
+        """
+        # For MVP, define basic required parameters for each calculation type
+        if calculation_type == "retirement_estimate":
+            return ["age", "monthly_salary"]
+        elif calculation_type == "contribution_calculation":
+            return ["monthly_salary"]
+        elif calculation_type == "early_retirement":
+            return ["age", "monthly_salary", "years_of_service"]
+        elif calculation_type == "comparison":
+            return ["age", "monthly_salary", "years_of_service"]
+        else:
+            # Default parameters for unknown calculation types
+            return ["age", "monthly_salary"]
+            
+    def perform_calculation(self, calculation_type: str, parameters: Dict[str, Any], agreement: str = "") -> Dict[str, Any]:
+        """Perform a pension calculation based on the provided parameters.
+        
+        Args:
+            calculation_type: Type of calculation to perform
+            parameters: Dictionary of parameters for the calculation
+            agreement: The pension agreement to use for calculation
+            
+        Returns:
+            Dictionary containing the calculation results
+        """
+        # For MVP, implement simple calculations
+        if calculation_type == "retirement_estimate":
+            # Simple retirement estimate calculation
+            monthly_salary = parameters.get("monthly_salary", 0)
+            age = parameters.get("age", 65)
+            years_of_service = parameters.get("years_of_service", 0)
+            
+            # Very basic calculation for MVP
+            # In a real system, this would use agreement-specific formulas
+            replacement_rate = 0.5  # 50% of salary
+            age_factor = max(0, min(1, (age - 25) / 40))  # Factor based on age
+            service_factor = min(1, years_of_service / 30)  # Factor based on service years
+            
+            # Calculate monthly pension
+            monthly_pension = monthly_salary * replacement_rate * age_factor * service_factor
+            monthly_pension = round(monthly_pension, 0)  # Round to nearest krona
+            
+            # Calculate total pension capital (simple estimate)
+            years_in_retirement = 20  # Assume 20 years in retirement
+            months_in_retirement = years_in_retirement * 12
+            total_pension = monthly_pension * months_in_retirement
+            total_pension = round(total_pension, -3)  # Round to nearest thousand
+            
+            return {
+                "monthly_pension": monthly_pension,
+                "total_pension": total_pension,
+                "replacement_rate": replacement_rate,
+                "age_factor": age_factor,
+                "service_factor": service_factor
+            }
+            
+        elif calculation_type == "contribution_calculation":
+            # Calculate pension contributions
+            monthly_salary = parameters.get("monthly_salary", 0)
+            
+            # Basic contribution calculation
+            # In a real system, this would use agreement-specific rates and thresholds
+            contribution_rate = 0.045  # 4.5% contribution rate
+            monthly_contribution = monthly_salary * contribution_rate
+            yearly_contribution = monthly_contribution * 12
+            
+            monthly_contribution = round(monthly_contribution, 0)  # Round to nearest krona
+            yearly_contribution = round(yearly_contribution, 0)  # Round to nearest krona
+            
+            return {
+                "monthly_contribution": monthly_contribution,
+                "yearly_contribution": yearly_contribution,
+                "contribution_rate": contribution_rate
+            }
+            
+        else:
+            # Default empty result for unsupported calculation types
+            return {"error": f"Calculation type '{calculation_type}' not supported"}
     
     def handle_calculation_query(self, query: str, agreement: str) -> Dict[str, Any]:
         """
@@ -245,10 +437,7 @@ class CalculationAgent:
         parameters = self.extract_parameters(query, agreement)
         
         # Check if we have the required parameters
-        required_params = ["monthly_salary"]
-        if calculation_type == "retirement_estimate":
-            required_params.extend(["age"])
-        
+        required_params = self.get_required_parameters(calculation_type, agreement)
         missing_params = [param for param in required_params if param not in parameters]
         
         if missing_params:

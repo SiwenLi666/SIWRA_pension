@@ -1,0 +1,366 @@
+{
+  "conversation_id": "conv_76592d79_20250409232129",
+  "user_id": "::1",
+  "created_at": "2025-04-09T23:21:29.042667",
+  "last_updated": "2025-04-10T00:12:05.154694",
+  "messages": [
+    {
+      "id": "msg_82642e04",
+      "role": "user",
+      "content": "Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+      "timestamp": "2025-04-09T23:21:29.948982",
+      "metadata": {}
+    },
+    {
+      "id": "msg_05643554",
+      "role": "assistant",
+      "content": "Baserat på din månadslön på 35000 kr och din ålder på 45 år, uppskattar jag att din månatliga pension vid 65 års ålder blir cirka 9188 kr. Detta baseras på en månatlig avsättning på ungefär 6125 kr.",
+      "timestamp": "2025-04-09T23:21:29.949909",
+      "metadata": {}
+    },
+    {
+      "id": "msg_89ff3428",
+      "role": "user",
+      "content": "Hur beräknas min pensionsgrundande inkomst?",
+      "timestamp": "2025-04-09T23:21:48.002609",
+      "metadata": {}
+    },
+    {
+      "id": "msg_d79403a7",
+      "role": "assistant",
+      "content": "För att beräkna din pension behöver jag veta din månadslön. Kan du ange hur mycket du tjänar per månad?",
+      "timestamp": "2025-04-09T23:21:48.004112",
+      "metadata": {}
+    },
+    {
+      "id": "msg_31114f64",
+      "role": "user",
+      "content": "40000 sek",
+      "timestamp": "2025-04-09T23:22:01.147099",
+      "metadata": {}
+    },
+    {
+      "id": "msg_3710407c",
+      "role": "assistant",
+      "content": "För att beräkna din pension behöver jag veta din månadslön. Kan du ange hur mycket du tjänar per månad?",
+      "timestamp": "2025-04-09T23:22:01.148586",
+      "metadata": {}
+    },
+    {
+      "id": "msg_23bff5c1",
+      "role": "user",
+      "content": "Hur länge kan en yrkesofficerare skjuta upp sin pension enligt överenskommelsen?",
+      "timestamp": "2025-04-09T23:24:40.229704",
+      "metadata": {}
+    },
+    {
+      "id": "msg_9586a533",
+      "role": "assistant",
+      "content": "För att beräkna din pension behöver jag veta din månadslön. Kan du ange hur mycket du tjänar per månad?",
+      "timestamp": "2025-04-09T23:24:40.230933",
+      "metadata": {}
+    },
+    {
+      "id": "msg_d3eb2db2",
+      "role": "user",
+      "content": "Hur länge kan en yrkesofficerare skjuta upp sin pension enligt överenskommelsen?",
+      "timestamp": "2025-04-09T23:26:57.541329",
+      "metadata": {}
+    },
+    {
+      "id": "msg_70e3112b",
+      "role": "assistant",
+      "content": "För att beräkna din pension behöver jag veta din månadslön. Kan du ange hur mycket du tjänar per månad?",
+      "timestamp": "2025-04-09T23:26:57.542568",
+      "metadata": {}
+    },
+    {
+      "id": "msg_7ccf9d11",
+      "role": "user",
+      "content": "Vilka övergångsbestämmelser gäller för arbetstagare födda 1965 eller tidigare",
+      "timestamp": "2025-04-09T23:35:19.012916",
+      "metadata": {}
+    },
+    {
+      "id": "msg_92fd3f1d",
+      "role": "assistant",
+      "content": "Tyvärr kan jag inte svara på den frågan just nu.",
+      "timestamp": "2025-04-09T23:35:19.014221",
+      "metadata": {}
+    },
+    {
+      "id": "msg_27bc2a66",
+      "role": "user",
+      "content": "Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+      "timestamp": "2025-04-09T23:36:06.409920",
+      "metadata": {}
+    },
+    {
+      "id": "msg_f49ea657",
+      "role": "assistant",
+      "content": "Baserat på din månadslön på 35000 kr och din ålder på 45 år, uppskattar jag att din månatliga pension vid 65 års ålder blir cirka 9188 kr.\n\n**Så här beräknades pensionen:**\n1. Månatlig avsättning: 35000 kr × 17.5% = 6125 kr\n2. Årlig avsättning: 6125 kr × 12 månader = 73500 kr\n3. Antal år till pension: 65 - 45 = 20 år\n4. Tillväxtfaktor: 1.5 (baserat på 3% årlig tillväxt)\n5. Totalt pensionskapital: 6125 kr × 12 månader × 20 år × 1.5 = 2205000 kr\n6. Månatlig pension: 2205000 kr ÷ (20 år × 12 månader) = 9188 kr\n\nObservera att detta är en förenklad beräkning. Din faktiska pension påverkas av flera faktorer som avtalspension, premiepension, inkomstpension, och eventuellt privat pensionssparande.",
+      "timestamp": "2025-04-09T23:36:06.411209",
+      "metadata": {}
+    },
+    {
+      "id": "msg_fb2ff7ab",
+      "role": "user",
+      "content": "det du räknar ut är väl om jag börjar jobb nu va?",
+      "timestamp": "2025-04-09T23:37:30.942304",
+      "metadata": {}
+    },
+    {
+      "id": "msg_f20afd11",
+      "role": "assistant",
+      "content": "Tyvärr kan jag inte svara på den frågan just nu.",
+      "timestamp": "2025-04-09T23:37:30.943402",
+      "metadata": {}
+    },
+    {
+      "id": "msg_57c6a512",
+      "role": "user",
+      "content": "vilka avtal har du kolla på just nu?",
+      "timestamp": "2025-04-09T23:38:36.251182",
+      "metadata": {}
+    },
+    {
+      "id": "msg_db3b6051",
+      "role": "assistant",
+      "content": "Tyvärr kan jag inte svara på den frågan just nu.",
+      "timestamp": "2025-04-09T23:38:36.252295",
+      "metadata": {}
+    },
+    {
+      "id": "msg_5510ec67",
+      "role": "user",
+      "content": "Vilka övergångsbestämmelser gäller för arbetstagare födda 1965 eller tidigare?\"",
+      "timestamp": "2025-04-09T23:43:56.741779",
+      "metadata": {}
+    },
+    {
+      "id": "msg_8c5deaac",
+      "role": "assistant",
+      "content": "ion vid en tidigare ålder än 65 år enligt övergångsbestämmelser till PA-91 F som \nhänvisar till PA-91 gäller sagda övergångsbestämmelser. \n \nDen förmånsbestämda ålderspensionen enligt föregående stycke beräknas för tid \nfr.o.m. den månad arbetstagaren fyller 65 år enligt punkt 2 ovan samt för tid före \nden månaden enligt 18 § PA 91. \n \n9 § Övergångsbestämmelser för anställda vid Högskolan i Jönkö-\nping98 \n1. Fortsatt tillämpning av tidigare pensionsavtal \nFör arbetstagare födda 1945 eller tidigare ska tidigare bestämmelser i PA-91 F \nfortsätta att tillämpas. \n \nFör arbetstagare som avgått med pensionsförmån enligt vid avgången gällande \npensionsavtal gäller att bestämmelserna i det avtalet ska fortsätta att tillämpas. 93 Efterlevandepension utges även för arbetstagare födda 1965 eller tidigare och som före 63 års ålder har på-\ngående utbetalning av ålderspension, eller den som har en pågående utbetalning av ålderspension med 60 el-\nler 61 års ålder för beräkning av målpension, eller...",
+      "timestamp": "2025-04-09T23:43:56.746466",
+      "metadata": {}
+    },
+    {
+      "id": "msg_4bb0d47a",
+      "role": "user",
+      "content": "\"Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+      "timestamp": "2025-04-09T23:45:38.683177",
+      "metadata": {}
+    },
+    {
+      "id": "msg_5139d721",
+      "role": "assistant",
+      "content": "Baserat på din månadslön på 35000 kr och din ålder på 45 år, uppskattar jag att din månatliga pension vid 65 års ålder blir cirka 9188 kr.\n\n**Så här beräknades pensionen:**\n1. Månatlig avsättning: 35000 kr × 17.5% = 6125 kr\n2. Årlig avsättning: 6125 kr × 12 månader = 73500 kr\n3. Antal år till pension: 65 - 45 = 20 år\n4. Tillväxtfaktor: 1.5 (baserat på 3% årlig tillväxt)\n5. Totalt pensionskapital: 6125 kr × 12 månader × 20 år × 1.5 = 2205000 kr\n6. Månatlig pension: 2205000 kr ÷ (20 år × 12 månader) = 9188 kr\n\nObservera att detta är en förenklad beräkning. Din faktiska pension påverkas av flera faktorer som avtalspension, premiepension, inkomstpension, och eventuellt privat pensionssparande.",
+      "timestamp": "2025-04-09T23:45:38.684976",
+      "metadata": {}
+    },
+    {
+      "id": "msg_552879f3",
+      "role": "user",
+      "content": "Det du räknar ut är väl om jag börjar jobb nu va?",
+      "timestamp": "2025-04-09T23:45:54.010758",
+      "metadata": {}
+    },
+    {
+      "id": "msg_fbae1910",
+      "role": "assistant",
+      "content": "som ska tillämpas. \nSärskild avtalspension kan betalas ut längst in till dess att arbetstagaren fyllt i  \n32 a § LAS angiven ålder. Särskild avtalspension betalas i vart fall ut till och \nmed kalendermånaden innan arbetstagaren fyller 66 år eller den tidigare \nkalendermånad då intjänad pension hos arbetsgivaren börjar betalas ut. Om inte \narbetsgivare och arbetstagare kommer överens om annat upphör partiell särskild \navtalspension om sysselsättningsgraden i anställningen ändras eller anställ-\nningen upphör på arbetstagarens initiativ. \n§ 13   Pensionsnämnd14 \nEn pensionsnämnd ska finnas med uppgift att lämna utlåtande avseende tolkning \noch tillämpning av bestämmelserna i detta avtal på begäran av part, KKP, \n \n13 Ändrad lydelse genom förhandlingsprotokoll tecknat den 2023-10-18. 97 \n \n \nÖverenskommelse om ändringar i AKAP-KR och \nKAP-KL  \nParter \nArbetsgivarsidan \nSveriges Kommuner och Regioner (SKR) och Sobona – Kommunala \nFöretagens Arbetsgivarorganisation (Sobona) \nArbetstagarsi...",
+      "timestamp": "2025-04-09T23:45:54.012344",
+      "metadata": {}
+    },
+    {
+      "id": "msg_00f91ffd",
+      "role": "user",
+      "content": "Vilka avtal har du kolla på just nu?",
+      "timestamp": "2025-04-09T23:46:05.963385",
+      "metadata": {}
+    },
+    {
+      "id": "msg_14c8f4fb",
+      "role": "assistant",
+      "content": "Jag har information om följande pensionsavtal: PA16 (för statligt anställda) och SKR2023 (för kommunalt anställda).",
+      "timestamp": "2025-04-09T23:46:05.964738",
+      "metadata": {}
+    },
+    {
+      "id": "msg_b14e9a40",
+      "role": "user",
+      "content": "hur många kapitel finns det i PA16?",
+      "timestamp": "2025-04-09T23:46:43.549809",
+      "metadata": {}
+    },
+    {
+      "id": "msg_29ecb4cb",
+      "role": "assistant",
+      "content": "regelverk finns ytterligare bestämmelser om hur flyttavgift får tas ut av den \navgivande försäkringsgivaren. \n \n52 Tillkom genom förhandlingsprotokoll tecknat den 2013-12-17, ändrad lydelse genom förhandlingsprotokoll \ntecknat den 2017-04-27. 101 \n \nEn ny § 1 a tillförs med innehållet att arbetstagare som har kvalificerat sig för \nförmånen har möjlighet att träffa överenskommelse med arbetsgivaren om att \navstå från sin rätt att ta ut särskild avtalspension för en arbetstagare inom \nräddningstjänsten.  \nSe bilaga 1 till detta förhandlingsprotokoll. \n§ 3   Ändringar i KollektivAvtalad Pension (KAP-KL) \nKapitel VIII § 33, Rätt till särskild avtalspension för arbetstagare inom \nräddningstjänsten, tillförs en ny punkt a) (med följdändringar i numrering av \nföljande punkter) avseende omfattning.  \nEn ny § 33 a) tillförs kapitel VIII, med innehållet att för arbetstagare som har \nkvalificerat sig för förmånen finns möjlighet att träffa överenskommelse med \narbetsgivaren om att avstå från s...",
+      "timestamp": "2025-04-09T23:46:43.554447",
+      "metadata": {}
+    },
+    {
+      "id": "msg_9a927e29",
+      "role": "user",
+      "content": "vilka avtal har du kolla på just nu?",
+      "timestamp": "2025-04-09T23:55:06.871950",
+      "metadata": {
+        "topics": [
+          "information"
+        ]
+      }
+    },
+    {
+      "id": "msg_fc9dee82",
+      "role": "assistant",
+      "content": "För tillfället har jag information om två huvudsakliga pensionsavtal: PA16, som gäller för dig om du är statligt anställd, och SKR2023, som är relevant om du arbetar inom kommunal sektor.",
+      "timestamp": "2025-04-09T23:55:06.876915",
+      "metadata": {
+        "topics": [
+          "information"
+        ]
+      }
+    },
+    {
+      "id": "msg_394ec9a9",
+      "role": "user",
+      "content": "Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?",
+      "timestamp": "2025-04-09T23:55:37.645077",
+      "metadata": {
+        "topics": [
+          "calculation"
+        ]
+      }
+    },
+    {
+      "id": "msg_8c825d24",
+      "role": "assistant",
+      "content": "Utifrån din nuvarande ålder på 45 år och en månadslön på 35000 kr, kan vi uppskatta att din månatliga pension vid 65 års ålder kommer att vara omkring 9188 kr. \n\nHär är en förenklad beräkning av hur vi kom fram till detta belopp:\n1. Din månatliga avsättning till pensionen beräknas genom att ta 17.5% av din månadslön, vilket blir 6125 kr.\n2. Din årliga avsättning blir då 6125 kr multiplicerat med 12 månader, vilket ger 73500 kr.\n3. Antalet år kvar till din pension är 20 år (65 - 45 år).\n4. Vi antar en tillväxtfaktor på 1.5, baserat på en årlig tillväxt på 3%.\n5. Ditt totala pensionskapital beräknas då till 6125 kr x 12 månader x 20 år x 1.5, vilket ger 2205000 kr.\n6. Din uppskattade månatliga pension blir då 2205000 kr delat med (20 år x 12 månader), vilket ger 9188 kr.\n\nObservera att detta är en förenklad beräkning och din faktiska pension kan påverkas av flera faktorer, inklusive avtalspension, premiepension, inkomstpension och eventuellt privat pensionssparande.",
+      "timestamp": "2025-04-09T23:55:37.651406",
+      "metadata": {
+        "topics": [
+          "calculation"
+        ]
+      }
+    },
+    {
+      "id": "msg_a3bae844",
+      "role": "user",
+      "content": "Kan jag få en uppskattning av min framtida pension?",
+      "timestamp": "2025-04-09T23:56:08.304624",
+      "metadata": {
+        "topics": [
+          "calculation"
+        ]
+      }
+    },
+    {
+      "id": "msg_48555eab",
+      "role": "assistant",
+      "content": "Tyvärr, utan mer specifik information kan jag inte ge en exakt uppskattning av din framtida pension. För att få en mer detaljerad beräkning rekommenderar jag att du kontaktar ditt försäkringsbolag direkt eller använder en pensionskalkylator. Dessa finns ofta tillgängliga på försäkringsbolagens webbplatser.",
+      "timestamp": "2025-04-09T23:56:08.310369",
+      "metadata": {
+        "topics": [
+          "calculation"
+        ]
+      }
+    },
+    {
+      "id": "msg_5cc3ca15",
+      "role": "user",
+      "content": "Hur beräknas min pension?",
+      "timestamp": "2025-04-09T23:56:40.419976",
+      "metadata": {
+        "topics": [
+          "calculation"
+        ]
+      }
+    },
+    {
+      "id": "msg_f5e94c2f",
+      "role": "assistant",
+      "content": "Din pension beräknas utifrån den lön du har tjänat in under din arbetslivstid, i förhållande till antalet dagar du har arbetat under denna period. Om din fasta lön vid något tillfälle har överstigit 62,5 procent av inkomstbasbeloppet (IBB), justeras detta gränsvärde proportionellt i förhållande till din anställningstid. Det är viktigt att notera att alla anställningar hos samma arbetsgivare under en beräkningsperiod räknas som en enda anställning. Dessutom beräknas gränsvärdet om 7,5 IBB proportionellt om du har haft en eller flera anställningar som varat sammanhängande i minst tre månader under beräkningsperioden.",
+      "timestamp": "2025-04-09T23:56:40.425253",
+      "metadata": {
+        "topics": [
+          "calculation"
+        ]
+      }
+    },
+    {
+      "id": "msg_134c9b8b",
+      "role": "user",
+      "content": "Hur beräknas min pension?",
+      "timestamp": "2025-04-10T00:06:40.532781",
+      "metadata": {
+        "topics": [
+          "calculation"
+        ]
+      }
+    },
+    {
+      "id": "msg_c2958075",
+      "role": "assistant",
+      "content": "Din pension beräknas utifrån din inkomst under arbetslivet. Detta görs genom att ta hänsyn till din lön i förhållande till antalet dagar du har arbetat under den period som beräkningen baseras på. Om din fasta lön vid något tillfälle har överstigit 62,5 procent av inkomstbasbeloppet (IBB), justeras gränsvärdet proportionerligt i förhållande till din anställningstid. Det är viktigt att notera att alla anställningar hos samma arbetsgivare under en beräkningsperiod räknas som en anställning. Om du har haft en eller flera anställningar som varat sammanhängande i minst tre månader under beräkningsperioden, justeras gränsvärdet om 7,5 IBB proportionerligt.",
+      "timestamp": "2025-04-10T00:06:40.538415",
+      "metadata": {
+        "topics": [
+          "calculation"
+        ]
+      }
+    },
+    {
+      "id": "msg_23c76cae",
+      "role": "user",
+      "content": "Vilka ändringar i pensionsutbetalningar kommer att gälla från och med 1 januari 2025",
+      "timestamp": "2025-04-10T00:07:45.363088",
+      "metadata": {
+        "topics": [
+          "information"
+        ]
+      }
+    },
+    {
+      "id": "msg_2d988c10",
+      "role": "assistant",
+      "content": "Från och med 1 januari 2025 kommer det att införas nya regler för pensionsutbetalningar enligt statliga tjänstepensionsbestämmelser. Dessa förändringar innebär att du som pensionär kommer att kunna göra uppehåll i utbetalningen av din premiebestämda ålderspension och även komma överens om en längre utbetalningstid. Båda dessa alternativ kommer att vara kostnadsfria för dig.\n\nLagändringen kommer även att tillåta uppehåll i utbetalningen av efterlevandepension. Om din försäkringsgivare bedömer att återbetalningsskyddet inom din premiebestämda pension kan betraktas som en efterlevandepension, kommer du att ha rätt att göra uppehåll i utbetalningen och ändra utbetalningstiden inom ramen för försäkringens villkor.\n\nDu kommer också att kunna välja att förlänga utbetalningstiden för din premiebestämda ålderspension som redan är under utbetalning.\n\nDessa nya regler kommer att gälla för statliga tjänstepensionsbestämmelser från och med 1 januari 2025 och framåt. Din försäkringsgivare ska tillämpa de nya reglerna senast från och med 1 januari 2026 och de kommer att omfatta ålderspensioner som betalas ut under minst fem år.",
+      "timestamp": "2025-04-10T00:07:45.369045",
+      "metadata": {
+        "topics": [
+          "information"
+        ]
+      }
+    },
+    {
+      "id": "msg_56a42529",
+      "role": "user",
+      "content": "Vilka ändringar i pensionsutbetalningar kommer att gälla från och med 1 januari 2025",
+      "timestamp": "2025-04-10T00:12:05.146882",
+      "metadata": {
+        "topics": [
+          "information"
+        ]
+      }
+    },
+    {
+      "id": "msg_92468b69",
+      "role": "assistant",
+      "content": "Från och med 1 januari 2025 kommer det att införas nya regler för utbetalning av premiebestämda ålderspensioner enligt statliga tjänstepensionsbestämmelser. Dessa ändringar innebär att det blir möjligt att under utbetalningens gång komma överens om en förlängd utbetalningstid och att göra uppehåll i utbetalningen. Både uppehåll och ändring av utbetalningstid ska vara kostnadsfria för den försäkrade. \n\nDessa nya regler gäller från och med 1 januari 2025 och framåt. Försäkringsgivare ska börja tillämpa dessa ändrade bestämmelser senast från och med 1 januari 2026. De berör ålderspensioner som betalas ut under minst fem år.\n\nDen nya lagstiftningen tillåter också uppehåll i utbetalningen av efterlevandepension. Försäkringsgivare som bedömer att återbetalningsskydd inom ramen för premiebestämd pension kan betraktas som en efterlevandepension, har rätt att tillåta både uppehåll och ändrad utbetalningstid inom ramen för försäkringens villkor.\n\nEn försäkrad person kommer även att kunna välja att förlänga utbetalningstiden för premiebestämda ålderspensioner som redan är under utbetalning.",
+      "timestamp": "2025-04-10T00:12:05.154656",
+      "metadata": {
+        "topics": [
+          "information"
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "selected_agreement": null,
+    "topics_discussed": [
+      "information",
+      "calculation"
+    ],
+    "reference_entities": {}
+  }
+}

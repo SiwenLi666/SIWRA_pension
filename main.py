@@ -14,7 +14,7 @@ from src.utils.config import setup_logger
 from src.graph.pension_graph import create_pension_graph
 from src.graph.state import GraphState
 from src.retriever.document_processor import DocumentProcessor
-from src.agents.advice_agents import PensionAnalystAgent
+# Removed import of PensionAnalystAgent as part of refactoring
 from src.graph.state import AgentState
 from src.utils.config import BASE_DIR, USER_FEEDBACK_MECHANISM, CONVERSATION_CONTEXT, FOLLOW_UP_SUGGESTIONS
 import langdetect
@@ -50,9 +50,8 @@ setup_logger()
 load_dotenv()
 logger = logging.getLogger('main')
 
+# Initialize document processor without analyst agent as part of refactoring
 processor = DocumentProcessor()
-analyst_agent = PensionAnalystAgent(processor)
-processor.analyst_agent = analyst_agent
 
 def detect_language(text: str) -> str:
     try:
@@ -73,7 +72,8 @@ class PensionAdvisorGraph:
             self.visualizer = None
 
     def run_with_visualization(self, message: str, generate_viz: bool = False):
-        """Run the graph with optional visualization.
+        """
+        Run the graph with optional visualization.
         
         Args:
             message: The user message to process
@@ -82,73 +82,56 @@ class PensionAdvisorGraph:
         Returns:
             Tuple of (response_text, final_state)
         """
-        logger.info(f" Initial user message: {message!r}")
-        assert isinstance(message, str) and message.strip(), " Tom eller ogiltig fråga skickades till LangGraph."
-
-        state_dict = {
-            "question": message.strip(),
-            "user_language": detect_language(message),
-            "state": AgentState.GATHERING_INFO.value,
-            "conversation_id": str(uuid.uuid4()),
+        # Detect language
+        language = detect_language(message)
+        
+        # Initialize state with minimal required fields
+        state = {
+            "question": message,
+            "user_language": language,
             "conversation_history": [],
-            "user_profile": {},
-            "token_usage": [],
-            "current_node": "entry",  # Track current node for visualization
+            "status": "🔍 Bearbetar frågan..."
         }
-
-        logger.info(f" Building state: {state_dict}")
-
-        # Capture initial state for visualization
-        if generate_viz and self.visualizer:
-            self.visualizer.capture_state(state_dict)
-
-        final_state = None
-        for step in self.graph.stream(state_dict):
-            if isinstance(step, dict):
-                # Add current node information for visualization
-                if len(step) == 1 and isinstance(list(step.values())[0], dict):
-                    # This is a node output like {"node_name": {actual state}}
-                    node_name = list(step.keys())[0]
-                    step_state = list(step.values())[0]
-                    step_state["current_node"] = node_name
-                    
-                    # Capture state for visualization
-                    if generate_viz and self.visualizer:
-                        self.visualizer.capture_state(step_state)
-                        
-                final_state = step  # always track the last dict
-
-        if not final_state:
-            logger.error(" LangGraph did not return any state.")
-            raise RuntimeError("LangGraph failed to produce a final output.")
-
-        #  UNWRAP single-node result like {"ask_for_missing_fields": {...}}
-        if len(final_state) == 1 and isinstance(list(final_state.values())[0], dict):
-            logger.warning("[DEBUG] Detected wrapped final state — unwrapping it.")
-            final_state = list(final_state.values())[0]
-
-        logger.info(f" Final state from LangGraph:\n{final_state}")
-        logger.warning(f"[DEBUG] state keys: {list(final_state.keys())}")
-
+        
         # Generate visualization if requested
         if generate_viz and self.visualizer:
-            dashboard_path = self.visualizer.create_dashboard()
-            logger.info(f" Generated LangGraph visualization dashboard at: {dashboard_path}")
-            # Add visualization path to final state
-            final_state["visualization_path"] = dashboard_path
-
-        response_text = (
-            final_state.get("response")
-            or final_state.get("draft_answer")
-            or "Tyvärr, ingen respons genererades."
-        )
-
-        if not isinstance(response_text, str):
-            response_text = str(response_text)
-        response_text = response_text.strip().replace('\u202f', ' ').replace('\xa0', ' ')
-
-        logger.info(f" Cleaned response: {response_text[:300]}")
-        return response_text, final_state
+            try:
+                viz_html = self.visualizer.generate_html(state)
+                logger.info(f"Generated visualization HTML: {len(viz_html)} bytes")
+                return viz_html, state
+            except Exception as e:
+                logger.error(f"Error generating visualization: {str(e)}")
+                return f"Error generating visualization: {str(e)}", state
+        
+        # Run the graph with the simplified ToolUsingPensionAgent
+        try:
+            logger.info(f"Processing message: {message}")
+            final_state = self.graph.invoke(state)
+            
+            # UNWRAP single-node result if needed
+            if len(final_state) == 1 and isinstance(list(final_state.values())[0], dict):
+                logger.warning("[DEBUG] Detected wrapped final state - unwrapping it.")
+                final_state = list(final_state.values())[0]
+            
+            logger.info(f"Final state from LangGraph: {final_state}")
+            logger.info(f"[DEBUG] state keys: {list(final_state.keys())}")
+            
+            response_text = (
+                final_state.get("response")
+                or final_state.get("draft_answer")
+                or "Tyvärr, ingen respons genererades."
+            )
+            
+            if not isinstance(response_text, str):
+                response_text = str(response_text)
+            response_text = response_text.strip().replace('\u202f', ' ').replace('\xa0', ' ')
+            
+            logger.info(f"Cleaned response: {response_text[:100]}..." if len(response_text) > 100 else response_text)
+            return response_text, final_state
+            
+        except Exception as e:
+            logger.error(f"Error running graph: {str(e)}")
+            return f"Ett fel uppstod: {str(e)}", state
 
 
 
