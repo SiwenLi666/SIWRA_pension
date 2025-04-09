@@ -43,6 +43,9 @@ USE_HYBRID_RETRIEVAL = True  # Enable hybrid BM25 + vector search
 BM25_WEIGHT = 0.4  # Weight for BM25 results (1-BM25_WEIGHT for vector)
 LOG_RETRIEVAL_METRICS = True  # Log retrieval performance metrics
 
+# Available pension agreements (update this list when adding new agreements)
+AVAILABLE_AGREEMENTS = ["PA16", "SKR2023"]  # Currently only these two are embedded
+
 # Phase 2: Document Processing Enhancements
 ENHANCED_METADATA_EXTRACTION = True  # Extract acronyms and definitions
 STRUCTURED_TRANSITIONAL_PROVISIONS = True  # Extract structured metadata for transitional rules

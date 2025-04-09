@@ -29,55 +29,102 @@ class CalculationAgent:
         self.calculation_manager = CalculationManager()
         self.data_extractor = PensionDataExtractor()
         
-        # Define calculation intent patterns
+        # Define calculation intent patterns (both English and Swedish)
         self.calculation_intents = {
             "retirement_estimate": [
+                # English patterns
                 r"retirement\s*estimate",
                 r"pension\s*estimate",
                 r"how\s*much\s*(?:will|would)\s*(?:I|my)\s*(?:get|receive|have)\s*(?:in|as|for)\s*(?:my)?\s*pension",
                 r"calculate\s*(?:my)?\s*pension",
                 r"estimate\s*(?:my)?\s*retirement",
-                r"what\s*(?:will|would)\s*(?:my)?\s*pension\s*be"
+                r"what\s*(?:will|would)\s*(?:my)?\s*pension\s*be",
+                # Swedish patterns
+                r"hur\s*mycket\s*pension\s*(?:kan|kommer|får|skulle)\s*(?:jag|man)\s*(?:få|ha)",
+                r"beräkna\s*(?:min)?\s*pension",
+                r"uppskatta\s*(?:min)?\s*pension",
+                r"vad\s*(?:blir|skulle|kommer)\s*(?:min)?\s*pension\s*(?:bli|vara)",
+                r"hur\s*stor\s*(?:blir|är)\s*(?:min)?\s*pension",
+                r"pensionsbelopp",
+                r"pensionsberäkning"
             ],
             "contribution_calculation": [
+                # English patterns
                 r"contribution\s*(?:amount|calculation)",
                 r"how\s*much\s*(?:is|will|would)\s*(?:be)?\s*(?:contributed|paid|set aside)",
                 r"calculate\s*(?:my)?\s*contribution",
-                r"what\s*(?:is|are)\s*the\s*contributions"
+                r"what\s*(?:is|are)\s*the\s*contributions",
+                # Swedish patterns
+                r"pensionsavsättning",
+                r"hur\s*mycket\s*(?:avsätts|betalas|sätts)\s*(?:in|undan)",
+                r"beräkna\s*(?:mina)?\s*avsättningar",
+                r"vad\s*(?:är|blir)\s*(?:mina)?\s*avsättningar"
             ],
             "early_retirement": [
+                # English patterns
                 r"early\s*retirement",
                 r"retire\s*early",
-                r"before\s*(?:normal|standard)\s*retirement\s*age"
+                r"before\s*(?:normal|standard)\s*retirement\s*age",
+                # Swedish patterns
+                r"förtidspension",
+                r"gå\s*i\s*pension\s*(?:i\s*förtid|tidigt)",
+                r"pension\s*före\s*(?:normal|vanlig)\s*pensionsålder"
             ],
             "comparison": [
+                # English patterns
                 r"compare\s*(?:between|with)?",
                 r"difference\s*between",
-                r"which\s*(?:is|gives)\s*(?:better|more|higher)"
+                r"which\s*(?:is|gives)\s*(?:better|more|higher)",
+                # Swedish patterns
+                r"jämför\s*(?:mellan)?",
+                r"skillnad\s*mellan",
+                r"vilken\s*(?:är|ger)\s*(?:bättre|mer|högre)"
             ]
         }
         
-        # Define parameter extraction patterns
+        # Define parameter extraction patterns (both English and Swedish)
         self.parameter_patterns = {
             "monthly_salary": [
+                # English patterns
                 r"(?:monthly\s*)?salary\s*(?:of|is)?\s*(\d+(?:\,\d+)?(?:\.\d+)?)",
-                r"(?:I|my)\s*(?:earn|make|get|have)\s*(\d+(?:\,\d+)?(?:\.\d+)?)\s*(?:per|a|each)?\s*month"
+                r"(?:I|my)\s*(?:earn|make|get|have)\s*(\d+(?:\,\d+)?(?:\.\d+)?)\s*(?:per|a|each)?\s*month",
+                # Swedish patterns
+                r"(?:månads)?lön\s*(?:på|av|är)?\s*(\d+(?:\s*\d+)*(?:\,\d+)?(?:\.\d+)?)",
+                r"(?:jag|min)\s*(?:tjänar|får|har)\s*(\d+(?:\s*\d+)*(?:\,\d+)?(?:\.\d+)?)\s*(?:per|i|varje)?\s*månad",
+                r"månadsinkomst\s*(?:på|av|är)?\s*(\d+(?:\s*\d+)*(?:\,\d+)?(?:\.\d+)?)"
             ],
             "age": [
+                # English patterns
                 r"(?:I\s*am|my\s*age\s*is)\s*(\d+)(?:\s*years\s*old)?",
-                r"age\s*(?:of|is)?\s*(\d+)"
+                r"age\s*(?:of|is)?\s*(\d+)",
+                # Swedish patterns
+                r"(?:jag\s*är|min\s*ålder\s*är)\s*(\d+)(?:\s*år(?:\s*gammal)?)?",
+                r"ålder\s*(?:på|är)?\s*(\d+)",
+                r"(\d+)\s*år\s*(?:gammal)?"
             ],
             "years_of_service": [
+                # English patterns
                 r"(?:I\s*have\s*worked|service|worked)\s*(?:for)?\s*(\d+)\s*years",
-                r"(\d+)\s*years\s*(?:of\s*service|working)"
+                r"(\d+)\s*years\s*(?:of\s*service|working)",
+                # Swedish patterns
+                r"(?:jag\s*har\s*arbetat|tjänstgjort|arbetat)\s*(?:i)?\s*(\d+)\s*år",
+                r"(\d+)\s*års?\s*(?:tjänstgöring|anställning|arbete)"
             ],
             "years_until_retirement": [
+                # English patterns
                 r"(\d+)\s*years\s*(?:until|before|to)\s*retirement",
-                r"retire\s*in\s*(\d+)\s*years"
+                r"retire\s*in\s*(\d+)\s*years",
+                # Swedish patterns
+                r"(\d+)\s*år\s*(?:till|innan|före)\s*pension",
+                r"gå\s*i\s*pension\s*om\s*(\d+)\s*år"
             ],
             "return_rate": [
+                # English patterns
                 r"return\s*rate\s*(?:of|is)?\s*(\d+(?:\.\d+)?)(?:\s*)?%",
-                r"(\d+(?:\.\d+)?)(?:\s*)?%\s*return"
+                r"(\d+(?:\.\d+)?)(?:\s*)?%\s*return",
+                # Swedish patterns
+                r"avkastning\s*(?:på|är)?\s*(\d+(?:\,\d+)?)(?:\s*)?%",
+                r"(\d+(?:\,\d+)?)(?:\s*)?%\s*(?:i\s*)?avkastning"
             ]
         }
     
@@ -92,25 +139,31 @@ class CalculationAgent:
             Tuple[bool, str, float]: (is_calculation, calculation_type, confidence)
         """
         query = query.lower()
+        best_match = (False, "", 0.0)
         
-        # Check for calculation intents
+        # Count how many patterns match for each calculation type
         for calc_type, patterns in self.calculation_intents.items():
+            matches = 0
             for pattern in patterns:
                 if re.search(pattern, query, re.IGNORECASE):
-                    # Simple confidence score based on pattern match
-                    confidence = 0.7
-                    
-                    # Increase confidence if multiple patterns match
-                    for additional_pattern in patterns:
-                        if additional_pattern != pattern and re.search(additional_pattern, query, re.IGNORECASE):
-                            confidence += 0.1
-                    
-                    # Cap confidence at 0.95
-                    confidence = min(confidence, 0.95)
-                    
-                    return True, calc_type, confidence
+                    matches += 1
+            
+            if matches > 0:
+                # Calculate confidence based on number of matches
+                # More matches = higher confidence
+                confidence = min(0.7 + (matches * 0.1), 0.95)  # Cap at 0.95
+                
+                # Update best match if this is better
+                if confidence > best_match[2]:
+                    best_match = (True, calc_type, confidence)
         
-        return False, "", 0.0
+        # Log the detection result
+        if best_match[0]:
+            logger.info(f"Detected calculation intent: {best_match[1]} with confidence {best_match[2]}")
+        else:
+            logger.info("No calculation intent detected")
+            
+        return best_match
     
     def extract_parameters(self, query: str, agreement: str) -> Dict[str, Any]:
         """
@@ -130,13 +183,29 @@ class CalculationAgent:
             for pattern in patterns:
                 matches = re.search(pattern, query, re.IGNORECASE)
                 if matches:
-                    # Extract value and convert to appropriate type
-                    value = matches.group(1).replace(',', '')
+                    # Extract value
+                    value = matches.group(1)
                     
-                    if param_name in ["monthly_salary", "return_rate"]:
-                        parameters[param_name] = float(value)
-                    else:
-                        parameters[param_name] = int(value)
+                    # Remove spaces between digits (common in Swedish number formatting)
+                    value = re.sub(r'(\d)\s+(\d)', r'\1\2', value)
+                    
+                    # Handle Swedish number format (comma as decimal separator)
+                    if ',' in value and '.' not in value:
+                        value = value.replace(',', '.')
+                    elif ',' in value and '.' in value:
+                        # If both comma and period exist, assume comma is thousand separator
+                        value = value.replace(',', '')
+                    
+                    try:
+                        if param_name in ["monthly_salary", "return_rate"]:
+                            parameters[param_name] = float(value)
+                        else:
+                            parameters[param_name] = int(float(value))
+                        
+                        # Log the extracted parameter
+                        logger.info(f"Extracted {param_name}: {parameters[param_name]}")
+                    except ValueError as e:
+                        logger.error(f"Error converting {param_name} value '{value}': {e}")
                     
                     # Break once we've found a match for this parameter
                     break

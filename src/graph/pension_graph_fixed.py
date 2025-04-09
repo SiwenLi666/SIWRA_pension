@@ -220,38 +220,11 @@ def ask_calculation_parameters(state):
     missing_params = state.get("missing_parameters", [])
     user_profile = state.get("user_profile", {})
     calculation_type = state.get("calculation_type", "")
-    question = state.get("question", "")
     
-    # First check if we already have all parameters
     if not missing_params:
         # No missing parameters, proceed to calculation
         state["requires_more_info"] = False
         state["all_params_collected"] = True
-        return state
-        
-    # Try to extract parameters from the user's response
-    calc_agent = CalculationAgent()
-    agreement = state.get("selected_agreement", user_profile.get("selected_agreement", ""))
-    
-    # Extract parameters from the question
-    parameters = calc_agent.extract_parameters(question, agreement)
-    
-    # Update user profile with any new parameters
-    for param_name, value in parameters.items():
-        user_profile[param_name] = value
-        logger.info(f"Extracted parameter from response: {param_name}={value}")
-    
-    state["user_profile"] = user_profile
-    
-    # Check if we now have all required parameters
-    still_missing = [param for param in missing_params if param not in user_profile or user_profile[param] is None]
-    
-    if not still_missing:
-        # All parameters collected, proceed to calculation
-        state["requires_more_info"] = False
-        state["all_params_collected"] = True
-        state["status"] = "✅ Har alla parametrar för beräkning"
-        logger.info("All required parameters available after extraction from response")
         return state
     
     # Translate parameter names to user-friendly Swedish

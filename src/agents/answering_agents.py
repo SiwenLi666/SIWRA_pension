@@ -104,6 +104,10 @@ class RefinerAgent:
         self.comparison_handler = ComparisonHandler() if ENHANCED_COMPARISON_HANDLING else None
         self.confidence_scorer = ConfidenceScorer() if CONFIDENCE_SCORING else None
         self.feedback_ui = FeedbackUI() if USER_FEEDBACK_MECHANISM else None
+        
+        # Get available agreements from config
+        from src.utils.config import AVAILABLE_AGREEMENTS
+        self.available_agreements = AVAILABLE_AGREEMENTS
 
     def refine(self, state):
         state["status"] = "✏️ Förbättrar sökfrågan..."
@@ -113,7 +117,11 @@ class RefinerAgent:
             SystemMessage(content=(
                 "Du är en expert på pensioner och teknisk sökoptimering. "
                 "Formulera 3–5 precisa och professionella sökfrågor för en vektordatabas, baserat på användarens fråga. "
-                "Använd korrekt terminologi från pensionsavtal (t.ex. 'familjepension', 'efterlevandeskydd') och inkludera agreement_name om relevant."
+                "Använd korrekt terminologi från pensionsavtal (t.ex. 'familjepension', 'efterlevandeskydd'). "
+                "Om frågan handlar om pensionsberäkningar eller pensionsbelopp, men INTE nämner ett specifikt avtal, "
+                "så använd INTE avtalsnamn i dina sökfrågor. Istället, formulera generella frågor om pensionsberäkningar. "
+                f"Systemet har endast information om följande avtal: {', '.join(self.available_agreements)}. "
+                "Använd ENDAST dessa avtal i dina sökfrågor om användaren specifikt frågar om dem."
             )),
             HumanMessage(content=f"Originalfåga: {question}")
         ]
@@ -409,18 +417,20 @@ class MissingFieldsAgent:
 
                 lang = state.get("user_language", "sv")  # use reliably detected lang
                 readable_fields = [field_translations.get(f, f) for f in missing]
-                # if lang == "sv":
-                #     followup = (
-                #         "\n\nFör att kunna ge mer personliga råd framöver, "
-                #         f"skulle det hjälpa om jag kan be få lite information om {', '.join(readable_fields)}."
-                #     )
-                # else:
-                #     followup = (
-                #         "\n\nTo offer more personalized guidance, "
-                #         f"it would help to know your {', '.join(readable_fields)}."
-                #     )
+                if lang == "sv":
+                    followup = (
+                        "\n\nFör att kunna ge mer personliga råd och beräkningar, "
+                        f"behöver jag information om {', '.join(readable_fields)}. "
+                        "Kan du vänligen dela med dig av denna information så att jag kan ge dig ett mer exakt svar?"
+                    )
+                else:
+                    followup = (
+                        "\n\nTo provide accurate pension calculations and personalized guidance, "
+                        f"I need information about your {', '.join(readable_fields)}. "
+                        "Could you please share this information so I can give you a more precise answer?"
+                    )
 
-        full_response = final_answer #+ followup
+        full_response = final_answer + followup
         state["response"] = full_response
         state["state"] = AgentState.FINISHED.value
 

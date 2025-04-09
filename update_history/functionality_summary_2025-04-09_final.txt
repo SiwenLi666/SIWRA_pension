@@ -7,6 +7,7 @@ Date: April 9, 2025
    - Combined BM25 and vector search for improved document retrieval
    - Configurable weighting between keyword and semantic search (currently 40% BM25, 60% vector)
    - Performance metrics logging for retrieval operations
+   - IMPORTANT: Only retrieves information from explicitly embedded documents (currently PA16 and SKR2023)
 
 2. **Document Processing**
    - Enhanced metadata extraction for acronyms and definitions
@@ -37,9 +38,9 @@ Date: April 9, 2025
 ## Known Issues and Bugs
 
 1. **Limited Agreement Coverage**
-   - Currently only PA16 and SKR2023 agreements are properly embedded
-   - References to other agreements (ITP1, ITP2, SAF-LO) may not be accurate
-   - Need to add more pension agreements to the document database
+   - Currently ONLY PA16 and SKR2023 agreements are embedded in the system
+   - The system should NOT reference or provide information about other agreements (ITP1, ITP2, SAF-LO) as they are not in the embedded documents
+   - Any information about non-embedded agreements would come from the LLM's general knowledge, not from RAG retrieval, which defeats the purpose of the system
 
 2. **Calculation Reliability Issues**
    - System provides generic responses to calculation questions without requesting necessary data
@@ -75,10 +76,11 @@ Date: April 9, 2025
 ### Testing Question Answering
 
 1. **Basic Information Queries**
-   - Ask about general pension concepts:
+   - Ask about general pension concepts from the available agreements (PA16 and SKR2023):
      - "Vad är PA16?"
      - "Hur fungerar efterlevandeskydd i PA16?"
      - "När kan jag gå i pension enligt PA16?"
+     - "Vad säger SKR2023 om pensionsålder?"
    - The system should provide relevant information from the embedded documents
 
 2. **Follow-up Questions**
@@ -86,10 +88,11 @@ Date: April 9, 2025
    - Click on any of the suggested questions to continue the conversation
    - Or ask your own follow-up question related to the previous topic
 
-3. **Agreement Comparison**
-   - Ask comparison questions between agreements:
+3. **Agreement Exploration**
+   - Ask detailed questions about specific sections of the available agreements:
+     - "Vad säger PA16 Avdelning 1 om ålderspension?"
+     - "Hur beräknas pensionen enligt PA16 Avdelning 2?"
      - "Vad är skillnaden mellan PA16 Avdelning 1 och Avdelning 2?"
-   - Note: Due to limited agreement coverage, comparisons with non-embedded agreements may be inaccurate
 
 ### Testing Calculation Features
 
@@ -151,6 +154,7 @@ Date: April 9, 2025
 
 1. Fix the calculation agent to request necessary personal data before providing calculations
 2. Add more pension agreements to the document database
-3. Repair the feedback mechanism
-4. Implement proper error handling for port conflicts
-5. Enhance the user interface with clearer instructions and guidance
+3. Ensure the system ONLY provides information from embedded documents
+4. Repair the feedback mechanism
+5. Implement proper error handling for port conflicts
+6. Enhance the user interface with clearer instructions and guidance

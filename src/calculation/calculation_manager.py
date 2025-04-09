@@ -51,12 +51,17 @@ class CalculationManager:
         # Load or create calculation history database
         self.history_db = self._load_or_create_db(self.history_db_path)
         
+        # Get available agreements from config
+        from src.utils.config import AVAILABLE_AGREEMENTS
+        self.available_agreements = AVAILABLE_AGREEMENTS
+        
         # Initialize calculation formulas for different pension agreements
         self.calculation_formulas = {
             "ITP1": self._calculate_itp1,
             "ITP2": self._calculate_itp2,
             "SAF-LO": self._calculate_saflo,
-            "PA16": self._calculate_pa16
+            "PA16": self._calculate_pa16,
+            "SKR2023": self._calculate_skr2023  # Add SKR2023 formula
         }
     
     def _load_or_create_db(self, db_path: str) -> Dict:
@@ -106,7 +111,7 @@ class CalculationManager:
         Perform a pension calculation.
         
         Args:
-            agreement: Pension agreement type (ITP1, ITP2, SAF-LO, PA16).
+            agreement: Pension agreement type (ITP1, ITP2, SAF-LO, PA16, SKR2023).
             calculation_type: Type of calculation to perform (retirement, early_retirement, etc.).
             parameters: Parameters for the calculation.
             
@@ -114,9 +119,20 @@ class CalculationManager:
             Dict[str, Any]: Calculation results.
         """
         try:
+            # If no agreement specified, use a default or generic calculation
+            if not agreement or agreement.strip() == "":
+                # Use the first available agreement or a generic calculation
+                if self.available_agreements:
+                    agreement = self.available_agreements[0]
+                    logger.info(f"No agreement specified, using default: {agreement}")
+                else:
+                    # Use a generic calculation if no agreements are available
+                    return self._calculate_generic(calculation_type, parameters)
+            
             # Validate agreement
             if agreement not in self.calculation_formulas:
-                raise ValueError(f"Unsupported agreement: {agreement}")
+                logger.warning(f"Unsupported agreement: {agreement}, using generic calculation")
+                return self._calculate_generic(calculation_type, parameters)
             
             # Get calculation function
             calculation_func = self.calculation_formulas[agreement]
@@ -132,6 +148,200 @@ class CalculationManager:
             logger.error(f"Error performing calculation: {str(e)}")
             return {
                 "error": str(e),
+                "success": False
+            }
+    
+    def _calculate_generic(self, calculation_type: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Perform a generic pension calculation when no specific agreement is selected.
+        This provides a reasonable estimate based on Swedish pension system basics.
+        
+        Args:
+            calculation_type: Type of calculation to perform.
+            parameters: Parameters for the calculation.
+            
+        Returns:
+            Dict[str, Any]: Calculation results.
+        """
+        # Default parameters for generic calculations
+        generic_params = {
+            "contribution_rate": 0.175,        # 17.5% of salary (typical Swedish system)
+            "income_base_amount": 71000,      # SEK per year (2023)
+            "price_base_amount": 52500,       # SEK per year (2023)
+            "income_cap_base_amount": 7.5,    # 7.5 income base amounts
+            "default_return_rate": 0.03,      # 3% annual return
+            "admin_fee_percentage": 0.003,    # 0.3% annual admin fee
+        }
+        
+        # Extract required parameters
+        monthly_salary = parameters.get("monthly_salary", 0)
+        age = parameters.get("age", 40)
+        years_until_retirement = parameters.get("years_until_retirement", 65 - age)
+        return_rate = parameters.get("return_rate", generic_params["default_return_rate"])
+        
+        # Calculate annual salary
+        annual_salary = monthly_salary * 12
+        
+        # Calculate income cap
+        income_cap = generic_params["income_cap_base_amount"] * generic_params["income_base_amount"]
+        
+        if calculation_type == "retirement_estimate":
+            # Calculate annual contribution
+            annual_contribution = min(annual_salary, income_cap) * generic_params["contribution_rate"]
+            
+            # Project future value of contributions
+            future_value = 0
+            for year in range(1, years_until_retirement + 1):
+                # Add this year's contribution
+                future_value += annual_contribution
+                
+                # Apply return for the year
+                future_value *= (1 + return_rate - generic_params["admin_fee_percentage"])
+            
+            # Convert to monthly pension (simple conversion assuming 20 years of payments)
+            monthly_pension = future_value / (20 * 12)
+            
+            return {
+                "success": True,
+                "monthly_pension": round(monthly_pension, 2),
+                "annual_pension": round(monthly_pension * 12, 2),
+                "future_value": round(future_value, 2),
+                "calculation_type": calculation_type,
+                "note": "Detta är en generisk beräkning eftersom inget specifikt avtal valdes.",
+                "parameters_used": {
+                    "monthly_salary": monthly_salary,
+                    "age": age,
+                    "years_until_retirement": years_until_retirement,
+                    "return_rate": return_rate,
+                    "generic_parameters": generic_params
+                }
+            }
+        
+        elif calculation_type == "contribution_calculation":
+            # Calculate annual contribution
+            annual_contribution = min(annual_salary, income_cap) * generic_params["contribution_rate"]
+            
+            return {
+                "success": True,
+                "annual_contribution": round(annual_contribution, 2),
+                "monthly_contribution": round(annual_contribution / 12, 2),
+                "calculation_type": calculation_type,
+                "note": "Detta är en generisk beräkning eftersom inget specifikt avtal valdes.",
+                "parameters_used": {
+                    "monthly_salary": monthly_salary,
+                    "generic_parameters": generic_params
+                }
+            }
+        
+        else:
+            return {
+                "error": f"Unsupported calculation type for generic calculation: {calculation_type}",
+                "success": False
+            }
+    
+    def _calculate_skr2023(self, calculation_type: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Perform SKR2023 pension calculation.
+        
+        Args:
+            calculation_type: Type of calculation to perform.
+            parameters: Parameters for the calculation.
+            
+        Returns:
+            Dict[str, Any]: Calculation results.
+        """
+        # Get SKR2023 parameters
+        skr_params = self.get_calculation_parameters("SKR2023")
+        
+        # Default parameters if none are stored
+        if not skr_params:
+            skr_params = {
+                "contribution_rate": 0.045,         # 4.5% of salary
+                "income_base_amount": 71000,       # SEK per year (2023)
+                "price_base_amount": 52500,        # SEK per year (2023)
+                "income_cap_base_amount": 7.5,     # 7.5 income base amounts
+                "default_return_rate": 0.03,       # 3% annual return
+                "admin_fee_percentage": 0.003,     # 0.3% annual admin fee
+                "additional_contribution": 0.02,    # 2% additional contribution
+            }
+        
+        # Extract required parameters
+        monthly_salary = parameters.get("monthly_salary", 0)
+        age = parameters.get("age", 40)
+        years_until_retirement = parameters.get("years_until_retirement", 65 - age)
+        return_rate = parameters.get("return_rate", skr_params["default_return_rate"])
+        
+        # Calculate annual salary
+        annual_salary = monthly_salary * 12
+        
+        # Calculate income cap
+        income_cap = skr_params["income_cap_base_amount"] * skr_params["income_base_amount"]
+        
+        if calculation_type == "retirement_estimate":
+            # Calculate annual contribution
+            base_contribution = min(annual_salary, income_cap) * skr_params["contribution_rate"]
+            
+            # Additional contribution for salaries above cap
+            additional_contribution = 0
+            if annual_salary > income_cap:
+                additional_contribution = (annual_salary - income_cap) * skr_params["additional_contribution"]
+            
+            total_annual_contribution = base_contribution + additional_contribution
+            
+            # Project future value of contributions
+            future_value = 0
+            for year in range(1, years_until_retirement + 1):
+                # Add this year's contribution
+                future_value += total_annual_contribution
+                
+                # Apply return for the year
+                future_value *= (1 + return_rate - skr_params["admin_fee_percentage"])
+            
+            # Convert to monthly pension (simple conversion assuming 20 years of payments)
+            monthly_pension = future_value / (20 * 12)
+            
+            return {
+                "success": True,
+                "monthly_pension": round(monthly_pension, 2),
+                "annual_pension": round(monthly_pension * 12, 2),
+                "future_value": round(future_value, 2),
+                "calculation_type": calculation_type,
+                "parameters_used": {
+                    "monthly_salary": monthly_salary,
+                    "age": age,
+                    "years_until_retirement": years_until_retirement,
+                    "return_rate": return_rate,
+                    "skr_parameters": skr_params
+                }
+            }
+        
+        elif calculation_type == "contribution_calculation":
+            # Calculate annual contribution
+            base_contribution = min(annual_salary, income_cap) * skr_params["contribution_rate"]
+            
+            # Additional contribution for salaries above cap
+            additional_contribution = 0
+            if annual_salary > income_cap:
+                additional_contribution = (annual_salary - income_cap) * skr_params["additional_contribution"]
+            
+            total_annual_contribution = base_contribution + additional_contribution
+            
+            return {
+                "success": True,
+                "annual_contribution": round(total_annual_contribution, 2),
+                "monthly_contribution": round(total_annual_contribution / 12, 2),
+                "base_contribution": round(base_contribution, 2),
+                "additional_contribution": round(additional_contribution, 2),
+                "calculation_type": calculation_type,
+                "parameters_used": {
+                    "monthly_salary": monthly_salary,
+                    "skr_parameters": skr_params
+                }
+            }
+        
+        else:
+            return {
+                "error": f"Unsupported calculation type for SKR2023: {calculation_type}",
                 "success": False
             }
     
