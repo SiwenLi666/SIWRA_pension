@@ -5,7 +5,7 @@ from typing import List, Optional
 import logging
 from src.utils.config import SUMMARY_JSON_PATH
 import traceback
-print("📦 Loading summary.json from:")
+print("[INFO] Loading summary.json from:")
 traceback.print_stack(limit=3)
 
 

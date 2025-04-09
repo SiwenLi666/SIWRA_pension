@@ -49,6 +49,29 @@
             display: flex;
             gap: 10px;
         }
+        
+        #suggestions-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .suggestion-button {
+            background-color: #e8f4fc;
+            border: 1px solid #b8daff;
+            border-radius: 15px;
+            padding: 8px 15px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-button:hover {
+            background-color: #cce5ff;
+            transform: translateY(-2px);
+        }
         #message-input {
             flex-grow: 1;
             padding: 10px;
@@ -82,15 +105,22 @@
     </style>
 </head>
 <body>
-    <h1>SIWRA Pension Advisor</h1>
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>SIWRA Pension Advisor</h1>
+        <div>
+            <a href="/feedback_dashboard.html" style="text-decoration: none; color: #2196F3; font-weight: bold; margin-right: 15px;">📊 Feedback Dashboard</a>
+            <a href="/conversation_dashboard.html" style="text-decoration: none; color: #2196F3; font-weight: bold;">💬 Conversation History</a>
+        </div>
+    </header>
     <div class="welcome-message">
         Välkommen! Ställ dina frågor om pension på svenska eller engelska.<br>
         Welcome! Ask your pension-related questions in Swedish or English.
     </div>
     <div id="chat-container"></div>
-    <div class="typing-indicator" id="typing-indicator">Pension advisor is thinking...</div>
+    <div id="typing-indicator" style="display: none;">Thinking...</div>
+    <div id="suggestions-container"></div>
     <div id="input-container">
-        <input type="text" id="message-input" placeholder="Ställ en fråga om pension..." autofocus>
+        <input type="text" id="message-input" placeholder="Skriv ditt meddelande här..." autofocus>
         <button onclick="sendMessage()">Skicka</button>
     </div>
 
@@ -98,6 +128,9 @@
         const chatContainer = document.getElementById('chat-container');
         const messageInput = document.getElementById('message-input');
         const typingIndicator = document.getElementById('typing-indicator');
+        
+        // Store conversation ID for context management
+        let currentConversationId = localStorage.getItem('pension_advisor_conversation_id') || null;
 
         messageInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -127,16 +160,31 @@
                 'Pension advisor is thinking...';
 
             try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+                
+                // Add conversation ID to headers if available
+                if (currentConversationId) {
+                    headers['X-Conversation-ID'] = currentConversationId;
+                }
+                
                 const response = await fetch('http://localhost:9090/chat', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: headers,
                     body: JSON.stringify({ message: message })
                 });
                 console.log("[debug] Raw fetch response:", response);
                 const data = await response.json();
                 console.log("[debug] Parsed response data:", data);
+                
+                // Check for conversation ID in response headers
+                const conversationId = response.headers.get('X-Conversation-ID');
+                if (conversationId && conversationId !== currentConversationId) {
+                    currentConversationId = conversationId;
+                    localStorage.setItem('pension_advisor_conversation_id', currentConversationId);
+                    console.log("[debug] Conversation ID updated:", currentConversationId);
+                }
 
                 // Hide typing indicator
                 typingIndicator.style.display = 'none';
@@ -144,6 +192,20 @@
                 // Add bot response to chat
                 const responseLang = detectLanguage(data.response);
                 addMessage(data.response, 'bot', responseLang);
+                
+                // Handle follow-up suggestions if available
+                if (data.suggestions && data.suggestions.length > 0) {
+                    displaySuggestions(data.suggestions, data.suggestion_id);
+                } else {
+                    // Clear any existing suggestions
+                    clearSuggestions();
+                }
+                
+                // Update conversation ID if available
+                if (data.conversation_id) {
+                    currentConversationId = data.conversation_id;
+                    localStorage.setItem('pension_advisor_conversation_id', currentConversationId);
+                }
             } catch (error) {
                 console.error('Error:', error);
                 typingIndicator.style.display = 'none';
@@ -201,6 +263,72 @@
 
 
 
+        // Function to display follow-up suggestions
+        function displaySuggestions(suggestions, suggestionId) {
+            // Clear any existing suggestions
+            clearSuggestions();
+            
+            const suggestionsContainer = document.getElementById('suggestions-container');
+            
+            // Add a label
+            const label = document.createElement('div');
+            label.style.width = '100%';
+            label.style.marginBottom = '5px';
+            label.style.fontSize = '0.9em';
+            label.style.color = '#666';
+            label.textContent = 'Förslag på följdfrågor:';
+            suggestionsContainer.appendChild(label);
+            
+            // Add each suggestion as a button
+            suggestions.forEach(suggestion => {
+                const button = document.createElement('button');
+                button.className = 'suggestion-button';
+                button.textContent = suggestion;
+                button.dataset.suggestionId = suggestionId;
+                button.dataset.suggestion = suggestion;
+                
+                button.addEventListener('click', function() {
+                    // Track suggestion usage
+                    trackSuggestionUsage(this.dataset.suggestionId, this.dataset.suggestion);
+                    
+                    // Set the suggestion as the message input
+                    messageInput.value = suggestion;
+                    
+                    // Send the message
+                    sendMessage();
+                });
+                
+                suggestionsContainer.appendChild(button);
+            });
+        }
+        
+        // Function to clear suggestions
+        function clearSuggestions() {
+            const suggestionsContainer = document.getElementById('suggestions-container');
+            suggestionsContainer.innerHTML = '';
+        }
+        
+        // Function to track suggestion usage
+        async function trackSuggestionUsage(suggestionId, selectedSuggestion) {
+            try {
+                const response = await fetch('http://localhost:9090/api/suggestions/track', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        suggestion_id: suggestionId,
+                        selected_suggestion: selectedSuggestion
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('[debug] Suggestion usage tracked:', data);
+            } catch (error) {
+                console.error('Error tracking suggestion usage:', error);
+            }
+        }
+        
         // Add initial welcome message
         addMessage('Hej! Jag är din pensionsrådgivare. Hur kan jag hjälpa dig?', 'bot', 'sv');
     </script>

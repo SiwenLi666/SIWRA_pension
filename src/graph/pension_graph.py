@@ -20,9 +20,13 @@ def create_pension_graph():
     builder.add_node("refine_answer", refiner_agent.refine)
     builder.add_node("ask_for_missing_fields", missing_fields_agent.ask)
 
-    # generate_answer → refine (om draft_answer är "nej"), annars → ask_for_missing_fields
+    # Route from generate_answer based on answer quality and verification
     def route_from_generate(state):
-        return "refine" if state.get("draft_answer", "").strip().lower() == "nej" else "final"
+        # Check if answer needs refinement (either it's "nej" or verification failed)
+        if state.get("needs_refinement", False) or state.get("draft_answer", "").strip().lower() == "nej":
+            return "refine"
+        else:
+            return "final"
 
     builder.add_conditional_edges("generate_answer", route_from_generate, {
         "refine": "refine_answer",

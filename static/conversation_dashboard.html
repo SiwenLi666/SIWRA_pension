@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pension Advisor - Conversation Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: 600;
+        }
+        .conversation-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .conversation-item {
+            border-left: 4px solid #dee2e6;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .conversation-item:hover {
+            background-color: #f1f8ff;
+            border-left-color: #007bff;
+        }
+        .conversation-item.active {
+            background-color: #e6f2ff;
+            border-left-color: #0056b3;
+        }
+        .conversation-meta {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .message-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            position: relative;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: 20%;
+        }
+        .assistant-message {
+            background-color: #f5f5f5;
+            margin-right: 20%;
+        }
+        .message-time {
+            font-size: 0.7rem;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 5px;
+        }
+        .navbar {
+            background-color: #343a40;
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .metadata-badge {
+            display: inline-block;
+            padding: 0.25em 0.6em;
+            font-size: 75%;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+            background-color: #f0f0f0;
+            color: #666;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .no-conversations {
+            text-align: center;
+            padding: 50px 0;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Pension Advisor</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Hem</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/feedback_dashboard.html">Feedback Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/conversation_dashboard.html">Conversation Dashboard</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container mt-4">
+        <h1 class="mb-4">Conversation Dashboard</h1>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Konversationer</span>
+                        <button id="refresh-btn" class="btn btn-sm btn-light">
+                            <i class="bi bi-arrow-clockwise"></i> Uppdatera
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="conversation-list" id="conversation-list">
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Laddar...</span>
+                                </div>
+                                <p class="mt-2">Laddar konversationer...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span id="conversation-title">Välj en konversation</span>
+                        <button id="delete-conversation-btn" class="btn btn-sm btn-danger" style="display: none;">
+                            Ta bort konversation
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="conversation-metadata" class="mb-3" style="display: none;">
+                            <h6>Metadata:</h6>
+                            <div id="metadata-content"></div>
+                        </div>
+                        <div class="message-container" id="message-container">
+                            <div class="text-center py-5" id="select-conversation-prompt">
+                                <p>Välj en konversation från listan till vänster för att visa dess innehåll.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const conversationList = document.getElementById('conversation-list');
+        const messageContainer = document.getElementById('message-container');
+        const conversationTitle = document.getElementById('conversation-title');
+        const selectConversationPrompt = document.getElementById('select-conversation-prompt');
+        const conversationMetadata = document.getElementById('conversation-metadata');
+        const metadataContent = document.getElementById('metadata-content');
+        const deleteConversationBtn = document.getElementById('delete-conversation-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
+        
+        // Current selected conversation
+        let selectedConversationId = null;
+        
+        // Fetch active conversations
+        async function fetchConversations() {
+            try {
+                const response = await fetch('/api/conversations');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch conversations');
+                }
+                const conversations = await response.json();
+                
+                // Clear the list
+                conversationList.innerHTML = '';
+                
+                if (conversations.length === 0) {
+                    conversationList.innerHTML = '<div class="no-conversations">Inga konversationer hittades.</div>';
+                    return;
+                }
+                
+                // Sort conversations by last updated (newest first)
+                conversations.sort((a, b) => {
+                    return new Date(b.last_updated) - new Date(a.last_updated);
+                });
+                
+                // Populate the list
+                conversations.forEach(conversation => {
+                    const lastUpdated = new Date(conversation.last_updated).toLocaleString('sv-SE');
+                    const messageCount = conversation.message_count || 0;
+                    
+                    const conversationItem = document.createElement('div');
+                    conversationItem.className = `conversation-item ${selectedConversationId === conversation.conversation_id ? 'active' : ''}`;
+                    conversationItem.dataset.id = conversation.conversation_id;
+                    
+                    conversationItem.innerHTML = `
+                        <div class="d-flex justify-content-between">
+                            <strong>Konversation ${conversation.conversation_id.substring(5, 13)}</strong>
+                            <span class="badge bg-primary">${messageCount} meddelanden</span>
+                        </div>
+                        <div class="conversation-meta">
+                            <div>Senast aktiv: ${lastUpdated}</div>
+                            ${conversation.selected_agreement ? `<div>Avtal: ${conversation.selected_agreement}</div>` : ''}
+                        </div>
+                    `;
+                    
+                    conversationItem.addEventListener('click', () => {
+                        // Remove active class from all items
+                        document.querySelectorAll('.conversation-item').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        
+                        // Add active class to clicked item
+                        conversationItem.classList.add('active');
+                        
+                        // Load conversation
+                        selectedConversationId = conversation.conversation_id;
+                        loadConversation(selectedConversationId);
+                    });
+                    
+                    conversationList.appendChild(conversationItem);
+                });
+                
+                // If a conversation was previously selected, reload it
+                if (selectedConversationId) {
+                    loadConversation(selectedConversationId);
+                }
+                
+                return conversations;
+            } catch (error) {
+                console.error('Error fetching conversations:', error);
+                conversationList.innerHTML = '<div class="no-conversations text-danger">Kunde inte ladda konversationer.</div>';
+            }
+        }
+        
+        // Load a specific conversation
+        async function loadConversation(conversationId) {
+            try {
+                // Show loading
+                messageContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Laddar...</span>
+                        </div>
+                        <p class="mt-2">Laddar konversation...</p>
+                    </div>
+                `;
+                
+                // Hide the select prompt
+                selectConversationPrompt.style.display = 'none';
+                
+                // Fetch conversation history
+                const response = await fetch(`/api/conversations/${conversationId}/history`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch conversation history');
+                }
+                const messages = await response.json();
+                
+                // Fetch conversation context
+                const contextResponse = await fetch(`/api/conversations/${conversationId}/context`);
+                if (!contextResponse.ok) {
+                    throw new Error('Failed to fetch conversation context');
+                }
+                const contextData = await contextResponse.json();
+                
+                // Update title
+                conversationTitle.textContent = `Konversation ${conversationId.substring(5, 13)}`;
+                
+                // Show delete button
+                deleteConversationBtn.style.display = 'block';
+                
+                // Display metadata
+                if (contextData.metadata) {
+                    conversationMetadata.style.display = 'block';
+                    metadataContent.innerHTML = '';
+                    
+                    // Selected agreement
+                    if (contextData.metadata.selected_agreement) {
+                        const badge = document.createElement('span');
+                        badge.className = 'metadata-badge';
+                        badge.textContent = `Avtal: ${contextData.metadata.selected_agreement}`;
+                        metadataContent.appendChild(badge);
+                    }
+                    
+                    // Topics discussed
+                    if (contextData.metadata.topics_discussed && contextData.metadata.topics_discussed.length > 0) {
+                        contextData.metadata.topics_discussed.forEach(topic => {
+                            const badge = document.createElement('span');
+                            badge.className = 'metadata-badge';
+                            badge.textContent = `Ämne: ${topic}`;
+                            metadataContent.appendChild(badge);
+                        });
+                    }
+                    
+                    // Reference entities
+                    if (contextData.metadata.reference_entities) {
+                        for (const [key, value] of Object.entries(contextData.metadata.reference_entities)) {
+                            const badge = document.createElement('span');
+                            badge.className = 'metadata-badge';
+                            badge.textContent = `${key}: ${value}`;
+                            metadataContent.appendChild(badge);
+                        }
+                    }
+                } else {
+                    conversationMetadata.style.display = 'none';
+                }
+                
+                // Display messages
+                messageContainer.innerHTML = '';
+                
+                if (messages.length === 0) {
+                    messageContainer.innerHTML = '<p class="text-center py-3">Denna konversation har inga meddelanden.</p>';
+                    return;
+                }
+                
+                messages.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${message.role === 'user' ? 'user-message' : 'assistant-message'}`;
+                    
+                    const timestamp = new Date(message.timestamp).toLocaleString('sv-SE');
+                    
+                    messageDiv.innerHTML = `
+                        <div>${message.content}</div>
+                        <div class="message-time">${timestamp}</div>
+                    `;
+                    
+                    messageContainer.appendChild(messageDiv);
+                });
+                
+                // Scroll to bottom
+                messageContainer.scrollTop = messageContainer.scrollHeight;
+                
+                return messages;
+            } catch (error) {
+                console.error('Error loading conversation:', error);
+                messageContainer.innerHTML = '<p class="text-center py-3 text-danger">Kunde inte ladda konversation.</p>';
+            }
+        }
+        
+        // Delete a conversation
+        async function deleteConversation(conversationId) {
+            if (!confirm('Är du säker på att du vill ta bort denna konversation?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/conversations/${conversationId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to delete conversation');
+                }
+                
+                // Reset UI
+                selectedConversationId = null;
+                conversationTitle.textContent = 'Välj en konversation';
+                messageContainer.innerHTML = '';
+                selectConversationPrompt.style.display = 'block';
+                conversationMetadata.style.display = 'none';
+                deleteConversationBtn.style.display = 'none';
+                
+                // Refresh conversations
+                await fetchConversations();
+                
+                alert('Konversation borttagen.');
+            } catch (error) {
+                console.error('Error deleting conversation:', error);
+                alert('Kunde inte ta bort konversation.');
+            }
+        }
+        
+        // Event listeners
+        refreshBtn.addEventListener('click', fetchConversations);
+        
+        deleteConversationBtn.addEventListener('click', () => {
+            if (selectedConversationId) {
+                deleteConversation(selectedConversationId);
+            }
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', fetchConversations);
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

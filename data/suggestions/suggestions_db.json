@@ -1,0 +1,92 @@
+{
+  "8f0e6f54-ee4d-4ca5-b0be-657d8834cde3": {
+    "conversation_id": "conv_3e906adc_20250409155010",
+    "question": "vad vet du om PA16?",
+    "answer": "PA16 är ett pensionsavtal som innehåller föreskrifter om arbetsgivarens befogenheter.\nDet tillåter en arbetstagare och arbetsgivare att komma överens om att skjuta upp utbetalning av pension för att fortsätta arbeta, med en maximal period på 48 månader.\nFrån och med 2023 kommer åldersgränser för utbetalning av vissa socialförsäkringsförmåner att höjas till 66 år.\nDessutom har ändringar i inkomstskattelagen gjorts som innebär att en arbetstagare kan göra ett eller flera uppehåll med utbetalningarna av ålderspensionen inom ramen för statliga tjänstepensionsbestämmelser.\nPA16 innehåller också övergångsbestämmelser för arbetstagare födda 1965 eller tidigare.",
+    "suggestions": [
+      "Does part-time work affect my pension?",
+      "How much can I expect to receive in pension?",
+      "How is the pension indexed over time?"
+    ],
+    "topics": [
+      "eligibility",
+      "benefits"
+    ],
+    "selected_agreement": null,
+    "language": "en",
+    "timestamp": "2025-04-09T15:50:37.668618",
+    "used_suggestions": []
+  },
+  "9cbdc119-f92f-449e-82f3-0fb8b8312a07": {
+    "conversation_id": "conv_94b0218a_20250409155237",
+    "question": "vad gäller kring efterlevnadsskydd i PA16 avdelning2?",
+    "answer": "Från och med 1 januari 2025, enligt PA16, blir det möjligt att göra uppehåll i utbetalningen av efterlevandepension.",
+    "suggestions": [
+      "Finns det ett tak för pensionsutbetalningar?",
+      "Hur indexeras pensionen över tid?",
+      "Hur mycket kan jag förvänta mig att få i pension?"
+    ],
+    "topics": [
+      "benefits"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T15:52:53.919692",
+    "used_suggestions": []
+  },
+  "e646de3a-caf2-459e-b870-e61d1abb9f6e": {
+    "conversation_id": "conv_d470cda9_20250409155627",
+    "question": "vad gäller kring efterlevnadsskydd i PA16 avdelning2?",
+    "answer": "Ändringarna i PA16, som gäller från 1 januari 2025, innebär att det blir möjligt att göra uppehåll i utbetalningen av efterlevandepension.",
+    "suggestions": [
+      "Hur indexeras pensionen över tid?",
+      "Hur mycket kan jag förvänta mig att få i pension?",
+      "Finns det ett tak för pensionsutbetalningar?"
+    ],
+    "topics": [
+      "benefits"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T15:56:46.260214",
+    "used_suggestions": []
+  },
+  "57e8007f-e813-4bc4-bb53-81789619c0fc": {
+    "conversation_id": "conv_d470cda9_20250409155627",
+    "question": "\"Vilka möjligheter finns det att skjuta upp pensionsutbetalningar enligt PA16?\"",
+    "answer": "Enligt PA16 finns det möjligheter att skjuta upp pensionsutbetalningar.\nEn arbetstagare och arbetsgivare kan komma överens om att skjuta upp utbetalning av pension för att fortsätta arbeta, med en maximal period på 48 månader.\nEn förnyad överenskommelse krävs för att skjuta upp pensionsperioden ytterligare och arbetstagaren kan inte ensidigt skjuta fram pensionsuttaget.\nDessutom kan en arbetstagare göra ett eller flera uppehåll med utbetalningarna av ålderspensionen inom ramen för statliga tjänstepensionsbestämmelser, och detta ska vara kostnadsfritt för den försäkrade.\nDet blir också möjligt att göra uppehåll i utbetalningen samt att ändra utbetalningstiden, vilket ska vara kostnadsfritt för den försäkrade.",
+    "suggestions": [
+      "Hur indexeras pensionen över tid?",
+      "Hur mycket kan jag förvänta mig att få i pension?",
+      "Hur beräknas min pensionsgrundande inkomst?"
+    ],
+    "topics": [
+      "eligibility",
+      "benefits"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T15:57:33.900626",
+    "used_suggestions": []
+  },
+  "25339020-a8b8-49a8-b3c2-e421e979e574": {
+    "conversation_id": "conv_d470cda9_20250409155627",
+    "question": "Hur mycket kan jag förvänta mig att få i pension?",
+    "answer": "Förbättrat svar: \n\nBeräkningen av pension är komplex och påverkas av flera faktorer. Dessa inkluderar typen av pensionsavtal du omfattas av, din ålder vid pensionering, din totala inkomst under arbetslivet, eventuella efterlevandeskydd och familjepension, återbäringsräntan för traditionell livförsäkring och arbetsgivarens premiebetalningar till statens avtalsförsäkringar.\n\nTvå vanliga pensionsavtal är PA-74 och PA-91. Om du är omfattad av PA-91 och lämnar arbetslivet vid 60 års ålder, kommer din pension att beräknas utifrån de insättningar och premiebetalningar som gjorts under arbetslivet, samt eventuella efterlevandeskydd och familjepension. Det bör noteras att bestämmelserna i PA-91 med 60 års pensionsålder tillämpas för lönedelar som inte överstiger 7,5 inkomstbasbelopp, vilket innebär att det finns ett tak för hur mycket av lönen som tas i beaktande vid pensionsberäkningen.\n\nEfterlevandeskydd och familjepension kan också påverka den slutliga pensionsstorleken, men exakt hur detta sker är inte specificerat i de tillgängliga dokumenten. Detsamma gäller för återbäringsräntan för traditionell livförsäkring och arbetsgivarens premiebetalningar till statens avtalsförsäkringar, vilka båda kan ha en inverkan på den slutliga pensionsstorleken.\n\nDin pensionsålder kommer också att påverka storleken på din pension. Till exempel, om du pensioneras vid 60 års ålder, kommer din pension att beräknas på ett visst sätt, medan om du pensioneras vid en senare ålder kan beräkningen vara annorlunda.\n\nTyvärr finns det ingen specifik information tillgänglig om de exakta procentsatser eller belopp som används för att beräkna pension baserat på inkomst, eller hur inkomstbasbeloppet påverkar pensionsberäkningen. Det finns heller ingen mer detaljerad information om hur PA-74 och PA-91 påverkar pensionsstorleken. För att få en mer exakt uppskattning av din förväntade pension, rekommenderar jag att du kontaktar din pensionsleverantör eller en pensionsrådgivare.\n\n---\n\n**Tillförlitlighet: Låg (25%)**\n\n*Faktorer som påverkar tillförlitligheten:*\n\n- Evidensstyrka: 0%\n- Kontextrelevans: 0%\n\n        \n---\n\n### Var detta svaret hjälpsamt?\n\n<div style=\"display: flex; gap: 10px; margin-top: 10px;\">\n  <button onclick=\"submitFeedback('positive')\" style=\"padding: 5px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;\">\n    👍 Ja\n  </button>\n  <button onclick=\"submitFeedback('negative')\" style=\"padding: 5px 15px; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;\">\n    👎 Nej\n  </button>\n</div>\n\n<div id=\"feedback-form\" style=\"display: none; margin-top: 10px;\">\n  <textarea id=\"additional-feedback\" placeholder=\"Berätta gärna varför (valfritt)\" style=\"width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ddd;\"></textarea>\n  <button onclick=\"submitAdditionalFeedback()\" style=\"padding: 5px 15px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;\">\n    Skicka\n  </button>\n</div>\n\n<div id=\"feedback-thank-you\" style=\"display: none; margin-top: 10px; padding: 10px; background-color: #e7f3fe; border-radius: 4px;\">\n  Tack för din feedback! Den hjälper oss att förbättra systemet.\n</div>\n\n<script>\n  function submitFeedback(type) {\n    // Show the additional feedback form\n    document.getElementById('feedback-form').style.display = 'block';\n    \n    // Store the feedback type\n    window.feedbackType = type;\n    \n    // Disable the feedback buttons\n    const buttons = document.querySelectorAll('button');\n    buttons[0].disabled = true;\n    buttons[1].disabled = true;\n    \n    // Send the initial feedback\n    fetch('/api/feedback', {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n      },\n      body: JSON.stringify({\n        question_id: 'q_f951b2e7_20250409155901',\n        feedback: type,\n        question: 'Hur mycket kan jag förvänta mig att få i pension?',\n        answer: 'Förbättrat svar: \n\nBeräkningen av pension är komplex och påverkas av flera faktorer. Dessa inkluderar typen av pensionsavtal du omfattas av, din ålder vid pensionering, din totala inkomst under arbetslivet, eventuella efterlevandeskydd och familjepension, återbäringsräntan för traditionell livförsäkring och arbetsgivarens premiebetalningar till statens avtalsförsäkringar.\n\nTvå vanliga pensionsavtal är PA-74 och PA-91. Om du är omfattad av PA-91 och lämnar arbetslivet vid 60 års ålder, kommer din pension att beräknas utifrån de insättningar och premiebetalningar som gjorts under arbetslivet, samt eventuella efterlevandeskydd och familjepension. Det bör noteras att bestämmelserna i PA-91 med 60 års pensionsålder tillämpas för lönedelar som inte överstiger 7,5 inkomstbasbelopp, vilket innebär att det finns ett tak för hur mycket av lönen som tas i beaktande vid pensionsberäkningen.\n\nEfterlevandeskydd och familjepension kan också påverka den slutliga pensionsstorleken, men exakt hur detta sker är inte specificerat i de tillgängliga dokumenten. Detsamma gäller för återbäringsräntan för traditionell livförsäkring och arbetsgivarens premiebetalningar till statens avtalsförsäkringar, vilka båda kan ha en inverkan på den slutliga pensionsstorleken.\n\nDin pensionsålder kommer också att påverka storleken på din pension. Till exempel, om du pensioneras vid 60 års ålder, kommer din pension att beräknas på ett visst sätt, medan om du pensioneras vid en senare ålder kan beräkningen vara annorlunda.\n\nTyvärr finns det ingen specifik information tillgänglig om de exakta procentsatser eller belopp som används för att beräkna pension baserat på inkomst, eller hur inkomstbasbeloppet påverkar pensionsberäkningen. Det finns heller ingen mer detaljerad information om hur PA-74 och PA-91 påverkar pensionsstorleken. För att få en mer exakt uppskattning av din förväntade pension, rekommenderar jag att du kontaktar din pensionsleverantör eller en pensionsrådgivare.\n\n---\n\n**Tillförlitlighet: Låg (25%)**\n\n*Faktorer som påverkar tillförlitligheten:*\n\n- Evidensstyrka: 0%\n- Kontextrelevans: 0%\n',\n        additional_comments: ''\n      }),\n    });\n  }\n  \n  function submitAdditionalFeedback() {\n    // Get the additional feedback\n    const additionalFeedback = document.getElementById('additional-feedback').value;\n    \n    // Hide the feedback form\n    document.getElementById('feedback-form').style.display = 'none';\n    \n    // Show the thank you message\n    document.getElementById('feedback-thank-you').style.display = 'block';\n    \n    // Send the additional feedback\n    fetch('/api/feedback', {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n      },\n      body: JSON.stringify({\n        question_id: 'q_f951b2e7_20250409155901',\n        feedback: window.feedbackType,\n        question: 'Hur mycket kan jag förvänta mig att få i pension?',\n        answer: 'Förbättrat svar: \n\nBeräkningen av pension är komplex och påverkas av flera faktorer. Dessa inkluderar typen av pensionsavtal du omfattas av, din ålder vid pensionering, din totala inkomst under arbetslivet, eventuella efterlevandeskydd och familjepension, återbäringsräntan för traditionell livförsäkring och arbetsgivarens premiebetalningar till statens avtalsförsäkringar.\n\nTvå vanliga pensionsavtal är PA-74 och PA-91. Om du är omfattad av PA-91 och lämnar arbetslivet vid 60 års ålder, kommer din pension att beräknas utifrån de insättningar och premiebetalningar som gjorts under arbetslivet, samt eventuella efterlevandeskydd och familjepension. Det bör noteras att bestämmelserna i PA-91 med 60 års pensionsålder tillämpas för lönedelar som inte överstiger 7,5 inkomstbasbelopp, vilket innebär att det finns ett tak för hur mycket av lönen som tas i beaktande vid pensionsberäkningen.\n\nEfterlevandeskydd och familjepension kan också påverka den slutliga pensionsstorleken, men exakt hur detta sker är inte specificerat i de tillgängliga dokumenten. Detsamma gäller för återbäringsräntan för traditionell livförsäkring och arbetsgivarens premiebetalningar till statens avtalsförsäkringar, vilka båda kan ha en inverkan på den slutliga pensionsstorleken.\n\nDin pensionsålder kommer också att påverka storleken på din pension. Till exempel, om du pensioneras vid 60 års ålder, kommer din pension att beräknas på ett visst sätt, medan om du pensioneras vid en senare ålder kan beräkningen vara annorlunda.\n\nTyvärr finns det ingen specifik information tillgänglig om de exakta procentsatser eller belopp som används för att beräkna pension baserat på inkomst, eller hur inkomstbasbeloppet påverkar pensionsberäkningen. Det finns heller ingen mer detaljerad information om hur PA-74 och PA-91 påverkar pensionsstorleken. För att få en mer exakt uppskattning av din förväntade pension, rekommenderar jag att du kontaktar din pensionsleverantör eller en pensionsrådgivare.\n\n---\n\n**Tillförlitlighet: Låg (25%)**\n\n*Faktorer som påverkar tillförlitligheten:*\n\n- Evidensstyrka: 0%\n- Kontextrelevans: 0%\n',\n        additional_comments: additionalFeedback\n      }),\n    });\n  }\n</script>",
+    "suggestions": [
+      "Finns det ett tak för pensionsutbetalningar?",
+      "Vilka dokument behöver jag för att ansöka?",
+      "Hur indexeras pensionen över tid?"
+    ],
+    "topics": [
+      "eligibility",
+      "benefits",
+      "application",
+      "calculation"
+    ],
+    "selected_agreement": null,
+    "language": "sv",
+    "timestamp": "2025-04-09T15:59:01.282893",
+    "used_suggestions": []
+  }
+}
