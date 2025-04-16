@@ -13,7 +13,6 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.messages import SystemMessage, HumanMessage
 from langdetect import detect, DetectorFactory
 from src.utils.config import BASE_DIR, VECTORSTORE_DIR, SUMMARY_JSON_PATH, OPENAI_API_KEY, ENHANCED_METADATA_EXTRACTION, STRUCTURED_TRANSITIONAL_PROVISIONS
-from src.database.presentation_db import PensionAnalysisManager
 
 DetectorFactory.seed = 0
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -29,7 +28,6 @@ class DocumentProcessor:
     def __init__(self):
         self.agreements_dir = Path(BASE_DIR) / "data"
         self.persist_dir = Path(VECTORSTORE_DIR)
-        self.analysis_manager = PensionAnalysisManager()
         self.embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
         
         # Improved chunking strategy with higher overlap and semantic boundaries
@@ -122,7 +120,7 @@ class DocumentProcessor:
         # Look for explicit definitions with "betyder", "innebär", "definieras som", etc.
         definition_markers = ["betyder", "innebär", "definieras som", "avser", "syftar på"]
         for marker in definition_markers:
-            pattern = re.compile(f'([A-Z0-9\-]{{2,}})\s+{marker}\s+([^.]+)')
+            pattern = re.compile(rf'([A-Z0-9\-]{{2,}})\s+{marker}\s+([^.]+)')
             for match in pattern.finditer(text):
                 term, definition = match.groups()
                 definition = definition.strip()
@@ -162,7 +160,7 @@ class DocumentProcessor:
         # Look for specific phrases indicating target groups
         target_indicators = ['gäller för', 'tillämpas på', 'omfattar', 'avser']
         for indicator in target_indicators:
-            pattern = f'{indicator}\s+([\w\såäöÅÄÖ,]+?)(?:\.|\n)'
+            pattern = rf'{indicator}\s+([\w\såäöÅÄÖ,]+?)(?:\.|\n)'
             matches = re.findall(pattern, text.lower())
             clean_matches = [match.strip() for match in matches if len(match.strip()) > 3]
             target_groups.extend(clean_matches)

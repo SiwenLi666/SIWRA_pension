@@ -20,28 +20,14 @@ from src.utils.config import BASE_DIR, USER_FEEDBACK_MECHANISM, CONVERSATION_CON
 import langdetect
 
 # Import feedback API if enabled
-if USER_FEEDBACK_MECHANISM:
-    from src.feedback.feedback_api import feedback_router
+USER_FEEDBACK_MECHANISM = False
     
 # Import conversation API if enabled
-if CONVERSATION_CONTEXT:
-    from src.conversation.conversation_api import conversation_router
-    from src.conversation.conversation_manager import ConversationManager
+CONVERSATION_CONTEXT = False
     
 # Import follow-up suggestions API if enabled
-if FOLLOW_UP_SUGGESTIONS:
-    from src.suggestions.suggestion_api import suggestion_router
-    from src.suggestions.suggestion_manager import SuggestionManager
+FOLLOW_UP_SUGGESTIONS = False
     
-# Import calculation API
-from src.calculation.calculation_api import calculation_router
-from src.calculation.calculation_agent import CalculationAgent
-
-# Import visualization API
-from src.graph.visualization_api import visualization_router
-
-
-
 
 static_dir = Path(BASE_DIR) / "static"
 
@@ -207,13 +193,6 @@ if FOLLOW_UP_SUGGESTIONS:
     app.include_router(suggestion_router)
     logger.info(" Suggestion API routes enabled")
     
-# Include calculation router
-app.include_router(calculation_router)
-logger.info(" Calculation API routes enabled")
-
-# Include visualization router
-app.include_router(visualization_router)
-logger.info(" Visualization API routes enabled")
     
 # Include conversation router if enabled
 if CONVERSATION_CONTEXT:
@@ -225,9 +204,6 @@ if FOLLOW_UP_SUGGESTIONS:
     app.include_router(suggestion_router)
     logger.info(" Follow-up suggestions API routes enabled")
     
-# Include calculation router
-app.include_router(calculation_router)
-logger.info(" Calculation API routes enabled")
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(message: ChatMessage, request: Request):

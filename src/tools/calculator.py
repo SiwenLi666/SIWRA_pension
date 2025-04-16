@@ -1,183 +1,222 @@
+import json
+import os
 import re
+from typing import Dict, Any, List
+from src.tools.base_tool import BaseTool 
 import logging
-from typing import Dict, Any, List, Optional
-from src.agents.tool_using_agent import BaseTool
 
-logger = logging.getLogger(__name__)
+
+log_dir = os.path.join(os.path.dirname(__file__), "../../logs")
+os.makedirs(log_dir, exist_ok=True)
+
+log_file = os.path.join(log_dir, "calculator.log")
+
+logger = logging.getLogger("calculator_logger")
+logger.setLevel(logging.DEBUG)
+
+# Undvik duplicerade handlers
+if not logger.handlers:
+    file_handler = logging.FileHandler(log_file, encoding="utf-8")
+    file_handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+
+PARAMETER_PATH = os.path.join(os.path.dirname(__file__), "../calculation/calculation_parameters.json")
 
 class CalculatorTool(BaseTool):
-    """Tool for handling pension calculations"""
-    
+    """
+    Tool for performing pension calculations based on structured parameters.
+    """
+
     def __init__(self):
         super().__init__(
             name="calculator",
-            description="Performs pension calculations based on user parameters"
+            description="Performs pension calculations using structured agreement parameters"
         )
-    
+        self.parameters = self._load_parameters()
+
+    def _load_parameters(self) -> Dict[str, Any]:
+        with open(PARAMETER_PATH, encoding="utf-8") as f:
+            return json.load(f)
+
     def can_handle(self, question: str, state: Dict[str, Any]) -> bool:
-        """Determine if this tool can handle the given question"""
         question_lower = question.lower()
-        
-        # Specific calculation-related patterns
-        calculation_patterns = [
-            r'hur\s+mycket\s+pension',
-            r'hur\s+stor\s+blir\s+min\s+pension',
-            r'vad\s+får\s+jag\s+i\s+pension',
-            r'beräkna\s+min\s+pension',
-            r'räkna\s+ut\s+min\s+pension',
-            r'min\s+månadslön\s+är',
-            r'jag\s+tjänar',
-            r'min\s+lön\s+är'
+        patterns = [
+            r"hur\s+mycket",
+            r"vad\s+f[\u00e5|a]r\s+jag",
+            r"ber[a\u00e4]kna",
+            r"r[a\u00e4]kna\s+ut",
+            r"min\s+m[\u00e5|a]nadsl[\u00f6|o]n",
+            r"jag\s+tj[\u00e4|a]nar"
         ]
-        
-        # Check for specific calculation patterns
-        has_calculation_pattern = any(re.search(pattern, question_lower) for pattern in calculation_patterns)
-        
-        # Check for salary and age patterns together (strong indicator of calculation intent)
-        has_salary_pattern = bool(re.search(r'(\d[\d\s]*\s*kr|\d[\d\s]*\s*kronor|\d[\d\s]*\s*sek)', question_lower))
-        has_age_pattern = bool(re.search(r'(\d+)\s*år', question_lower))
-        has_salary_and_age = has_salary_pattern and has_age_pattern
-        
-        # Check if we're in an ongoing calculation conversation with existing parameters
-        has_calculation_context = "calculation_parameters" in state and state.get("calculation_parameters")
-        
-        # Short follow-up in a calculation context
-        is_followup = has_calculation_context and len(question.split()) < 10 and bool(re.search(r'\d+', question_lower))
-        
-        # Exclude questions that are clearly not about calculations
-        exclusion_patterns = [
-            r'hur\s+länge',
-            r'kan\s+man',
-            r'tillåtet\s+att',
-            r'möjligt\s+att',
-            r'enligt\s+överenskommelsen',
-            r'enligt\s+avtalet',
-            r'rättigheter',
-            r'skyldigheter'
-        ]
-        
-        is_excluded = any(re.search(pattern, question_lower) for pattern in exclusion_patterns)
-        
-        # Final decision logic
-        result = (has_calculation_pattern or has_salary_and_age or is_followup) and not is_excluded
-        
-        logger.info(f"Calculator can_handle: {result} (calculation pattern: {has_calculation_pattern}, "
-                   f"salary+age: {has_salary_and_age}, followup: {is_followup}, excluded: {is_excluded})")
-        return result
-    
+        return any(re.search(p, question_lower) for p in patterns)
+
     def run(self, question: str, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Run the calculation based on the question"""
-        logger.info("Running calculator tool")
-        
-        # Get existing parameters from state if available
-        existing_parameters = state.get("calculation_parameters", {})
-        
-        # Extract parameters from the current question
-        new_parameters = self._extract_parameters(question)
-        
-        # Merge parameters, prioritizing new parameters over existing ones
-        parameters = {**existing_parameters, **new_parameters}
-        
-        # Save parameters back to state for future questions
-        state["calculation_parameters"] = parameters
-        
-        # Check if we have all required parameters
-        missing_params = self._check_missing_parameters(parameters)
-        if missing_params:
-            # Ask for missing parameters
-            state["response"] = self._generate_missing_params_response(missing_params)
+        user_profile = state.get("user_profile", {})
+        extracted = self._extract_parameters(question)
+        merged = {**user_profile, **extracted}
+        if "scenario" in extracted:
+            merged["scenario"] = extracted["scenario"]
+
+
+        state["user_profile"] = merged
+
+        missing = self._check_required(merged)
+        if missing:
+            state["response"] = f"Jag behöver följande information för att beräkna: {', '.join(missing)}."
             return state
-        
-        # Perform the calculation
-        result = self._perform_calculation(parameters)
-        
-        # Format the response
-        state["response"] = self._format_result(result, parameters)
+
+        agreement = state.get("detected_agreement") or "PA16"
+        scenario = merged.get("scenario", "Avd1")  # default to Avd1 for PA16
+
+        try:
+            if agreement == "PA16" and scenario == "Avd2":
+                result = self._calculate_avd2(agreement, scenario, merged)
+            else:
+                result = self._calculate(agreement, scenario, merged)
+
+            state["response"] = self._format_response(result, agreement, scenario, merged)
+
+            # 🧠 Spara beräkningsinfo för uppföljning ("hur räknade du?")
+            state["last_calculation"] = {
+                "input": merged,
+                "result": result,
+                "agreement": agreement,
+                "scenario": scenario
+            }
+
+        except Exception as e:
+            state["response"] = f"Fel vid beräkning: {str(e)}"
+
         return state
-    
+
+
     def _extract_parameters(self, question: str) -> Dict[str, Any]:
-        """Extract calculation parameters from the question"""
-        parameters = {}
-        
-        # Extract age
-        age_match = re.search(r'(\d+)\s*år', question, re.IGNORECASE)
-        if age_match:
-            parameters["age"] = int(age_match.group(1))
-        
-        # Extract salary
-        salary_match = re.search(r'(\d[\d\s]*)\s*kr', question, re.IGNORECASE)
-        if salary_match:
-            salary_str = salary_match.group(1).replace(" ", "")
-            parameters["monthly_salary"] = int(salary_str)
-        
-        # Extract retirement age if specified
-        retirement_match = re.search(r'pension\s*vid\s*(\d+)', question, re.IGNORECASE)
-        if retirement_match:
-            parameters["retirement_age"] = int(retirement_match.group(1))
-        
-        # Set defaults for missing parameters
-        if "age" not in parameters:
-            parameters["age"] = 40  # Default age
-        
-        if "retirement_age" not in parameters:
-            parameters["retirement_age"] = 65  # Default retirement age
-        
-        logger.info(f"Extracted parameters: {parameters}")
-        return parameters
-    
-    def _check_missing_parameters(self, parameters: Dict[str, Any]) -> List[str]:
-        """Check if any required parameters are missing"""
-        required_params = ["monthly_salary"]
-        return [param for param in required_params if param not in parameters]
-    
-    def _generate_missing_params_response(self, missing_params: List[str]) -> str:
-        """Generate a response asking for missing parameters"""
-        if "monthly_salary" in missing_params:
-            return "För att beräkna din pension behöver jag veta din månadslön. Kan du ange hur mycket du tjänar per månad?"
-        
-        return "Jag behöver mer information för att kunna beräkna din pension."
-    
-    def _perform_calculation(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
-        """Perform the actual pension calculation"""
-        monthly_salary = parameters.get("monthly_salary", 0)
-        age = parameters.get("age", 40)
-        retirement_age = parameters.get("retirement_age", 65)
-        
-        # Simple calculation logic (can be expanded)
-        years_until_retirement = retirement_age - age
-        monthly_contribution = monthly_salary * 0.175  # 17.5% contribution
-        
-        # Assume 3% annual growth
-        total_pension = monthly_contribution * 12 * years_until_retirement * 1.5
-        monthly_pension = total_pension / (20 * 12)  # Assume 20 years of retirement
-        
+        data = {}
+        question_lower = question.lower()
+
+        # Ålder (t.ex. "45 år")
+        age = re.search(r"(\d{2})\s*[aå]r", question_lower)
+        if age:
+            data["age"] = int(age.group(1))
+
+        # Lön (t.ex. "35 000 kr", "35000 kronor")
+        salary = re.search(r"(\d+[\s\d]*)\s*(kr|kronor|sek)", question_lower)
+        if salary:
+            data["monthly_salary"] = int(salary.group(1).replace(" ", ""))
+
+        # Uttagsålder (t.ex. "vid 65 års pension")
+        pension_age = re.search(r"vid\s+(\d{2})\s*[aå]rs?\s+pension", question_lower)
+        if pension_age:
+            data["retirement_age"] = int(pension_age.group(1))
+
+        # Scenario: Avd1 eller Avd2
+        scenario_match = re.search(r"avd(?:elning)?[\s\.]?(1|2)", question_lower)
+        if scenario_match:
+            data["scenario"] = f"Avd{scenario_match.group(1)}"
+
+        return data
+
+
+
+    def _check_required(self, data: Dict[str, Any]) -> List[str]:
+        required = ["age", "monthly_salary"]
+        return [f for f in required if f not in data]
+
+    def _calculate(self, agreement: str, scenario: str, user_input: Dict[str, Any]) -> Dict[str, Any]:
+        param = self.parameters[agreement]["scenarios"][scenario]
+
+        age = user_input["age"]
+        salary = user_input["monthly_salary"]
+        pension_age = user_input.get("retirement_age", param.get("default_retirement_age", 65))
+        years_to_pension = pension_age - age
+        growth = param.get("default_return_rate", 0.03)
+
+        logger.info(f"🧮 Beräkning startad: age={age}, salary={salary}, pension_age={pension_age}, years_to_pension={years_to_pension}, growth={growth}")
+
+        # Step 1: determine cap
+        cap = param["income_cap_base_amount"] * param["income_base_amount"]
+        below = min(salary, cap)
+        above = max(0, salary - cap)
+        logger.info(f"🔢 Inkomsttak = {cap}, under tak = {below}, över tak = {above}")
+
+        # Step 2: calculate contributions
+        rate_below = param.get("contribution_rate_below_cap", 0)
+        rate_above = param.get("contribution_rate_above_cap", 0)
+
+        contrib_below = below * rate_below
+        contrib_above = above * rate_above
+        annual_contribution = (contrib_below + contrib_above) * 12
+        monthly_contribution = annual_contribution / 12
+
+        logger.info(f"💰 Avsättning: {rate_below*100:.1f}% av {below} = {contrib_below}, {rate_above*100:.1f}% av {above} = {contrib_above}")
+        logger.info(f"📅 Årlig avsättning = {annual_contribution}, månatlig = {monthly_contribution:.2f}")
+
+        # Step 3: estimate future value (compounding year by year)
+        total_with_growth = 0
+        for i in range(1, years_to_pension + 1):
+            compounded = annual_contribution * (1 + growth)**(years_to_pension - i)
+            total_with_growth += compounded
+            logger.debug(f"📈 År {i}: insättning + tillväxt = {compounded:.2f}")
+
+        monthly_pension = total_with_growth / (20 * 12)  # spread over 20 years
+
+        logger.info(f"📦 Totalt kapital med tillväxt = {total_with_growth:.2f}, månatlig pension = {monthly_pension:.2f}")
+
         return {
-            "monthly_pension": round(monthly_pension),
-            "total_pension": round(total_pension),
-            "monthly_contribution": round(monthly_contribution)
+            "monthly_pension": int(monthly_pension),
+            "total_pension": int(total_with_growth),
+            "monthly_contribution": int(monthly_contribution),
+            "years_to_pension": years_to_pension
         }
-    
-    def _format_result(self, result: Dict[str, Any], parameters: Dict[str, Any]) -> str:
-        """Format the calculation result as a response with detailed explanation"""
-        monthly_salary = parameters.get("monthly_salary", 0)
-        age = parameters.get("age", 40)
-        retirement_age = parameters.get("retirement_age", 65)
-        years_until_retirement = retirement_age - age
-        
-        # Create a detailed explanation
-        response = f"Baserat på din månadslön på {monthly_salary} kr och din ålder på {age} år, "
-        response += f"uppskattar jag att din månatliga pension vid {retirement_age} års ålder blir cirka {result['monthly_pension']} kr.\n\n"
-        
-        # Add calculation breakdown
-        response += "**Så här beräknades pensionen:**\n"
-        response += f"1. Månatlig avsättning: {monthly_salary} kr × 17.5% = {result['monthly_contribution']} kr\n"
-        response += f"2. Årlig avsättning: {result['monthly_contribution']} kr × 12 månader = {result['monthly_contribution'] * 12} kr\n"
-        response += f"3. Antal år till pension: {retirement_age} - {age} = {years_until_retirement} år\n"
-        response += f"4. Tillväxtfaktor: 1.5 (baserat på 3% årlig tillväxt)\n"
-        response += f"5. Totalt pensionskapital: {result['monthly_contribution']} kr × 12 månader × {years_until_retirement} år × 1.5 = {result['total_pension']} kr\n"
-        response += f"6. Månatlig pension: {result['total_pension']} kr ÷ (20 år × 12 månader) = {result['monthly_pension']} kr\n\n"
-        
-        response += "Observera att detta är en förenklad beräkning. Din faktiska pension påverkas av flera faktorer som avtalspension, "
-        response += "premiepension, inkomstpension, och eventuellt privat pensionssparande."
-        
-        return response
+
+    def _calculate_avd2(self, agreement: str, scenario: str, user_input: Dict[str, Any]) -> Dict[str, Any]:
+        param = self.parameters[agreement]["scenarios"][scenario]
+
+        age = user_input["age"]
+        salary = user_input["monthly_salary"]
+        pension_age = user_input.get("retirement_age", param.get("default_retirement_age", 65))
+        years_to_pension = pension_age - age
+        growth = param.get("default_return_rate", 0.03)
+
+        logger.info(f"🧮 Avd2-beräkning startad: age={age}, salary={salary}, pension_age={pension_age}, tjänsteår={years_to_pension}")
+
+        # Hämta nivåer: t.ex. {"<=30": 0.10, ">30": 0.65}
+        levels = param.get("defined_benefit_levels", [])
+
+        percent = 0
+        for level in levels:
+            if level["years"].startswith("<=") and years_to_pension <= int(level["years"][2:]):
+                percent = level["percent"]
+                break
+            elif level["years"].startswith(">") and years_to_pension > int(level["years"][1:]):
+                percent = level["percent"]
+                break
+
+        annual_salary = salary * 12
+        annual_pension = annual_salary * percent
+        monthly_pension = annual_pension / 12
+
+
+        logger.info(f"📏 Tjänsteår = {years_to_pension}, nivå = {percent*100:.1f}%, pension = {monthly_pension:.2f}/mån")
+
+        return {
+            "monthly_pension": int(monthly_pension),
+            "total_pension": int(monthly_pension * 12 * 20),  # schablon: 20 års uttag
+            "monthly_contribution": 0,
+            "years_to_pension": years_to_pension
+        }
+
+    def _format_response(self, result, agreement, scenario, inputs):
+        if agreement == "PA16" and scenario == "Avd2":
+            return (
+                f"Baserat på dina uppgifter uppskattas din pension enligt {agreement} ({scenario}) till ca {result['monthly_pension']} kr/mån från {inputs.get('retirement_age', 65)} års ålder. "
+                f"Detta baseras på en förmånsnivå av slutlönen efter {result['years_to_pension']} års tjänstetid."
+            )
+        else:
+            return (
+                f"Baserat på dina uppgifter uppskattas din pension enligt {agreement} ({scenario}) till ca {result['monthly_pension']} kr/mån från {inputs.get('retirement_age', 65)} års ålder. "
+                f"Det motsvarar ett totalt kapital på ca {result['total_pension']} kr, baserat på en avsättning på {result['monthly_contribution']} kr/mån under {result['years_to_pension']} år."
+            )

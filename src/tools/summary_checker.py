@@ -2,7 +2,8 @@ import logging
 import json
 import os
 from typing import Dict, Any, Optional
-from src.agents.tool_using_agent import BaseTool
+from src.tools.base_tool import BaseTool
+
 
 logger = logging.getLogger(__name__)
 
