@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Follow-up Suggestions Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #3498db;
+            font-weight: bold;
+        }
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            flex: 1;
+            margin: 0 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .stat-card h3 {
+            margin-top: 0;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+        .stat-card p {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e1e1e1;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #7f8c8d;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8em;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+        .topic-tag {
+            display: inline-block;
+            background-color: #e8f4fc;
+            border-radius: 15px;
+            padding: 4px 10px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-size: 0.8em;
+        }
+        .suggestion-count {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            text-align: center;
+            line-height: 24px;
+            margin-left: 10px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Follow-up Suggestions Dashboard</h1>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="conversation_dashboard.html">Conversations</a>
+            <a href="feedback_dashboard.html">Feedback</a>
+            <a href="calculation_dashboard.html">Calculations</a>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="card stats-card">
+            <h2>Overview</h2>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-suggestions">0</div>
+                    <div class="stat-label">Total Suggestions Used</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="unique-suggestions">0</div>
+                    <div class="stat-label">Unique Suggestions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="popular-topic">-</div>
+                    <div class="stat-label">Most Popular Topic</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="usage-rate">0%</div>
+                    <div class="stat-label">Usage Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Top Suggestions</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="top-suggestions-chart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Topic Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="topic-distribution-chart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Agreement Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="agreement-distribution-chart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card full-width">
+            <h2>Top Suggestions</h2>
+            <table id="suggestions-table">
+                <thead>
+                    <tr>
+                        <th>Suggestion</th>
+                        <th>Usage Count</th>
+                        <th>Topics</th>
+                        <th>Agreement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="4" class="loading">Loading suggestion data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch suggestion stats
+        async function fetchSuggestionStats() {
+            try {
+                const response = await fetch('http://localhost:9090/api/suggestions/stats');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch suggestion stats');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching suggestion stats:', error);
+                return null;
+            }
+        }
+
+        // Function to update the dashboard with stats
+        async function updateDashboard() {
+            try {
+                const stats = await fetchSuggestionStats();
+                
+                // Update total suggestions count
+                document.getElementById('total-suggestions').textContent = stats.total_suggestions_used;
+                
+                // Update unique suggestions count
+                document.getElementById('unique-suggestions').textContent = stats.unique_suggestions;
+                
+                // Update popular topic
+                document.getElementById('popular-topic').textContent = stats.most_popular_topic;
+                
+                // Update usage rate
+                document.getElementById('usage-rate').textContent = stats.usage_rate + '%';
+                
+                // Update suggestions table
+                updateSuggestionsTable(stats.top_suggestions);
+                
+                // Create charts
+                createTopSuggestionsChart(stats.top_suggestions);
+                createTopicDistributionChart(stats.top_topics);
+                
+                // Create agreement distribution chart if container exists
+                if (document.getElementById('agreement-distribution-chart')) {
+                    createAgreementDistributionChart(stats.agreement_distribution);
+                }
+            } catch (error) {
+                console.error('Error updating dashboard:', error);
+            }
+        }
+
+        // Function to update the suggestions table
+        function updateSuggestionsTable(topSuggestions) {
+            const tableBody = document.querySelector('#suggestions-table tbody');
+            
+            if (!topSuggestions || topSuggestions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4">No suggestion data available</td></tr>';
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            topSuggestions.forEach(suggestionData => {
+                const row = document.createElement('tr');
+                
+                // Suggestion text
+                const textCell = document.createElement('td');
+                textCell.textContent = suggestionData.suggestion;
+                row.appendChild(textCell);
+                
+                // Usage count
+                const countCell = document.createElement('td');
+                countCell.textContent = suggestionData.count;
+                row.appendChild(countCell);
+                
+                // Topics
+                const topicsCell = document.createElement('td');
+                if (suggestionData.topics && suggestionData.topics.length > 0) {
+                    suggestionData.topics.forEach(topic => {
+                        const topicTag = document.createElement('span');
+                        topicTag.className = 'topic-tag';
+                        topicTag.textContent = topic;
+                        topicsCell.appendChild(topicTag);
+                    });
+                } else {
+                    topicsCell.textContent = 'No topics';
+                }
+                row.appendChild(topicsCell);
+                
+                // Primary agreement
+                const agreementCell = document.createElement('td');
+                agreementCell.textContent = suggestionData.primary_agreement || 'Unknown';
+                row.appendChild(agreementCell);
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to create top suggestions chart
+        function createTopSuggestionsChart(topSuggestions) {
+            if (!topSuggestions || topSuggestions.length === 0) return;
+            
+            // Limit to top 5 for better visualization
+            const top5 = topSuggestions.slice(0, 5);
+            
+            // Prepare data
+            const labels = top5.map(item => truncateText(item.suggestion, 30));
+            const data = top5.map(item => item.count);
+            
+            // Get or create canvas context
+            const ctx = document.getElementById('top-suggestions-chart').getContext('2d');
+            
+            // Create chart
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Usage Count',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to create topic distribution chart
+        function createTopicDistributionChart(topTopics) {
+            if (!topTopics || topTopics.length === 0) return;
+            
+            // Limit to top 5 for better visualization
+            const top5 = topTopics.slice(0, 5);
+            
+            // Prepare data
+            const labels = top5.map(item => item.topic);
+            const data = top5.map(item => item.count);
+            
+            // Get or create canvas context
+            const ctx = document.getElementById('topic-distribution-chart').getContext('2d');
+            
+            // Create chart
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const percentage = top5[context.dataIndex].percentage || 0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to create agreement distribution chart
+        function createAgreementDistributionChart(agreements) {
+            if (!agreements || agreements.length === 0) return;
+            
+            // Prepare data
+            const labels = agreements.map(item => item.agreement);
+            const data = agreements.map(item => item.count);
+            
+            // Get or create canvas context
+            const ctx = document.getElementById('agreement-distribution-chart').getContext('2d');
+            
+            // Create chart
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            'rgba(46, 204, 113, 0.7)',
+                            'rgba(52, 152, 219, 0.7)',
+                            'rgba(155, 89, 182, 0.7)',
+                            'rgba(241, 196, 15, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(46, 204, 113, 1)',
+                            'rgba(52, 152, 219, 1)',
+                            'rgba(155, 89, 182, 1)',
+                            'rgba(241, 196, 15, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const percentage = agreements[context.dataIndex].percentage || 0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Helper function to truncate text
+        function truncateText(text, maxLength) {
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        // Simple language detection
+        function detectLanguage(text) {
+            const swedishChars = /[åäöÅÄÖ]/;
+            return swedishChars.test(text) ? 'Swedish' : 'English';
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', updateDashboard);
+    </script>
+</body>
+</html>
