@@ -36,18 +36,23 @@ class SummaryCheckerTool(BaseTool):
         return summary is not None
     
     def run(self, question: str, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Return the pre-generated summary that matches the question"""
+        """
+        CONTRACT: Every return path MUST set state['response'] to a user-facing string.
+        Return the pre-generated summary that matches the question.
+        """
         logger.info("Running summary checker tool")
-        
         summary = self._find_matching_summary(question)
         if summary:
             state["response"] = summary
             state["response_source"] = "summary_json"
+            logger.info(f"Returning response: {state.get('response')}")
+            return state
         else:
             # This shouldn't happen if can_handle returned True, but just in case
-            state["response"] = None
-        
-        return state
+            state["response"] = "Tyvärr kunde jag inte hitta någon sammanfattning som matchar din fråga."
+            logger.info(f"Returning response: {state.get('response')}")
+            return state
+
     
     def _create_sample_summary(self):
         """Create a sample summary file to demonstrate the format"""

@@ -2,8 +2,7 @@ import logging
 from typing import Dict, Any, List
 from src.tools.base_tool import BaseTool
 
-
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("vector_retriever_logger")
 
 class VectorRetrieverTool(BaseTool):
     """Tool for retrieving information from the vector database"""
@@ -43,18 +42,21 @@ class VectorRetrieverTool(BaseTool):
 
             if not documents:
                 state["response"] = "Tyvärr kunde jag inte hitta någon information om det."
+                logger.info(f"Returning response: {state.get('response')}")
                 return state
             
             # Generate a response based on the retrieved documents
             response = self._generate_response(question, documents)
             state["response"] = response
             state["response_source"] = "vector_db"
-            
+            logger.info(f"Returning response: {state.get('response')}")
+            return state
+        
         except Exception as e:
             logger.error(f"Error retrieving documents: {str(e)}")
             state["response"] = "Tyvärr kunde jag inte hämta information just nu."
-        
-        return state
+            logger.info(f"Returning response: {state.get('response')}")
+            return state
     
     def _retrieve_documents(self, question: str, retriever) -> List[Dict[str, Any]]:
         """Retrieve relevant documents from the vector database"""
