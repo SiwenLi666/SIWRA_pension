@@ -1,33 +1,31 @@
-2025-04-16 01:02:58,107 | INFO | 🧮 Beräkning startad: age=45, salary=35000, pension_age=65, years_to_pension=20, growth=0.03
-2025-04-16 01:02:58,108 | INFO | 🔢 Inkomsttak = 555000.0, under tak = 35000, över tak = 0
-2025-04-16 01:02:58,108 | INFO | 💰 Avsättning: 4.5% av 35000 = 1575.0, 30.0% av 0 = 0.0
-2025-04-16 01:02:58,109 | INFO | 📅 Årlig avsättning = 18900.0, månatlig = 1575.00
-2025-04-16 01:02:58,109 | DEBUG | 📈 År 1: insättning + tillväxt = 33141.26
-2025-04-16 01:02:58,109 | DEBUG | 📈 År 2: insättning + tillväxt = 32175.98
-2025-04-16 01:02:58,110 | DEBUG | 📈 År 3: insättning + tillväxt = 31238.82
-2025-04-16 01:02:58,110 | DEBUG | 📈 År 4: insättning + tillväxt = 30328.95
-2025-04-16 01:02:58,110 | DEBUG | 📈 År 5: insättning + tillväxt = 29445.58
-2025-04-16 01:02:58,111 | DEBUG | 📈 År 6: insättning + tillväxt = 28587.95
-2025-04-16 01:02:58,111 | DEBUG | 📈 År 7: insättning + tillväxt = 27755.29
-2025-04-16 01:02:58,111 | DEBUG | 📈 År 8: insättning + tillväxt = 26946.88
-2025-04-16 01:02:58,111 | DEBUG | 📈 År 9: insättning + tillväxt = 26162.02
-2025-04-16 01:02:58,112 | DEBUG | 📈 År 10: insättning + tillväxt = 25400.02
-2025-04-16 01:02:58,112 | DEBUG | 📈 År 11: insättning + tillväxt = 24660.21
-2025-04-16 01:02:58,112 | DEBUG | 📈 År 12: insättning + tillväxt = 23941.95
-2025-04-16 01:02:58,113 | DEBUG | 📈 År 13: insättning + tillväxt = 23244.62
-2025-04-16 01:02:58,113 | DEBUG | 📈 År 14: insättning + tillväxt = 22567.59
-2025-04-16 01:02:58,113 | DEBUG | 📈 År 15: insättning + tillväxt = 21910.28
-2025-04-16 01:02:58,113 | DEBUG | 📈 År 16: insättning + tillväxt = 21272.12
-2025-04-16 01:02:58,114 | DEBUG | 📈 År 17: insättning + tillväxt = 20652.54
-2025-04-16 01:02:58,114 | DEBUG | 📈 År 18: insättning + tillväxt = 20051.01
-2025-04-16 01:02:58,114 | DEBUG | 📈 År 19: insättning + tillväxt = 19467.00
-2025-04-16 01:02:58,115 | DEBUG | 📈 År 20: insättning + tillväxt = 18900.00
-2025-04-16 01:02:58,115 | INFO | 📦 Totalt kapital med tillväxt = 507850.08, månatlig pension = 2116.04
-2025-04-16 01:19:31,106 | INFO | 🧮 Beräkning startad: age=45, salary=35000, pension_age=65, years_to_pension=20, growth=0.03
-2025-04-16 01:19:31,107 | INFO | 🔢 Inkomsttak = 555000.0, under tak = 35000, över tak = 0
-2025-04-16 01:28:57,533 | INFO | 🧮 Avd2-beräkning startad: age=45, salary=35000, pension_age=65, tjänsteår=20
-2025-04-16 01:28:57,534 | INFO | 📏 Tjänsteår = 20, nivå = 10.0%, pension = 291.67/mån
-2025-04-16 01:31:12,043 | INFO | 🧮 Avd2-beräkning startad: age=45, salary=35000, pension_age=65, tjänsteår=20
-2025-04-16 01:31:12,044 | INFO | 📏 Tjänsteår = 20, nivå = 10.0%, pension = 291.67/mån
-2025-04-16 01:35:30,352 | INFO | 🧮 Avd2-beräkning startad: age=45, salary=35000, pension_age=65, tjänsteår=20
-2025-04-16 01:35:30,353 | INFO | 📏 Tjänsteår = 20, nivå = 10.0%, pension = 3500.00/mån
+2025-04-24 15:03:24,493 | INFO | 🧹 Loggen har rensats för en ny beräkning.
+2025-04-24 15:03:24,494 | INFO | Beräkning startad: ålder=40, lön=50000, pensionsålder=65, år till pension=25, tillväxt=0.019, löneväxling=0, löneväxlingspremie=0
+2025-04-24 15:03:24,495 | INFO | Avsättning: 4.5% av 50000 = 2250.0, 30.0% av 0 = 0.0
+2025-04-24 15:03:24,495 | INFO | Löneväxlingspremie: 0 * 0.0% = 0
+2025-04-24 15:03:24,496 | INFO | Årlig avsättning = 27000.0, månatlig = 2250.00
+2025-04-24 15:03:24,496 | INFO | År 1: insättning + tillväxt = 42417.41
+2025-04-24 15:03:24,497 | INFO | År 2: insättning + tillväxt = 41626.51
+2025-04-24 15:03:24,497 | INFO | År 3: insättning + tillväxt = 40850.35
+2025-04-24 15:03:24,498 | INFO | År 4: insättning + tillväxt = 40088.67
+2025-04-24 15:03:24,498 | INFO | År 5: insättning + tillväxt = 39341.19
+2025-04-24 15:03:24,499 | INFO | År 6: insättning + tillväxt = 38607.64
+2025-04-24 15:03:24,499 | INFO | År 7: insättning + tillväxt = 37887.77
+2025-04-24 15:03:24,499 | INFO | År 8: insättning + tillväxt = 37181.33
+2025-04-24 15:03:24,509 | INFO | År 9: insättning + tillväxt = 36488.05
+2025-04-24 15:03:24,510 | INFO | År 10: insättning + tillväxt = 35807.71
+2025-04-24 15:03:24,510 | INFO | År 11: insättning + tillväxt = 35140.05
+2025-04-24 15:03:24,511 | INFO | År 12: insättning + tillväxt = 34484.84
+2025-04-24 15:03:24,511 | INFO | År 13: insättning + tillväxt = 33841.84
+2025-04-24 15:03:24,511 | INFO | År 14: insättning + tillväxt = 33210.83
+2025-04-24 15:03:24,512 | INFO | År 15: insättning + tillväxt = 32591.59
+2025-04-24 15:03:24,512 | INFO | År 16: insättning + tillväxt = 31983.90
+2025-04-24 15:03:24,512 | INFO | År 17: insättning + tillväxt = 31387.54
+2025-04-24 15:03:24,513 | INFO | År 18: insättning + tillväxt = 30802.29
+2025-04-24 15:03:24,513 | INFO | År 19: insättning + tillväxt = 30227.96
+2025-04-24 15:03:24,513 | INFO | År 20: insättning + tillväxt = 29664.34
+2025-04-24 15:03:24,514 | INFO | År 21: insättning + tillväxt = 29111.23
+2025-04-24 15:03:24,514 | INFO | År 22: insättning + tillväxt = 28568.43
+2025-04-24 15:03:24,515 | INFO | År 23: insättning + tillväxt = 28035.75
+2025-04-24 15:03:24,515 | INFO | År 24: insättning + tillväxt = 27513.00
+2025-04-24 15:03:24,516 | INFO | År 25: insättning + tillväxt = 27000.00
+2025-04-24 15:03:24,516 | INFO | Totalt kapital med tillväxt = 853860.22, månatlig pension = 3557.75

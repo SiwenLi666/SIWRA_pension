@@ -8,7 +8,7 @@
           "income_cap_base_amount": 7.5,
           "income_base_amount": 74000,
           "admin_fee_percentage": 0.003,
-          "default_return_rate": 0.03,
+          "default_return_rate": 0.019, 
           "default_retirement_age": 65,
           "defined_benefit_levels": [],
           "itpk_contribution_rate": null,
@@ -21,7 +21,7 @@
           "income_cap_base_amount": 7.5,
           "income_base_amount": 74000,
           "admin_fee_percentage": 0.003,
-          "default_return_rate": 0.03,
+          "default_return_rate": 0.019, 
           "default_retirement_age": 65,
           "defined_benefit_levels": [
             { "years": "<=30", "percent": 0.10 },
@@ -41,8 +41,7 @@
           "income_cap_base_amount": 7.5,
           "income_base_amount": 74000,
           "admin_fee_percentage": 0.002,
-          "default_return_rate": 0.03,
-          "default_retirement_age": 65,
+          "default_return_rate": 0.019, 
           "defined_benefit_levels": [],
           "itpk_contribution_rate": null,
           "family_pension_threshold": null
