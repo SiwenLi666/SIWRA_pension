@@ -178,6 +178,14 @@ function renderParameterInputs() {
 function performCalculation() {
     if (!currentAgreement || !currentScenario) return;
     const scenarioObj = calculationParameters[currentAgreement].scenarios[currentScenario];
+    // Ensure resultTop exists for all scenarios
+    let resultTop = document.getElementById('result-top');
+    if (!resultTop) {
+        resultTop = document.createElement('div');
+        resultTop.id = 'result-top';
+        const form = document.getElementById('calculator-form');
+        form.insertBefore(resultTop, form.firstChild);
+    }
     // User inputs
     const age = Number(calculatorState['age'] ?? 40);
     const salary = Number(calculatorState['salary'] ?? 50000);
@@ -289,8 +297,6 @@ function performCalculation() {
           <div style=\"font-size:2.1em; font-weight:700; color:#b28900;\">${isNaN(monthlyPension) ? '-' : monthlyPension.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
           <div style=\"color:#b28900; font-size:1.15em; margin-bottom:2px;\">kr/mån</div>
           <div style=\"font-size:1.07em; color:#222; margin-bottom:2px;\">🧓 Månatlig pension</div>
-          <div style="color:#b28900; font-size:1.15em; margin-bottom:2px;">kr/mån</div>
-          <div style="font-size:1.07em; color:#222; margin-bottom:2px;">🧓 Månatlig pension</div>
         </div>
       </div>
       ${document.getElementById('advanced-params') && document.getElementById('advanced-params').style.maxHeight !== '0px' ?
