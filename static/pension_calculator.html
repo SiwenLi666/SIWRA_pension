@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pensionskalkylator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .calculator-container {
+    max-width: 900px;
+    margin: 32px auto 32px auto;
+    padding: 36px 40px 32px 40px;
+    background: #f9fbfc;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+    border: 1px solid #e0e6ed;
+}
+
+/* Add some responsive tweaks */
+@media (max-width: 1000px) {
+    .calculator-container {
+        max-width: 98vw;
+        padding: 18px 6vw;
+    }
+}
+
+.form-label, label {
+    font-weight: 500;
+    color: #264653;
+    font-size: 1.06em;
+}
+
+input.form-control {
+    background: #f5f7fa;
+    border: 1px solid #c3d0e0;
+    border-radius: 7px;
+}
+
+/* Result boxes with icons/colors */
+.result-card {
+    border-radius: 10px;
+    padding: 18px 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 12px rgba(100,150,200,0.08);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.15em;
+}
+.result-card .result-icon {
+    font-size: 1.5em;
+    margin-right: 10px;
+    color: #2196F3;
+}
+.result-card.result-green {
+    background: linear-gradient(90deg, #e0fbe9 60%, #f7fff9 100%);
+    color: #1b5e20;
+}
+.result-card.result-blue {
+    background: linear-gradient(90deg, #e3f2fd 60%, #f7fbff 100%);
+    color: #0d47a1;
+}
+.result-card.result-yellow {
+    background: linear-gradient(90deg, #fffde7 60%, #fffef7 100%);
+    color: #b28900;
+}
+.result-card.result-grey {
+    background: #f3f4f6;
+    color: #546e7a;
+}
+
+h2.mb-4 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    letter-spacing: 0.01em;
+    color: #264653;
+    font-weight: 700;
+}
+
+#parameter-inputs {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(100,150,200,0.05);
+    padding: 22px 18px 8px 18px;
+    margin-bottom: 18px;
+}
+
+        .modal-title {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">SIWRA Pension Advisor</a>
+            <span class="navbar-text text-white ms-auto">Pensionskalkylator</span>
+        </div>
+    </nav>
+    <div class="calculator-container">
+        <h2 class="mb-4">Pensionskalkylator</h2>
+        <form id="calculator-form">
+            <div id="result-top" style="margin-bottom: 30px;"></div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="agreement-select" class="form-label">Tjänstepensionsavtal</label>
+                    <select id="agreement-select" class="form-select"></select>
+                </div>
+                <div class="col-md-6">
+                    <label for="scenario-select" class="form-label">Scenario</label>
+                    <select id="scenario-select" class="form-select"></select>
+                </div>
+            </div>
+            <div id="parameter-inputs"></div>
+            <!-- Advanced parameter toggle and advanced parameters will be injected here by JS -->
+            <div class="form-text mb-3" style="color:#5a5a5a; font-size:0.97em;">
+                Standardvärden används för avancerade parametrar. Klicka på "Visa avancerade inställningar" för att visa och ändra dem.
+            </div>
+        </form>
+    </div>
+    <script src="/pension_calculator.js"></script>
+</body>
+</html>
