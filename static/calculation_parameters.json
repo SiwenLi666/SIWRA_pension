@@ -1,0 +1,51 @@
+{
+    "PA16": {
+      "scenarios": {
+        "Avd1": {
+          "type": "premiebestämd",
+          "contribution_rate_below_cap": 0.045,
+          "contribution_rate_above_cap": 0.30,
+          "income_cap_base_amount": 7.5,
+          "income_base_amount": 74000,
+          "admin_fee_percentage": 0.003,
+          "default_return_rate": 0.019, 
+          "default_retirement_age": 65,
+          "defined_benefit_levels": [],
+          "itpk_contribution_rate": null,
+          "family_pension_threshold": null
+        },
+        "Avd2": {
+          "type": "förmånsbestämd",
+          "contribution_rate_below_cap": null,
+          "contribution_rate_above_cap": null,
+          "income_cap_base_amount": 7.5,
+          "income_base_amount": 74000,
+          "admin_fee_percentage": 0.003,
+          "default_return_rate": 0.019, 
+          "default_retirement_age": 65,
+          "defined_benefit_levels": [
+            { "years": "<=30", "percent": 0.10 },
+            { "years": ">30", "percent": 0.65 }
+          ],
+          "itpk_contribution_rate": 0.02,
+          "family_pension_threshold": null
+        }
+      }
+    },
+    "SKR2023": {
+      "scenarios": {
+        "Standard": {
+          "type": "premiebestämd",
+          "contribution_rate_below_cap": 0.045,
+          "contribution_rate_above_cap": 0.065,
+          "income_cap_base_amount": 7.5,
+          "income_base_amount": 74000,
+          "admin_fee_percentage": 0.002,
+          "default_return_rate": 0.019, 
+          "defined_benefit_levels": [],
+          "itpk_contribution_rate": null,
+          "family_pension_threshold": null
+        }
+      }
+    }
+}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pension Comparison</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="comparison.css">
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="tab-navigation">
+            <a href="calculator.html" class="tab-button">Pensionsberäknare</a>
+            <a href="comparison.html" class="tab-button active">Jämförelse</a>
+        </div>
+
+        <h2>Jämför Pensionsavtal</h2>
+        
+        <div class="comparison-form">
+            <div class="agreements-container">
+                <div class="agreement-column">
+                    <h3>Avtal 1</h3>
+                    <div class="form-group">
+                        <label for="agreement1">Pensionsavtal:</label>
+                        <select id="agreement1" class="calc-input">
+                            <option value="PA16">PA16</option>
+                            <option value="SKR2023">SKR2023</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scenario1">Scenario:</label>
+                        <select id="scenario1" class="calc-input">
+                            <option value="Avd1">Avdelning 1</option>
+                            <option value="Avd2">Avdelning 2</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="agreement-column">
+                    <h3>Avtal 2</h3>
+                    <div class="form-group">
+                        <label for="agreement2">Pensionsavtal:</label>
+                        <select id="agreement2" class="calc-input">
+                            <option value="PA16">PA16</option>
+                            <option value="SKR2023" selected>SKR2023</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scenario2">Scenario:</label>
+                        <select id="scenario2" class="calc-input">
+                            <option value="Standard" selected>Standard</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="common-parameters">
+                <h3>Gemensamma parametrar</h3>
+                <div class="form-group">
+                    <label for="age">Ålder:</label>
+                    <input type="number" id="age" class="calc-input" value="40" min="18" max="70">
+                </div>
+                
+                <div class="form-group">
+                    <label for="salary">Månadslön (kr):</label>
+                    <input type="number" id="salary" class="calc-input" value="35000" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="retirement_age">Pensionsålder:</label>
+                    <input type="number" id="retirement_age" class="calc-input" value="65" min="55" max="75">
+                </div>
+                
+                <div class="form-group">
+                    <label for="growth">Årlig tillväxt (%):</label>
+                    <input type="number" id="growth" class="calc-input" value="1.9" min="0" max="10" step="0.1">
+                </div>
+                
+                <div class="form-group">
+                    <label for="salary_exchange">Löneväxling (kr/mån):</label>
+                    <input type="number" id="salary_exchange" class="calc-input" value="0" min="0">
+                </div>
+            </div>
+        </div>
+        
+        <div class="actions comparison-actions">
+            <button id="compare-btn" class="primary-btn">Jämför avtal</button>
+            <button id="reset-btn" class="secondary-btn">Återställ</button>
+        </div>
+        
+        <div id="comparison-error" class="error-message">
+            <!-- Error messages will appear here -->
+        </div>
+        
+        <div id="comparison-results" class="comparison-results" style="display: none;">
+            <h3>Jämförelseresultat</h3>
+            
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th id="agreement1-header">PA16 (Avd1)</th>
+                            <th id="agreement2-header">SKR2023 (Standard)</th>
+                            <th>Skillnad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Månatlig pension (kr)</td>
+                            <td id="monthly-pension1">0</td>
+                            <td id="monthly-pension2">0</td>
+                            <td id="monthly-pension-diff">0%</td>
+                        </tr>
+                        <tr>
+                            <td>Totalt pensionskapital (kr)</td>
+                            <td id="total-pension1">0</td>
+                            <td id="total-pension2">0</td>
+                            <td id="total-pension-diff">0%</td>
+                        </tr>
+                        <tr>
+                            <td>Avsättning/mån (kr)</td>
+                            <td id="monthly-contribution1">0</td>
+                            <td id="monthly-contribution2">0</td>
+                            <td id="monthly-contribution-diff">0%</td>
+                        </tr>
+                        <tr>
+                            <td>År till pension</td>
+                            <td id="years-to-pension1">0</td>
+                            <td id="years-to-pension2">0</td>
+                            <td id="years-to-pension-diff">(samma)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="visualization-container">
+                <h3>Visualisering av månadspension</h3>
+                <div id="pension-chart" class="chart-container"></div>
+                
+                <h3>Visualisering av månatlig avsättning</h3>
+                <div id="contribution-chart" class="chart-container"></div>
+            </div>
+            
+            <div class="summary-container">
+                <h3>Sammanfattning av jämförelsen</h3>
+                <div id="comparison-summary" class="summary-content">
+                    <!-- Summary will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="comparison.js"></script>
+</body>
+</html>
