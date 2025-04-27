@@ -59,8 +59,118 @@ function renderParameterInputs() {
     ];
     let isAvd2 = (currentAgreement === 'PA16' && currentScenario === 'Avd2' && scenarioType === 'förmånsbestämd');
     if (isAvd2 && Array.isArray(scenarioObj.defined_benefit_levels)) {
-        mainFields.push({ key: 'years_of_service', label: 'Tjänsteår', default: 30 });
+        // Show both start year and years of service, dual-bound
+        mainFields.push({ key: 'start_work_year', label: 'Startår (år du började arbeta)', default: new Date().getFullYear() - 10 });
+        mainFields.push({ key: 'years_of_service', label: 'Tjänsteår', default: 10 });
         mainFields.push({ key: 'defined_benefit_levels', label: 'Förmånsnivåer', default: scenarioObj.defined_benefit_levels });
+    }
+    // Custom rendering for Avd2 dual-bound fields
+    if (isAvd2 && Array.isArray(scenarioObj.defined_benefit_levels)) {
+        // Remove any previous custom fields
+        paramContainer.innerHTML = '';
+        // Age, Salary, Retirement Age
+        ['age','salary','retirement_age'].forEach(key => {
+            const div = document.createElement('div');
+            div.className = 'mb-2';
+            const label = document.createElement('label');
+            label.textContent = key === 'age' ? 'Ålder' : key === 'salary' ? 'Lön (kr/mån)' : 'Pensionsålder';
+            label.setAttribute('for', `input-${key}`);
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'form-control';
+            input.id = `input-${key}`;
+            input.value = calculatorState[key] !== undefined ? calculatorState[key] : (key==='age'?40:key==='salary'?50000:scenarioObj.default_retirement_age||65);
+            input.addEventListener('input', () => {
+                calculatorState[key] = parseFloat(input.value);
+                performCalculation();
+                syncCalculatorToChat();
+            });
+            div.appendChild(label);
+            div.appendChild(input);
+            paramContainer.appendChild(div);
+        });
+        // Dual-bound fields
+        const dualDiv = document.createElement('div');
+        dualDiv.className = 'row mb-2';
+        // Startår
+        const startCol = document.createElement('div');
+        startCol.className = 'col-6';
+        const startLabel = document.createElement('label');
+        startLabel.textContent = 'Startår (år du började arbeta)';
+        startLabel.setAttribute('for','input-start_work_year');
+        const startInput = document.createElement('input');
+        startInput.type = 'number';
+        startInput.className = 'form-control';
+        startInput.id = 'input-start_work_year';
+        startInput.value = calculatorState['start_work_year'] !== undefined ? calculatorState['start_work_year'] : (new Date().getFullYear() - 10);
+        startCol.appendChild(startLabel);
+        startCol.appendChild(startInput);
+        dualDiv.appendChild(startCol);
+        // Tjänsteår
+        const yearsCol = document.createElement('div');
+        yearsCol.className = 'col-6';
+        const yearsLabel = document.createElement('label');
+        yearsLabel.textContent = 'Tjänsteår';
+        yearsLabel.setAttribute('for','input-years_of_service');
+        const yearsInput = document.createElement('input');
+        yearsInput.type = 'number';
+        yearsInput.className = 'form-control';
+        yearsInput.id = 'input-years_of_service';
+        yearsInput.value = calculatorState['years_of_service'] !== undefined ? calculatorState['years_of_service'] : 10;
+        yearsCol.appendChild(yearsLabel);
+        yearsCol.appendChild(yearsInput);
+        dualDiv.appendChild(yearsCol);
+        paramContainer.appendChild(dualDiv);
+        // Dual binding logic
+        // When start year changes, update years of service
+        startInput.addEventListener('input', () => {
+            const currentYear = new Date().getFullYear();
+            const retirementAge = Number(document.getElementById('input-retirement_age').value);
+            const age = Number(document.getElementById('input-age').value);
+            const retirementYear = currentYear + (retirementAge - age);
+            const startYear = parseInt(startInput.value);
+            const yearsOfService = Math.max(0, retirementYear - startYear);
+            yearsInput.value = yearsOfService;
+            calculatorState['start_work_year'] = startYear;
+            calculatorState['years_of_service'] = yearsOfService;
+            performCalculation();
+            syncCalculatorToChat();
+        });
+        // When years of service changes, update start year
+        yearsInput.addEventListener('input', () => {
+            const currentYear = new Date().getFullYear();
+            const retirementAge = Number(document.getElementById('input-retirement_age').value);
+            const age = Number(document.getElementById('input-age').value);
+            const retirementYear = currentYear + (retirementAge - age);
+            const yearsOfService = parseInt(yearsInput.value);
+            const startYear = retirementYear - yearsOfService;
+            startInput.value = startYear;
+            calculatorState['start_work_year'] = startYear;
+            calculatorState['years_of_service'] = yearsOfService;
+            performCalculation();
+            syncCalculatorToChat();
+        });
+        // Show defined benefit levels
+        const levelsDiv = document.createElement('div');
+        levelsDiv.className = 'mt-2';
+        const levelsLabel = document.createElement('label');
+        levelsLabel.textContent = 'Förmånsnivåer';
+        levelsDiv.appendChild(levelsLabel);
+        (scenarioObj.defined_benefit_levels || []).forEach((level, idx) => {
+            const row = document.createElement('div');
+            row.className = 'row mb-1';
+            const col1 = document.createElement('div');
+            col1.className = 'col-6';
+            col1.textContent = `Tjänsteår: ${level.years}`;
+            const col2 = document.createElement('div');
+            col2.className = 'col-6';
+            col2.textContent = `Förmån: ${(level.percent * 100).toFixed(2)}%`;
+            row.appendChild(col1);
+            row.appendChild(col2);
+            levelsDiv.appendChild(row);
+        });
+        paramContainer.appendChild(levelsDiv);
+        return;
     }
     mainFields.forEach(field => {
         const div = document.createElement('div');
@@ -203,8 +313,14 @@ function performCalculation() {
 
     // Förmånsbestämd branch
     if (scenarioObj.type === 'förmånsbestämd' && Array.isArray(scenarioObj.defined_benefit_levels) && scenarioObj.defined_benefit_levels.length > 0) {
-        // Use user-specified years of service
-        const yearsOfService = Number(calculatorState['years_of_service'] ?? 30);
+        // Always calculate years_of_service from start_work_year and retirement year
+        const currentYear = new Date().getFullYear();
+        const retirementAge = Number(calculatorState['retirement_age'] ?? scenarioObj.default_retirement_age ?? 65);
+        const age = Number(calculatorState['age'] ?? 40);
+        const retirementYear = currentYear + (retirementAge - age);
+        const startWorkYear = Number(calculatorState['start_work_year'] ?? (currentYear - 10));
+        const yearsOfService = Math.max(0, retirementYear - startWorkYear);
+        calculatorState['years_of_service'] = yearsOfService;
         // Find correct benefit percent based on years of service (use highest matching bracket)
         let benefitPercent = 0;
         scenarioObj.defined_benefit_levels.forEach((level, idx) => {
@@ -226,21 +342,21 @@ function performCalculation() {
             form.insertBefore(resultTop, form.firstChild);
         }
         resultTop.innerHTML = `
-          <div class=\"result-summary-card\" style=\"display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 2.5em; background: #fff; border-radius: 18px; box-shadow: 0 4px 24px rgba(33,150,243,0.09); padding: 28px 18px 18px 18px; margin-bottom: 18px;\">
-            <div class=\"result-block\" style=\"flex:1 1 170px; min-width:150px; text-align:center;\">
-              <div style=\"font-size:2.1em; font-weight:700; color:#43a047;\">${isNaN(annualPension) ? '-' : annualPension.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
-              <div style=\"color:#43a047; font-size:1.15em; margin-bottom:2px;\">kr/år</div>
-              <div style=\"font-size:1.07em; color:#222; margin-bottom:2px;\">Årlig pension</div>
+          <div class="result-summary-card" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 2.5em; background: #fff; border-radius: 18px; box-shadow: 0 4px 24px rgba(33,150,243,0.09); padding: 28px 18px 18px 18px; margin-bottom: 18px;">
+            <div class="result-block" style="flex:1 1 170px; min-width:150px; text-align:center;">
+              <div style="font-size:2.1em; font-weight:700; color:#43a047;">${isNaN(annualPension) ? '-' : annualPension.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
+              <div style="color:#43a047; font-size:1.15em; margin-bottom:2px;">kr/år</div>
+              <div style="font-size:1.07em; color:#222; margin-bottom:2px;">Årlig pension</div>
             </div>
-            <div class=\"result-block\" style=\"flex:1 1 170px; min-width:150px; text-align:center;\">
-              <div style=\"font-size:2.1em; font-weight:700; color:#1976d2;\">${isNaN(monthlyPension) ? '-' : monthlyPension.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
-              <div style=\"color:#1976d2; font-size:1.15em; margin-bottom:2px;\">kr/mån</div>
-              <div style=\"font-size:1.07em; color:#222; margin-bottom:2px;\">Månatlig pension</div>
+            <div class="result-block" style="flex:1 1 170px; min-width:150px; text-align:center;">
+              <div style="font-size:2.1em; font-weight:700; color:#1976d2;">${isNaN(monthlyPension) ? '-' : monthlyPension.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
+              <div style="color:#1976d2; font-size:1.15em; margin-bottom:2px;">kr/mån</div>
+              <div style="font-size:1.07em; color:#222; margin-bottom:2px;">Månatlig pension</div>
             </div>
-            <div class=\"result-block\" style=\"flex:1 1 120px; min-width:110px; text-align:center;\">
-              <div style=\"font-size:2.1em; font-weight:700; color:#b28900;\">${isNaN(yearsOfService) ? '-' : yearsOfService}</div>
-              <div style=\"color:#b28900; font-size:1.15em; margin-bottom:2px;\">år</div>
-              <div style=\"font-size:1.07em; color:#222; margin-bottom:2px;\">Tjänsteår</div>
+            <div class="result-block" style="flex:1 1 120px; min-width:110px; text-align:center;">
+              <div style="font-size:2.1em; font-weight:700; color:#b28900;">${isNaN(yearsOfService) ? '-' : yearsOfService}</div>
+              <div style="color:#b28900; font-size:1.15em; margin-bottom:2px;">år</div>
+              <div style="font-size:1.07em; color:#222; margin-bottom:2px;">Tjänsteår</div>
             </div>
           </div>
         `;
