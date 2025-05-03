@@ -371,6 +371,16 @@ async def websocket_endpoint(websocket: WebSocket):
                 # Process the message
                 response, state_dict = advisor.run_with_visualization(data)
                 
+                # Extract calculation parameters if available and send to frontend
+                if "last_calculation" in state_dict and state_dict["last_calculation"] and "input" in state_dict["last_calculation"]:
+                    calculation_params = state_dict["last_calculation"]["input"]
+                    # Send calculation parameters to frontend for display in calculator
+                    await websocket.send_json({
+                        "type": "chat_calculation_update",
+                        "calculationParams": calculation_params
+                    })
+                    logger.info(f"Sent calculation parameters to frontend: {calculation_params}")
+                
                 # Store the conversation context if enabled
                 if CONVERSATION_CONTEXT and conversation_manager and conversation_id:
                     # Extract metadata from state

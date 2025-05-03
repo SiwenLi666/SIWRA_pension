@@ -599,6 +599,16 @@ function syncChatToCalculator(params) {
     performCalculation();
 }
 
+// Listen for messages from the chat component (calculation results)
+window.addEventListener('message', function(event) {
+    // Only process messages with calculation parameters
+    if (event.data && event.data.type === 'chat_calculation_update' && event.data.calculationParams) {
+        console.log('Received calculation params from chat:', event.data.calculationParams);
+        // Update calculator with parameters from chat
+        syncChatToCalculator(event.data.calculationParams);
+    }
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
     await loadCalculationParameters();
     renderAgreementSelector();
