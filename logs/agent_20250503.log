@@ -393,3 +393,92 @@
 2025-05-03 17:05:01,418 INFO main:  Creating new cost tracking database...
 2025-05-03 17:05:01,418 INFO main:  System initialization completed successfully
 2025-05-03 17:08:12,145 INFO main:  Shutting down system...
+2025-05-03 17:34:55,749 INFO main: Starting server on localhost:9090
+2025-05-03 17:34:55,804 INFO main:  Starting system initialization...
+2025-05-03 17:34:55,805 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\data
+2025-05-03 17:34:55,806 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs
+2025-05-03 17:34:55,807 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs\agreements
+2025-05-03 17:34:55,808 INFO main:  Creating new cost tracking database...
+2025-05-03 17:34:55,808 INFO main:  System initialization completed successfully
+2025-05-03 17:51:48,345 INFO main:  Shutting down system...
+2025-05-03 17:51:56,585 INFO main: Starting server on localhost:9090
+2025-05-03 17:51:56,666 INFO main:  Starting system initialization...
+2025-05-03 17:51:56,668 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\data
+2025-05-03 17:51:56,669 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs
+2025-05-03 17:51:56,670 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs\agreements
+2025-05-03 17:51:56,670 INFO main:  Creating new cost tracking database...
+2025-05-03 17:51:56,670 INFO main:  System initialization completed successfully
+2025-05-03 19:23:13,881 INFO main:  Shutting down system...
+2025-05-03 19:23:20,879 INFO main: Starting server on localhost:9090
+2025-05-03 19:23:20,935 INFO main:  Starting system initialization...
+2025-05-03 19:23:20,936 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\data
+2025-05-03 19:23:20,937 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs
+2025-05-03 19:23:20,938 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs\agreements
+2025-05-03 19:23:20,939 INFO main:  Creating new cost tracking database...
+2025-05-03 19:23:20,940 INFO main:  System initialization completed successfully
+2025-05-03 21:34:56,697 INFO main:  Shutting down system...
+2025-05-03 21:37:37,681 INFO main: Starting server on localhost:9090
+2025-05-03 21:37:37,792 INFO main:  Starting system initialization...
+2025-05-03 21:37:37,793 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\data
+2025-05-03 21:37:37,794 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs
+2025-05-03 21:37:37,795 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs\agreements
+2025-05-03 21:37:37,796 INFO main:  Creating new cost tracking database...
+2025-05-03 21:37:37,796 INFO main:  System initialization completed successfully
+2025-05-03 21:39:13,526 INFO main: Starting server on localhost:9090
+2025-05-03 21:39:13,594 INFO main:  Starting system initialization...
+2025-05-03 21:39:13,595 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\data
+2025-05-03 21:39:13,595 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs
+2025-05-03 21:39:13,596 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs\agreements
+2025-05-03 21:39:13,596 INFO main:  Creating new cost tracking database...
+2025-05-03 21:39:13,596 INFO main:  System initialization completed successfully
+2025-05-03 21:41:19,122 INFO main: Received message: Hur mycket får jag i pension om jag tjänar 65000kr /mån jag är 40 år?
+2025-05-03 21:41:19,124 INFO main: Session ID: ::1
+2025-05-03 21:41:19,124 INFO main: Creating new LangGraph session for ::1
+2025-05-03 21:41:19,132 WARNING main: LangGraph visualization module not available. Visualization features will be disabled.
+2025-05-03 21:41:19,582 INFO main: Processing message: Hur mycket får jag i pension om jag tjänar 65000kr /mån jag är 40 år?
+2025-05-03 21:41:19,588 INFO src.graph.pension_graph: Processing question: Hur mycket får jag i pension om jag tjänar 65000kr /mån jag är 40 år?
+2025-05-03 21:41:19,589 INFO agent_logger: [AGENT] Start process. State: {'question': 'Hur mycket får jag i pension om jag tjänar 65000kr /mån jag är 40 år?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...'}
+2025-05-03 21:41:19,589 INFO agent_logger: [AGENT] Received question: 'hur mycket får jag i pension om jag tjänar 65000kr /mån jag är 40 år?'
+2025-05-03 21:41:19,589 INFO agent_logger: [AGENT] Trying tool: CalculatorTool
+2025-05-03 21:41:19,589 INFO agent_logger: [AGENT] Tool CalculatorTool.can_handle returned: True
+2025-05-03 21:41:19,590 INFO agent_logger: [AGENT] Selected tool: CalculatorTool
+2025-05-03 21:41:19,591 INFO agent_logger: [AGENT] After parameter extraction. Extracted: {'age': 40, 'monthly_salary': 65000}, State: {'question': 'Hur mycket får jag i pension om jag tjänar 65000kr /mån jag är 40 år?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'CalculatorTool'}
+2025-05-03 21:41:19,591 INFO agent_logger: [AGENT] After merging/defaulting. Merged: {'age': 40, 'monthly_salary': 65000}, State: {'question': 'Hur mycket får jag i pension om jag tjänar 65000kr /mån jag är 40 år?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'CalculatorTool'}
+2025-05-03 21:41:19,591 INFO agent_logger: [AGENT] Before calling tool: CalculatorTool. State: {'question': 'Hur mycket får jag i pension om jag tjänar 65000kr /mån jag är 40 år?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'CalculatorTool'}
+2025-05-03 21:41:19,593 INFO calculator_logger: 🧹 Loggen har rensats för en ny beräkning.
+2025-05-03 21:41:19,594 INFO calculator_logger: 🧮 Beräkning startad: ålder=40, lön=65000, pensionsålder=65, år till pension=25, tillväxt=0.019, löneväxling=0, löneväxlingspremie=0
+2025-05-03 21:41:19,594 INFO calculator_logger: 🔢 Inkomsttak (årsvis) = 555000.0, under tak = 555000.0, över tak = 225000.0
+2025-05-03 21:41:19,594 INFO calculator_logger: 💰 Avsättning: 4.5% av 555000.0 = 24975.00, 30.0% av 225000.0 = 67500.00
+2025-05-03 21:41:19,595 INFO calculator_logger: 💰 Löneväxlingspremie: 0 * 0.0% = 0
+2025-05-03 21:41:19,595 INFO calculator_logger: 📅 Årlig avsättning = 92475.00, månatlig = 7706.25
+2025-05-03 21:41:19,595 INFO calculator_logger: 📈 År 1: insättning + tillväxt = 145279.64
+2025-05-03 21:41:19,595 INFO calculator_logger: 📈 År 2: insättning + tillväxt = 142570.80
+2025-05-03 21:41:19,595 INFO calculator_logger: 📈 År 3: insättning + tillväxt = 139912.46
+2025-05-03 21:41:19,595 INFO calculator_logger: 📈 År 4: insättning + tillväxt = 137303.69
+2025-05-03 21:41:19,595 INFO calculator_logger: 📈 År 5: insättning + tillväxt = 134743.56
+2025-05-03 21:41:19,595 INFO calculator_logger: 📈 År 6: insättning + tillväxt = 132231.17
+2025-05-03 21:41:19,596 INFO calculator_logger: 📈 År 7: insättning + tillväxt = 129765.62
+2025-05-03 21:41:19,596 INFO calculator_logger: 📈 År 8: insättning + tillväxt = 127346.05
+2025-05-03 21:41:19,596 INFO calculator_logger: 📈 År 9: insättning + tillväxt = 124971.59
+2025-05-03 21:41:19,596 INFO calculator_logger: 📈 År 10: insättning + tillväxt = 122641.40
+2025-05-03 21:41:19,596 INFO calculator_logger: 📈 År 11: insättning + tillväxt = 120354.66
+2025-05-03 21:41:19,596 INFO calculator_logger: 📈 År 12: insättning + tillväxt = 118110.56
+2025-05-03 21:41:19,596 INFO calculator_logger: 📈 År 13: insättning + tillväxt = 115908.30
+2025-05-03 21:41:19,596 INFO calculator_logger: 📈 År 14: insättning + tillväxt = 113747.11
+2025-05-03 21:41:19,597 INFO calculator_logger: 📈 År 15: insättning + tillväxt = 111626.21
+2025-05-03 21:41:19,597 INFO calculator_logger: 📈 År 16: insättning + tillväxt = 109544.86
+2025-05-03 21:41:19,597 INFO calculator_logger: 📈 År 17: insättning + tillväxt = 107502.31
+2025-05-03 21:41:19,597 INFO calculator_logger: 📈 År 18: insättning + tillväxt = 105497.85
+2025-05-03 21:41:19,597 INFO calculator_logger: 📈 År 19: insättning + tillväxt = 103530.77
+2025-05-03 21:41:19,597 INFO calculator_logger: 📈 År 20: insättning + tillväxt = 101600.36
+2025-05-03 21:41:19,597 INFO calculator_logger: 📈 År 21: insättning + tillväxt = 99705.95
+2025-05-03 21:41:19,598 INFO calculator_logger: 📈 År 22: insättning + tillväxt = 97846.86
+2025-05-03 21:41:19,598 INFO calculator_logger: 📈 År 23: insättning + tillväxt = 96022.43
+2025-05-03 21:41:19,598 INFO calculator_logger: 📈 År 24: insättning + tillväxt = 94232.02
+2025-05-03 21:41:19,598 INFO calculator_logger: 📈 År 25: insättning + tillväxt = 92475.00
+2025-05-03 21:41:19,598 INFO calculator_logger: 📦 Totalt kapital med tillväxt = 2924471.24, månatlig pension = 12185.30
+2025-05-03 21:41:19,598 INFO agent_logger: [AGENT] After tool run. State: {'question': 'Hur mycket får jag i pension om jag tjänar 65000kr /mån jag är 40 år?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'CalculatorTool', 'user_profile': {'age': 40, 'monthly_salary': 65000, 'agreement': 'PA16', 'scenario': 'Avd1', 'retirement_age': 65, 'growth': 0.019}, 'response': 'Baserat på dina uppgifter uppskattas din pension enligt PA16 (Avd1) till ca 12185 kr/mån från 65 års ålder. Det motsvarar ett totalt kapital på ca 2924471 kr, baserat på en avsättning på 7706 kr/mån under 25 år.', 'last_calculation': {'input': {'age': 40, 'monthly_salary': 65000, 'agreement': 'PA16', 'scenario': 'Avd1', 'retirement_age': 65, 'growth': 0.019}, 'result': {'monthly_pension': 12185, 'total_pension': 2924471, 'monthly_contribution': 7706, 'years_to_pension': 25, 'breakdown': {'below_cap_amount': 555000, 'above_cap_amount': 225000, 'contrib_below': 24975, 'contrib_above': 67500, 'rate_below': 0.045, 'rate_above': 0.3}}, 'agreement': 'PA16', 'scenario': 'Avd1'}}
+2025-05-03 21:41:19,599 INFO main: Final state from LangGraph: {'question': 'Hur mycket får jag i pension om jag tjänar 65000kr /mån jag är 40 år?', 'user_language': 'sv', 'conversation_history': [], 'status': '✅ Klar', 'followup_count': 0, 'active_tool': 'CalculatorTool', 'user_profile': {'age': 40, 'monthly_salary': 65000, 'agreement': 'PA16', 'scenario': 'Avd1', 'retirement_age': 65, 'growth': 0.019}, 'response': 'Baserat på dina uppgifter uppskattas din pension enligt PA16 (Avd1) till ca 12185 kr/mån från 65 års ålder. Det motsvarar ett totalt kapital på ca 2924471 kr, baserat på en avsättning på 7706 kr/mån under 25 år.', 'last_calculation': {'input': {'age': 40, 'monthly_salary': 65000, 'agreement': 'PA16', 'scenario': 'Avd1', 'retirement_age': 65, 'growth': 0.019}, 'result': {'monthly_pension': 12185, 'total_pension': 2924471, 'monthly_contribution': 7706, 'years_to_pension': 25, 'breakdown': {'below_cap_amount': 555000, 'above_cap_amount': 225000, 'contrib_below': 24975, 'contrib_above': 67500, 'rate_below': 0.045, 'rate_above': 0.3}}, 'agreement': 'PA16', 'scenario': 'Avd1'}}
+2025-05-03 21:41:19,600 INFO main: [DEBUG] state keys: ['question', 'user_language', 'conversation_history', 'status', 'followup_count', 'active_tool', 'user_profile', 'response', 'last_calculation']
+2025-05-03 21:41:19,600 INFO main: Cleaned response: Baserat på dina uppgifter uppskattas din pension enligt PA16 (Avd1) till ca 12185 kr/mån från 65 års...
+2025-05-03 21:41:19,600 INFO main: [chat endpoint] Final response: 'Baserat på dina uppgifter uppskattas din pension enligt PA16 (Avd1) till ca 12185 kr/mån från 65 års ålder. Det motsvarar ett totalt kapital på ca 2924471 kr, baserat på en avsättning på 7706 kr/mån under 25 år.'
