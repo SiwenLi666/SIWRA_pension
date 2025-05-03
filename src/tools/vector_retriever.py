@@ -36,9 +36,9 @@ class VectorRetrieverTool(BaseTool):
         # Retrieve relevant documents
         try:
             documents = self._retrieve_documents(question, retriever)
-            if "ikraftträdande" in question.lower() or "ändring" in question.lower():
-                logger.info("Detected 'ikraftträdande' or 'ändring' in question – filtering docs with is_amendment=True")
-                documents = [doc for doc in documents if doc["metadata"].get("is_amendment") is True]
+            # if "ikraftträdande" in question.lower() or "ändring" in question.lower():
+            #     logger.info("Detected 'ikraftträdande' or 'ändring' in question – filtering docs with is_amendment=True")
+            #     documents = [doc for doc in documents if doc["metadata"].get("is_amendment") is True]
 
             if not documents:
                 state["response"] = "Tyvärr kunde jag inte hitta någon information om det."
