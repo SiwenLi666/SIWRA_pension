@@ -277,49 +277,61 @@ class CalculatorTool(BaseTool):
         salary_exchange = user_input.get("salary_exchange", 0)
         salary_exchange_premium = user_input.get("salary_exchange_premium", 0)
 
-        logger.info(f"Beräkning startad: ålder={age}, lön={salary}, pensionsålder={pension_age}, år till pension={years_to_pension}, tillväxt={growth}, löneväxling={salary_exchange}, löneväxlingspremie={salary_exchange_premium}")
+        logger.info(f"🧮 Beräkning startad: ålder={age}, lön={salary}, pensionsålder={pension_age}, år till pension={years_to_pension}, tillväxt={growth}, löneväxling={salary_exchange}, löneväxlingspremie={salary_exchange_premium}")
 
-        # Steg 1: Inkomsttak och lön under/över tak
-        cap = param["income_cap_base_amount"] * param["income_base_amount"]
-        below = min(salary, cap)
-        above = max(0, salary - cap)
-        #logger.info(f"Inkomsttak = {cap}, under tak = {below}, över tak = {above}")
+        # ✅ Step 1: Correct annual income and cap logic (NO *12 on cap!)
+        annual_salary = salary * 12
+        annual_cap = param["income_cap_base_amount"] * param["income_base_amount"]
 
-        # Steg 2: Beräkna avsättningar
+        below = min(annual_salary, annual_cap)
+        above = max(0, annual_salary - annual_cap)
+
+        # ✅ Step 2: Fetch rates
         rate_below = param.get("contribution_rate_below_cap", 0)
         rate_above = param.get("contribution_rate_above_cap", 0)
 
         contrib_below = below * rate_below
         contrib_above = above * rate_above
-        annual_contribution = (contrib_below + contrib_above) * 12
-        monthly_contribution = annual_contribution / 12
+        annual_contribution = contrib_below + contrib_above
 
-        # Löneväxling påverkar avsättningen
+        # ✅ Löneväxling
         salary_exchange_contribution = salary_exchange * salary_exchange_premium
         annual_contribution += salary_exchange_contribution * 12
         monthly_contribution = annual_contribution / 12
 
-        logger.info(f"Avsättning: {rate_below*100:.1f}% av {below} = {contrib_below}, {rate_above*100:.1f}% av {above} = {contrib_above}")
-        logger.info(f"Löneväxlingspremie: {salary_exchange} * {salary_exchange_premium*100:.1f}% = {salary_exchange_contribution}")
-        logger.info(f"Årlig avsättning = {annual_contribution}, månatlig = {monthly_contribution:.2f}")
+        # ✅ Log breakdown
+        logger.info(f"🔢 Inkomsttak (årsvis) = {annual_cap}, under tak = {below}, över tak = {above}")
+        logger.info(f"💰 Avsättning: {rate_below*100:.1f}% av {below} = {contrib_below:.2f}, {rate_above*100:.1f}% av {above} = {contrib_above:.2f}")
+        logger.info(f"💰 Löneväxlingspremie: {salary_exchange} * {salary_exchange_premium*100:.1f}% = {salary_exchange_contribution}")
+        logger.info(f"📅 Årlig avsättning = {annual_contribution:.2f}, månatlig = {monthly_contribution:.2f}")
 
-        # Steg 3: Uppskatta framtida värde (årlig ränta-på-ränta)
+        # ✅ Step 3: Growth accumulation
         total_with_growth = 0
         for i in range(1, years_to_pension + 1):
-            compounded = annual_contribution * (1 + growth)**(years_to_pension - i)
+            compounded = annual_contribution * (1 + growth) ** (years_to_pension - i)
             total_with_growth += compounded
-            logger.info(f"År {i}: insättning + tillväxt = {compounded:.2f}")
+            logger.info(f"📈 År {i}: insättning + tillväxt = {compounded:.2f}")
 
-        monthly_pension = total_with_growth / (20 * 12)  # fördelat över 20 år
+        monthly_pension = total_with_growth / (20 * 12)  # 20-year payout
 
-        logger.info(f"Totalt kapital med tillväxt = {total_with_growth:.2f}, månatlig pension = {monthly_pension:.2f}")
+        logger.info(f"📦 Totalt kapital med tillväxt = {total_with_growth:.2f}, månatlig pension = {monthly_pension:.2f}")
 
+        # ✅ Return full breakdown
         return {
             "monthly_pension": int(monthly_pension),
             "total_pension": int(total_with_growth),
             "monthly_contribution": int(monthly_contribution),
-            "years_to_pension": years_to_pension
+            "years_to_pension": years_to_pension,
+            "breakdown": {
+                "below_cap_amount": int(below),
+                "above_cap_amount": int(above),
+                "contrib_below": int(contrib_below),
+                "contrib_above": int(contrib_above),
+                "rate_below": rate_below,
+                "rate_above": rate_above
+            }
         }
+
 
     def _calculate_avd2(self, agreement: str, scenario: str, user_input: Dict[str, Any]) -> Dict[str, Any]:
         param = self.parameters[agreement]["scenarios"][scenario]

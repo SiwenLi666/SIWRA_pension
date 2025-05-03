@@ -59,8 +59,119 @@ function renderParameterInputs() {
     ];
     let isAvd2 = (currentAgreement === 'PA16' && currentScenario === 'Avd2' && scenarioType === 'förmånsbestämd');
     if (isAvd2 && Array.isArray(scenarioObj.defined_benefit_levels)) {
-        mainFields.push({ key: 'years_of_service', label: 'Tjänsteår', default: 30 });
+        // Show both start year and years of service, dual-bound
+        mainFields.push({ key: 'start_work_year', label: 'Startår (år du började arbeta)', default: new Date().getFullYear() - 10 });
+        mainFields.push({ key: 'years_of_service', label: 'Tjänsteår', default: 10 });
         mainFields.push({ key: 'defined_benefit_levels', label: 'Förmånsnivåer', default: scenarioObj.defined_benefit_levels });
+    }
+    // Custom rendering for Avd2 dual-bound fields
+    if (isAvd2 && Array.isArray(scenarioObj.defined_benefit_levels)) {
+        // Remove any previous custom fields
+        paramContainer.innerHTML = '';
+        // Age, Salary, Retirement Age
+        ['age','salary','retirement_age'].forEach(key => {
+            const div = document.createElement('div');
+            div.className = 'mb-2';
+            const label = document.createElement('label');
+            label.textContent = key === 'age' ? 'Ålder' : key === 'salary' ? 'Lön (kr/mån)' : 'Pensionsålder';
+            label.setAttribute('for', `input-${key}`);
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'form-control';
+            input.id = `input-${key}`;
+            input.value = calculatorState[key] !== undefined ? calculatorState[key] : (key==='age'?40:key==='salary'?50000:scenarioObj.default_retirement_age||65);
+            input.addEventListener('input', () => {
+                calculatorState[key] = parseFloat(input.value);
+                performCalculation();
+                syncCalculatorToChat();
+            });
+            div.appendChild(label);
+            div.appendChild(input);
+            paramContainer.appendChild(div);
+        });
+        // Dual-bound fields
+        const dualDiv = document.createElement('div');
+        dualDiv.className = 'row mb-2';
+        // Startår
+        const startCol = document.createElement('div');
+        startCol.className = 'col-6';
+        const startLabel = document.createElement('label');
+        startLabel.textContent = 'Startår (år du började arbeta)';
+        startLabel.setAttribute('for','input-start_work_year');
+        const startInput = document.createElement('input');
+        startInput.type = 'number';
+        startInput.className = 'form-control';
+        startInput.id = 'input-start_work_year';
+        startInput.value = calculatorState['start_work_year'] !== undefined ? calculatorState['start_work_year'] : (new Date().getFullYear() - 10);
+        startCol.appendChild(startLabel);
+        startCol.appendChild(startInput);
+        dualDiv.appendChild(startCol);
+        // Tjänsteår
+        const yearsCol = document.createElement('div');
+        yearsCol.className = 'col-6';
+        const yearsLabel = document.createElement('label');
+        yearsLabel.textContent = 'Tjänsteår';
+        yearsLabel.setAttribute('for','input-years_of_service');
+        const yearsInput = document.createElement('input');
+        yearsInput.type = 'number';
+        yearsInput.className = 'form-control';
+        yearsInput.id = 'input-years_of_service';
+        yearsInput.value = calculatorState['years_of_service'] !== undefined ? calculatorState['years_of_service'] : 10;
+        yearsCol.appendChild(yearsLabel);
+        yearsCol.appendChild(yearsInput);
+        dualDiv.appendChild(yearsCol);
+        paramContainer.appendChild(dualDiv);
+        // Dual binding logic
+        // When start year changes, update years of service
+        startInput.addEventListener('input', () => {
+            const currentYear = new Date().getFullYear();
+            const retirementAge = Number(document.getElementById('input-retirement_age').value);
+            const age = Number(document.getElementById('input-age').value);
+            const retirementYear = currentYear + (retirementAge - age);
+            const startYear = parseInt(startInput.value);
+            const yearsOfService = Math.max(0, retirementYear - startYear);
+            yearsInput.value = yearsOfService;
+            calculatorState['start_work_year'] = startYear;
+            calculatorState['years_of_service'] = yearsOfService;
+            performCalculation();
+            syncCalculatorToChat();
+        });
+        // When years of service changes, update start year
+        yearsInput.addEventListener('input', () => {
+            const currentYear = new Date().getFullYear();
+            const retirementAge = Number(document.getElementById('input-retirement_age').value);
+            const age = Number(document.getElementById('input-age').value);
+            const retirementYear = currentYear + (retirementAge - age);
+            const yearsOfService = parseInt(yearsInput.value);
+            const startYear = retirementYear - yearsOfService;
+            startInput.value = startYear;
+            calculatorState['start_work_year'] = startYear;
+            calculatorState['years_of_service'] = yearsOfService;
+            performCalculation();
+            syncCalculatorToChat();
+        });
+        // Show defined benefit levels
+        const levelsDiv = document.createElement('div');
+        levelsDiv.className = 'mt-2';
+        const levelsLabel = document.createElement('label');
+        levelsLabel.textContent = 'Förmånsnivåer';
+        levelsDiv.appendChild(levelsLabel);
+        (scenarioObj.defined_benefit_levels || []).forEach((level, idx) => {
+            const row = document.createElement('div');
+            row.className = 'row mb-1';
+            const col1 = document.createElement('div');
+            col1.className = 'col-6';
+            col1.textContent = `Tjänsteår: ${level.years}`;
+            const col2 = document.createElement('div');
+            col2.className = 'col-6';
+            col2.textContent = `Förmån: ${(level.percent * 100).toFixed(2)}%`;
+            row.appendChild(col1);
+            row.appendChild(col2);
+            levelsDiv.appendChild(row);
+        });
+        paramContainer.appendChild(levelsDiv);
+        return;
     }
     mainFields.forEach(field => {
         const div = document.createElement('div');
@@ -119,6 +230,38 @@ function renderParameterInputs() {
         };
     }
     paramContainer.appendChild(advancedBtn);
+    // RESET BUTTON
+    const resetBtn = document.createElement('button');
+    resetBtn.id = 'reset-params-btn';
+    resetBtn.type = 'button';
+    resetBtn.className = 'btn btn-outline-danger mb-3 ms-3';
+    resetBtn.innerHTML = 'Återställ till standardvärden';
+    resetBtn.onclick = function () {
+        const scenarioDefaults = calculationParameters[currentAgreement].scenarios[currentScenario];
+        calculatorState = {}; // Clear current values
+        Object.keys(scenarioDefaults).forEach(key => {
+            const inputEl = document.getElementById(`input-${key}`);
+            if (!inputEl) return;
+
+            // Convert % fields back to decimal in state and show 100x in UI
+            if (inputEl.type === 'text' && inputEl.value && inputEl.labels?.[0]?.textContent?.includes('%')) {
+                const raw = parseFloat(scenarioDefaults[key]);
+                if (!isNaN(raw)) {
+                    inputEl.value = (raw * 100).toFixed(2);
+                    calculatorState[key] = raw;
+                }
+            } else {
+                inputEl.value = scenarioDefaults[key];
+                calculatorState[key] = scenarioDefaults[key];
+            }
+        });
+
+        renderParameterInputs(); // Re-render inputs with reset state
+        performCalculation();    // Recalculate pension
+        syncCalculatorToChat?.();
+    };
+
+    paramContainer.appendChild(resetBtn);
 
     // Advanced fields (hidden by default): all scenario parameters except the three main ones
     let advDiv = document.getElementById('advanced-params');
@@ -161,24 +304,106 @@ function renderParameterInputs() {
         const label = document.createElement('label');
         label.textContent = fieldLabelMap[field] || field;
         label.setAttribute('for', `input-${field}`);
+
         const input = document.createElement('input');
         input.type = 'text';
         input.className = 'form-control';
         input.id = `input-${field}`;
-        input.value = scenarioObj[field];
-        input.readOnly = true;
+
+        // 💡 Visa som procent om etiketten innehåller %
+        const displayValue = (label.textContent.includes('%') && typeof scenarioObj[field] === 'number')
+            ? (scenarioObj[field] * 100).toFixed(2)
+            : scenarioObj[field];
+        input.value = displayValue;
+
+        input.removeAttribute('readonly');
+
+
+        // 🧠 Spara tillbaka i calculatorState och trigga omräkning
+        input.addEventListener('input', () => {
+            const raw = parseFloat(input.value.replace(',', '.'));
+            if (!isNaN(raw)) {
+                calculatorState[field] = label.textContent.includes('%') ? raw / 100 : raw;
+                performCalculation();
+                if (typeof syncCalculatorToChat === 'function') {
+                    syncCalculatorToChat();
+                }
+            }
+        });
+
         col.appendChild(label);
         col.appendChild(input);
         scenarioRow.appendChild(col);
         scenarioCount++;
+
+                
     });
     paramContainer.appendChild(advDiv);
+}
+// Force-load default scenario values into calculatorState
+function preloadScenarioDefaults() {
+    const defaults = calculationParameters[currentAgreement].scenarios[currentScenario];
+    Object.keys(defaults).forEach(key => {
+        if (calculatorState[key] === undefined && typeof defaults[key] === 'number') {
+            calculatorState[key] = defaults[key];
+        }
+    });
 }
 
 function performCalculation() {
     if (!currentAgreement || !currentScenario) return;
     const scenarioObj = calculationParameters[currentAgreement].scenarios[currentScenario];
-    // Ensure resultTop exists for all scenarios
+
+    const retirementAge = Number(calculatorState['retirement_age'] ?? scenarioObj.default_retirement_age ?? 65);
+    const age = Number(calculatorState['age'] ?? 40);
+    const salary = Number(calculatorState['salary'] ?? 50000);
+    const growth = Number(calculatorState['default_return_rate'] ?? scenarioObj.default_return_rate ?? 0.019);
+    const adminFee = Number(calculatorState['admin_fee_percentage'] ?? scenarioObj.admin_fee_percentage ?? 0);
+    const salaryExchange = Number(calculatorState['salary_exchange'] ?? 0);
+    const salaryExchangePremium = Number(calculatorState['salary_exchange_premium'] ?? 0);
+
+    const rateBelow = Number(calculatorState['contribution_rate_below_cap'] ?? scenarioObj.contribution_rate_below_cap ?? 0);
+    const rateAbove = Number(calculatorState['contribution_rate_above_cap'] ?? scenarioObj.contribution_rate_above_cap ?? 0);
+    const incomeCap = Number(calculatorState['income_cap_base_amount'] ?? scenarioObj.income_cap_base_amount ?? 7.5);
+    const baseAmount = Number(calculatorState['income_base_amount'] ?? scenarioObj.income_base_amount ?? 74000);
+
+    const annualSalary = salary * 12;
+    const cap = incomeCap * baseAmount;
+
+    const belowCap = Math.min(annualSalary, cap);
+    const aboveCap = Math.max(0, annualSalary - cap);
+
+    const belowCapContribution = belowCap * rateBelow;
+    const aboveCapContribution = aboveCap * rateAbove;
+
+    const lvxContribution = salaryExchange * 12 * (salaryExchangePremium / 100);
+
+    const annualContribution = belowCapContribution + aboveCapContribution + lvxContribution;
+    const monthlyContribution = annualContribution / 12;
+
+    const yearsToPension = retirementAge - age;
+
+    // Growth simulation
+    let total = 0;
+    let yearlyResults = [];
+
+    for (let i = 1; i <= yearsToPension; i++) {
+        // Apply only growth to compounding, do NOT subtract adminFee from growth
+        let compounded = annualContribution * Math.pow(1 + growth, yearsToPension - i);
+        // Optionally, deduct admin fee as a percentage of the balance after growth (if required by business logic)
+        // compounded = compounded * (1 - adminFee); // Uncomment if admin fee should be applied after growth
+        total += compounded;
+
+        yearlyResults.push({
+            year: i,
+            value: total
+        });
+    }
+
+
+    const monthlyPension = total / (20 * 12);
+
+
     let resultTop = document.getElementById('result-top');
     if (!resultTop) {
         resultTop = document.createElement('div');
@@ -186,142 +411,64 @@ function performCalculation() {
         const form = document.getElementById('calculator-form');
         form.insertBefore(resultTop, form.firstChild);
     }
-    // User inputs
-    const age = Number(calculatorState['age'] ?? 40);
-    const salary = Number(calculatorState['salary'] ?? 50000);
-    const retirementAge = Number(calculatorState['retirement_age'] ?? scenarioObj.default_retirement_age ?? 65);
-    const growth = Number(calculatorState['growth'] ?? scenarioObj.default_return_rate ?? 0.019);
-    const salaryExchange = Number(calculatorState['salary_exchange'] ?? 0);
-    const salaryExchangePremium = Number(calculatorState['salary_exchange_premium'] ?? 0);
-    let yearsToPension = retirementAge - age;
 
-    // Parameters from scenario
-    const rateBelow = scenarioObj.contribution_rate_below_cap || 0;
-    const rateAbove = scenarioObj.contribution_rate_above_cap || 0;
-    const incomeCap = scenarioObj.income_cap_base_amount || 0;
-    const baseAmount = scenarioObj.income_base_amount || 0;
-
-    // Förmånsbestämd branch
-    if (scenarioObj.type === 'förmånsbestämd' && Array.isArray(scenarioObj.defined_benefit_levels) && scenarioObj.defined_benefit_levels.length > 0) {
-        // Use user-specified years of service
-        const yearsOfService = Number(calculatorState['years_of_service'] ?? 30);
-        // Find correct benefit percent based on years of service (use highest matching bracket)
-        let benefitPercent = 0;
-        scenarioObj.defined_benefit_levels.forEach((level, idx) => {
-            let yearsCond = level.years;
-            let percent = level.percent;
-            if ((yearsCond === '<=30' && yearsOfService <= 30) || (yearsCond === '>30' && yearsOfService > 30)) {
-                benefitPercent = percent;
-            }
-        });
-        // Annual pension estimate
-        let annualPension = salary * 12 * benefitPercent;
-        let monthlyPension = annualPension / 12;
-        // Ensure resultTop exists
-        let resultTop = document.getElementById('result-top');
-        if (!resultTop) {
-            resultTop = document.createElement('div');
-            resultTop.id = 'result-top';
-            const form = document.getElementById('calculator-form');
-            form.insertBefore(resultTop, form.firstChild);
-        }
-        resultTop.innerHTML = `
-          <div class=\"result-summary-card\" style=\"display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 2.5em; background: #fff; border-radius: 18px; box-shadow: 0 4px 24px rgba(33,150,243,0.09); padding: 28px 18px 18px 18px; margin-bottom: 18px;\">
-            <div class=\"result-block\" style=\"flex:1 1 170px; min-width:150px; text-align:center;\">
-              <div style=\"font-size:2.1em; font-weight:700; color:#43a047;\">${isNaN(annualPension) ? '-' : annualPension.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
-              <div style=\"color:#43a047; font-size:1.15em; margin-bottom:2px;\">kr/år</div>
-              <div style=\"font-size:1.07em; color:#222; margin-bottom:2px;\">Årlig pension</div>
-            </div>
-            <div class=\"result-block\" style=\"flex:1 1 170px; min-width:150px; text-align:center;\">
-              <div style=\"font-size:2.1em; font-weight:700; color:#1976d2;\">${isNaN(monthlyPension) ? '-' : monthlyPension.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
-              <div style=\"color:#1976d2; font-size:1.15em; margin-bottom:2px;\">kr/mån</div>
-              <div style=\"font-size:1.07em; color:#222; margin-bottom:2px;\">Månatlig pension</div>
-            </div>
-            <div class=\"result-block\" style=\"flex:1 1 120px; min-width:110px; text-align:center;\">
-              <div style=\"font-size:2.1em; font-weight:700; color:#b28900;\">${isNaN(yearsOfService) ? '-' : yearsOfService}</div>
-              <div style=\"color:#b28900; font-size:1.15em; margin-bottom:2px;\">år</div>
-              <div style=\"font-size:1.07em; color:#222; margin-bottom:2px;\">Tjänsteår</div>
-            </div>
-          </div>
-        `;
-        return;
-    }
-
-    // Calculations
-    const annualSalary = salary * 12;
-    const cap = incomeCap * baseAmount * 12;
-    const belowCap = Math.min(annualSalary, cap);
-    const aboveCap = Math.max(annualSalary - cap, 0);
-    const belowCapContribution = belowCap * rateBelow;
-    const aboveCapContribution = aboveCap * rateAbove;
-    const annualContribution = belowCapContribution + aboveCapContribution + (salaryExchange * 12 * (salaryExchangePremium / 100));
-    const monthlyContribution = annualContribution / 12;
-
-    // Growth simulation
-    let total = 0;
-    let yearlyResults = [];
-    for (let year = 1; year <= yearsToPension; year++) {
-        total = (total + annualContribution) * (1 + growth);
-        yearlyResults.push({
-            year,
-            value: total
-        });
-    }
-    // Final results
-    const monthlyPension = yearsToPension > 0 ? total / (yearsToPension * 12) : 0;
-
-    // Render results in a single, clear, horizontally-aligned card
     resultTop.innerHTML = `
-      <div class=\"result-summary-card\" style=\"display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 2.5em; background: #fff; border-radius: 18px; box-shadow: 0 4px 24px rgba(33,150,243,0.09); padding: 28px 18px 18px 18px; margin-bottom: 18px;\">
-        <div class=\"result-block\" style=\"flex:1 1 170px; min-width:150px; text-align:center;\">
-          <div style=\"font-size:2.1em; font-weight:700; color:#43a047;\">${isNaN(annualContribution) ? '-' : annualContribution.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
-          <div style=\"color:#43a047; font-size:1.15em; margin-bottom:2px;\">kr/år</div>
-          <div style=\"font-size:1.07em; color:#222; margin-bottom:2px;\">Årlig avsättning</div>
+      <div class="result-summary-card" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 2.5em; background: #fff; border-radius: 18px; box-shadow: 0 4px 24px rgba(33,150,243,0.09); padding: 28px 18px 18px 18px; margin-bottom: 18px;">
+        <div class="result-block" style="flex:1 1 170px; min-width:150px; text-align:center;">
+          <div style="font-size:2.1em; font-weight:700; color:#43a047;">${isNaN(annualContribution) ? '-' : annualContribution.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
+          <div style="color:#43a047; font-size:1.15em; margin-bottom:2px;">kr/år</div>
+          <div style="font-size:1.07em; color:#222; margin-bottom:2px;">Årlig avsättning</div>
         </div>
-        <div class=\"result-block\" style=\"flex:1 1 170px; min-width:150px; text-align:center;\">
-          <div style=\"font-size:2.1em; font-weight:700; color:#1976d2;\">${isNaN(monthlyContribution) ? '-' : monthlyContribution.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
-          <div style=\"color:#1976d2; font-size:1.15em; margin-bottom:2px;\">kr/mån</div>
-          <div style=\"font-size:1.07em; color:#222; margin-bottom:2px;\">Månatlig avsättning</div>
+        <div class="result-block" style="flex:1 1 170px; min-width:150px; text-align:center;">
+          <div style="font-size:2.1em; font-weight:700; color:#1976d2;">${isNaN(monthlyContribution) ? '-' : monthlyContribution.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
+          <div style="color:#1976d2; font-size:1.15em; margin-bottom:2px;">kr/mån</div>
+          <div style="font-size:1.07em; color:#222; margin-bottom:2px;">Månatlig avsättning</div>
         </div>
-        <div class=\"result-block\" style=\"flex:1 1 120px; min-width:110px; text-align:center;\">
-          <div style=\"font-size:2.1em; font-weight:700; color:#b28900;\">${isNaN(yearsToPension) ? '-' : yearsToPension}</div>
-          <div style=\"color:#b28900; font-size:1.15em; margin-bottom:2px;\">år</div>
-          <div style=\"font-size:1.07em; color:#222; margin-bottom:2px;\">År till pension</div>
+        <div class="result-block" style="flex:1 1 120px; min-width:110px; text-align:center;">
+          <div style="font-size:2.1em; font-weight:700; color:#b28900;">${isNaN(yearsToPension) ? '-' : yearsToPension}</div>
+          <div style="color:#b28900; font-size:1.15em; margin-bottom:2px;">år</div>
+          <div style="font-size:1.07em; color:#222; margin-bottom:2px;">År till pension</div>
         </div>
-        <div class=\"result-block\" style=\"flex:1 1 180px; min-width:150px; text-align:center;\">
-          <div style=\"font-size:2.1em; font-weight:700; color:#0d47a1;\">${isNaN(total) ? '-' : total.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
-          <div style=\"color:#0d47a1; font-size:1.15em; margin-bottom:2px;\">kr</div>
-          <div style=\"font-size:1.07em; color:#222; margin-bottom:2px;\">Totalt kapital</div>
+        <div class="result-block" style="flex:1 1 180px; min-width:150px; text-align:center;">
+          <div style="font-size:2.1em; font-weight:700; color:#0d47a1;">${isNaN(total) ? '-' : total.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
+          <div style="color:#0d47a1; font-size:1.15em; margin-bottom:2px;">kr</div>
+          <div style="font-size:1.07em; color:#222; margin-bottom:2px;">Totalt kapital</div>
         </div>
-        <div class=\"result-block\" style=\"flex:1 1 180px; min-width:150px; text-align:center;\">
-          <div style=\"font-size:2.1em; font-weight:700; color:#b28900;\">${isNaN(monthlyPension) ? '-' : monthlyPension.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
-          <div style=\"color:#b28900; font-size:1.15em; margin-bottom:2px;\">kr/mån</div>
-          <div style=\"font-size:1.07em; color:#222; margin-bottom:2px;\">🧓 Månatlig pension</div>
+        <div class="result-block" style="flex:1 1 180px; min-width:150px; text-align:center;">
+          <div style="font-size:2.1em; font-weight:700; color:#b28900;">${isNaN(monthlyPension) ? '-' : monthlyPension.toLocaleString('sv-SE', {maximumFractionDigits:0})}</div>
+          <div style="color:#b28900; font-size:1.15em; margin-bottom:2px;">kr/mån</div>
+          <div style="font-size:1.07em; color:#222; margin-bottom:2px;">🧓 Månatlig pension</div>
         </div>
       </div>
-      ${document.getElementById('advanced-params') && document.getElementById('advanced-params').style.maxHeight !== '0px' ?
-        `<div class='row mt-3'><div class='col-12'><div class='alert alert-secondary' style='font-size:1.08em;'><strong>Årlig utveckling:</strong><div id='calc-yearly-breakdown' style='font-size:0.95em; max-height:180px; overflow-y:auto;'></div></div></div></div>` : ''}
+      ${aboveCap > 0 ? `
+        <div class='row mt-3'><div class='col-12'>
+          <div class='alert alert-info' style='font-size:1.05em;'>
+            <strong>⚖️ Inkomst över tak:</strong> 
+            <br>Lön över gräns: <strong>${aboveCap.toLocaleString('sv-SE')} kr/år</strong> 
+            <br>Premie: ${rateAbove * 100}% → <strong>${aboveCapContribution.toLocaleString('sv-SE')} kr/år</strong>
+          </div>
+        </div></div>` : ''}
     `;
-    // Show yearly breakdown only if advanced params are open
-    if (document.getElementById('advanced-params') && document.getElementById('advanced-params').style.maxHeight !== '0px') {
-      const yearlyDiv = document.getElementById('calc-yearly-breakdown');
-      if (yearlyDiv) yearlyDiv.innerHTML = yearlyResults.map(r => `<span style='color:#1976d2;'>År ${r.year}:</span> <span style='color:#388e3c;'>${r.value.toLocaleString('sv-SE', {maximumFractionDigits:2})} kr</span>`).join('<br>');
-    }
-
 }
 
 
+
 function syncCalculatorToChat() {
-    // MVP: Optionally send a message to chat or update context
-    // For now, just log (integration with backend/chat to be implemented)
-    // Example: window.postMessage({type: 'calculator_update', data: calculatorState}, '*');
+    // Send calculator state to chat context (MVP implementation)
+    if (window && typeof window.postMessage === 'function') {
+        window.postMessage({ type: 'calculator_update', data: { ...calculatorState } }, '*');
+    }
 }
 
 function syncChatToCalculator(params) {
     // Called when chat detects calculation intent and extracts parameters
-    if (params.salary) calculatorState.salary = params.salary;
-    if (params.age) calculatorState.age = params.age;
+    if (params && typeof params === 'object') {
+        Object.keys(params).forEach(key => {
+            calculatorState[key] = params[key];
+        });
+    }
     renderParameterInputs();
+    preloadScenarioDefaults();
     performCalculation();
 }
 

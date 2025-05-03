@@ -1,10 +1,27 @@
-from typing import Dict, Any
+import logging
+import os
+from datetime import datetime
 from src.tools.calculator import CalculatorTool
+
+# Ensure logs directory exists
+os.makedirs("logs", exist_ok=True)
+
+# Use a log file with today's date
+log_filename = f"logs/agent_{datetime.now().strftime('%Y%m%d')}.log"
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(log_filename, mode='a', encoding='utf-8')
+    ]
+)
+logger = logging.getLogger("agent_logger")
+
+from typing import Dict, Any
 from src.tools.vector_retriever import VectorRetrieverTool
 from src.tools.summary_checker import SummaryCheckerTool
 from src.tools.base_tool import BaseTool
-import logging
-logger = logging.getLogger("agent_logger")
 from src.llm_utils import ask_llm_gpt41nano
 
 
@@ -44,6 +61,7 @@ class ToolUsingPensionAgent:
         """
         logger.info("[AGENT] Start process. State: %s", state)
         question = state.get("question", "").lower().strip()
+        logger.info(f"[AGENT] Received question: '{question}'")
 
         # --- Step 1: Handle and track follow-up count ---
         # If no active tool (new main question), reset followup_count
@@ -68,6 +86,7 @@ class ToolUsingPensionAgent:
             state["response"] = llm_summary
             for k in ["active_tool", "followup_count", "last_llm_question", "expected_fields", "_followup_incremented"]:
                 state.pop(k, None)
+            logger.info(f"[AGENT] Final state to return (followup max): {state}")
             return state
 
         # Särskilt fallback-svar för följdfråga: "hur räknade du?"
@@ -84,6 +103,7 @@ class ToolUsingPensionAgent:
                     f"som växte med 1,9% årligen (enligt MinPension.se april 2025) till ett kapital på {r['total_pension']} kr. "
                     f"Det fördelas över 20 år → {r['monthly_pension']} kr/mån."
                 )
+                logger.info(f"[AGENT] Final state to return (calculation fallback): {state}")
                 return state
 
             # Fallback: använd kalkylloggen om ingen beräkning sparad
@@ -92,6 +112,7 @@ class ToolUsingPensionAgent:
             if calc_tool:
                 log_summary = calc_tool.format_log_for_user()
                 state["response"] = f"Här är stegen från senaste beräkningen:\n\n{log_summary}"
+                logger.info(f"[AGENT] Final state to return (calculation log fallback): {state}")
                 return state
             # If for some reason no calculator tool is found, fallback to previous minimal summary
             approx = get_last_calculation_from_log()
@@ -101,108 +122,130 @@ class ToolUsingPensionAgent:
                     f"men senast loggade beräkning gällde en lön på {approx['monthly_salary']} kr/mån "
                     f"och en ålder på {approx['age']} år, med pensionsålder {approx['retirement_age']}."
                 )
-        if "jämför" in question:
-            for tool in self.tools:
-                if hasattr(tool, "compare_agreements"):
-                    extracted = tool._extract_parameters(question)
-                    agreements = extracted.get("compare_agreements")
-                    scenarios = extracted.get("compare_scenarios", ["Avd1", "Avd1"])
-                    user_profile = state.get("user_profile", {})
-                    if agreements and len(agreements) == 2:
-                        missing = tool._check_required(user_profile)
-                        if missing:
-                            state["response"] = f"Jag behöver följande information för att jämföra: {', '.join(missing)}."
-                            return state
-                        state["response"] = tool.compare_agreements(
-                            agreements[0], scenarios[0], agreements[1], scenarios[1], user_profile
-                        )
-                        return state
-            state["response"] = "Jag kunde inte identifiera två avtal att jämföra. Ange t.ex. 'jämför PA16 och SKR2023'."
-            return state
+                logger.info(f"[AGENT] Final state to return (calculation log fallback 2): {state}")
+                return state
 
         # --- Step 4: Tool selection and activation (MVP logic) ---
         if not state.get("active_tool"):
             for tool in self.tools:
-                if tool.can_handle(question, state):
+                logger.info(f"[AGENT] Trying tool: {tool.__class__.__name__}")
+                try:
+                    can_handle = tool.can_handle(question, state)
+                    logger.info(f"[AGENT] Tool {tool.__class__.__name__}.can_handle returned: {can_handle}")
+                except Exception as e:
+                    logger.error(f"[AGENT] Exception in can_handle for {tool.__class__.__name__}: {e}")
+                    continue
+                if can_handle:
                     state["active_tool"] = tool.__class__.__name__
+                    logger.info(f"[AGENT] Selected tool: {tool.__class__.__name__}")
                     # If tool supports parameter extraction/validation
                     if hasattr(tool, "_extract_parameters") and hasattr(tool, "_check_required"):
-                        extracted = tool._extract_parameters(question)
-                        logger.info("[AGENT] After parameter extraction. Extracted: %s, State: %s", extracted, state)
-                        merged = {**state.get("user_profile", {}), **extracted}
-                        logger.info("[AGENT] After merging/defaulting. Merged: %s, State: %s", merged, state)
-                        if "agreement" not in merged:
-                            merged["agreement"] = "PA16"
-                        if "scenario" not in merged:
-                            merged["scenario"] = "Avd1" if merged["agreement"].upper() == "PA16" else "Standard"
-                        from src.tools.calculator import CalculatorTool
-                        calc = self.tools[0] if isinstance(self.tools[0], CalculatorTool) else CalculatorTool()
-                        agreement = merged["agreement"].upper()
-                        scenario = merged["scenario"]
-                        agreement_data = calc.parameters.get(agreement, {}).get("scenarios", {}).get(scenario, {})
-                        merged.setdefault("retirement_age", agreement_data.get("default_retirement_age", 65))
-                        merged.setdefault("growth", agreement_data.get("default_return_rate", 0.03))
-                        missing = tool._check_required(merged)
-                        if missing:
-                            # Use LLM with tool metadata for missing fields
-                            antaganden = (
-                                f"Avtal: {merged['agreement']} {merged['scenario']}\n"
-                                f"Uttagsålder: {merged['retirement_age']} år\n"
-                                f"Avkastning: {merged['growth']}\n"
-                            )
-                            llm_prompt = (
-                                f"För att räkna ut din pension använder jag följande standardvärden:\n"
-                                f"{antaganden}"
-                                f"Men jag behöver veta: {', '.join(missing)}.\n"
-                                f"Skriv gärna om du vill ändra något av ovanstående!\n"
-                                f"Användarens fråga: '{question}'\n"
-                                f"Nuvarande state: {merged}\n"
-                                f"Gissa aldrig. Om något är oklart eller saknas, returnera ENDAST en tydlig svensk följdfråga.\n"
-                                f"Om allt är tydligt, returnera ett JSON-objekt med alla parametrar."
-                            )
-                            # Spara senaste fråga och vilka fält som förväntas
-                            state["last_llm_question"] = f"Men jag behöver veta: {', '.join(missing)}."
-                            state["expected_fields"] = missing
-                            llm_response = ask_llm_gpt41nano(llm_prompt)
-                            # Enkel heuristik: om svaret börjar med '{', tolka som JSON-parametrar, annars följdfråga
-                            if llm_response.strip().startswith('{'):
-                                try:
-                                    import json
-                                    params = json.loads(llm_response)
-                                    merged.update(params)
-                                    # Kör kalkylatorn igen med ifyllda parametrar
-                                    state["user_profile"] = merged
-                                    state.pop("last_llm_question", None)
-                                    state.pop("expected_fields", None)
-                                    missing2 = tool._check_required(merged)
-                                    if not missing2:
-                                        logger.info("[AGENT] Before calling tool: %s. State: %s", tool.__class__.__name__, state)
-                                        result = tool.run(question, state)
-                                        logger.info("[AGENT] After tool run. State: %s", result)
-                                        return result
+                        # Only use parameter extraction for CalculatorTool
+                        if isinstance(tool, CalculatorTool):
+                            try:
+                                extracted = tool._extract_parameters(question)
+                                logger.info("[AGENT] After parameter extraction. Extracted: %s, State: %s", extracted, state)
+                                merged = {**state.get("user_profile", {}), **extracted}
+                                logger.info("[AGENT] After merging/defaulting. Merged: %s, State: %s", merged, state)
+                                if "agreement" not in merged:
+                                    merged["agreement"] = "PA16"
+                                if "scenario" not in merged:
+                                    merged["scenario"] = "Avd1" if merged["agreement"].upper() == "PA16" else "Standard"
+                                
+                                calc = self.tools[0] if isinstance(self.tools[0], CalculatorTool) else CalculatorTool()
+                                agreement = merged["agreement"].upper()
+                                scenario = merged["scenario"]
+                                agreement_data = calc.parameters.get(agreement, {}).get("scenarios", {}).get(scenario, {})
+                                merged.setdefault("retirement_age", agreement_data.get("default_retirement_age", 65))
+                                merged.setdefault("growth", agreement_data.get("default_return_rate", 0.03))
+                                missing = tool._check_required(merged)
+                                if missing:
+                                    logger.info(f"[AGENT] Missing parameters after extraction: {missing}")
+                                    # Use LLM with tool metadata for missing fields
+                                    antaganden = (
+                                        f"Avtal: {merged['agreement']} {merged['scenario']}\n"
+                                        f"Uttagsålder: {merged['retirement_age']} år\n"
+                                        f"Avkastning: {merged['growth']}\n"
+                                    )
+                                    llm_prompt = (
+                                        f"För att räkna ut din pension använder jag följande standardvärden:\n"
+                                        f"{antaganden}"
+                                        f"Men jag behöver veta: {', '.join(missing)}.\n"
+                                        f"Skriv gärna om du vill ändra något av ovanstående!\n"
+                                        f"Användarens fråga: '{question}'\n"
+                                        f"Nuvarande state: {merged}\n"
+                                        f"Gissa aldrig. Om något är oklart eller saknas, returnera ENDAST en tydlig svensk följdfråga.\n"
+                                        f"Om allt är tydligt, returnera ett JSON-objekt med alla parametrar."
+                                    )
+                                    # Spara senaste fråga och vilka fält som förväntas
+                                    state["last_llm_question"] = f"Men jag behöver veta: {', '.join(missing)}."
+                                    state["expected_fields"] = missing
+                                    llm_response = ask_llm_gpt41nano(llm_prompt)
+                                    # Enkel heuristik: om svaret börjar med '{', tolka som JSON-parametrar, annars följdfråga
+                                    if llm_response.strip().startswith('{'):
+                                        try:
+                                            import json
+                                            params = json.loads(llm_response)
+                                            merged.update(params)
+                                            # Kör kalkylatorn igen med ifyllda parametrar
+                                            state["user_profile"] = merged
+                                            state.pop("last_llm_question", None)
+                                            state.pop("expected_fields", None)
+                                            missing2 = tool._check_required(merged)
+                                            if not missing2:
+                                                logger.info("[AGENT] Before calling tool: %s. State: %s", tool.__class__.__name__, state)
+                                                result = tool.run(question, state)
+                                                logger.info("[AGENT] After tool run. State: %s", result)
+                                                logger.info(f"[AGENT] Final state to return (calc tool run after LLM): {result}")
+                                                return result
+                                            else:
+                                                logger.info(f"[AGENT] Still missing after LLM: {missing2}")
+                                                state["response"] = f"Jag behöver fortfarande: {', '.join(missing2)}."
+                                                logger.info(f"[AGENT] Final state to return (missing after LLM): {state}")
+                                                return state
+                                        except Exception as ex:
+                                            logger.error(f"[AGENT] Error decoding JSON from LLM: {ex}")
+                                            state["response"] = llm_response
+                                            logger.info(f"[AGENT] Final state to return (LLM JSON error): {state}")
+                                            return state
                                     else:
-                                        state["response"] = f"Jag behöver fortfarande: {', '.join(missing2)}."
+                                        # Direkt följdfråga från LLM
+                                        state["response"] = llm_response
+                                        logger.error(f"[AGENT] Fallback triggered. State: %s", state)
+                                        if not state.get("response"):
+                                            logger.error(f"[AGENT] Fallback triggered. State: %s", state)
+                                            state["response"] = "Tyvärr kunde jag inte svara på din fråga (internt fel)."
+                                        logger.info(f"[AGENT] Returning response: %s. State: %s", state.get('response'), state)
+                                        # Add any additional formatting or post-processing here
+                                        state["status"] = "✅ Klar"
                                         return state
-                                except Exception:
-                                    # Om JSON-dekodning misslyckas, visa svaret som följdfråga
-                                    state["response"] = llm_response
-                                    return state
-                            else:
-                                # Direkt följdfråga från LLM
-                                state["response"] = llm_response
-                                logger.error(f"[AGENT] Fallback triggered. State: %s", state)
-                                if not state.get("response"):
-                                    logger.error(f"[AGENT] Fallback triggered. State: %s", state)
-                                    state["response"] = "Tyvärr kunde jag inte svara på din fråga (internt fel)."
-                                logger.info(f"[AGENT] Returning response: %s. State: %s", state.get('response'), state)
-                                # Add any additional formatting or post-processing here
-                                state["status"] = "✅ Klar"
+                                # Om inga parametrar saknas, kör som vanligt
+                                logger.info("[AGENT] Before calling tool: %s. State: %s", tool.__class__.__name__, state)
+                                result = tool.run(question, state)
+                                logger.info("[AGENT] After tool run. State: %s", result)
+                                return result
+                            except Exception as e:
+                                logger.error(f"[AGENT] Exception during parameter extraction or tool run: {e}")
+                                state["response"] = f"Ett fel uppstod: {e}"
                                 return state
-                    # Om inga parametrar saknas, kör som vanligt
-                        logger.info("[AGENT] Before calling tool: %s. State: %s", tool.__class__.__name__, state)
-                        result = tool.run(question, state)
-                        logger.info("[AGENT] After tool run. State: %s", result)
-                        return result
+                    else:
+                        # For non-calculator tools (e.g., retriever, summary), just call run directly
+                        logger.info(f"[AGENT] Running tool {tool.__class__.__name__} with standard execution (no parameter extraction)")
+                        logger.info(f"[AGENT] [NON-CALC] Try block START. state id: {id(state)}; state: {state}")
+                        try:
+                            logger.info(f"[AGENT] [NON-CALC] Before tool run. state id: {id(state)}; state: {state}")
+                            result = tool.run(question, state)
+                            logger.info(f"[AGENT] [NON-CALC] After tool run. result id: {id(result)}; result: {result}")
+                            logger.info(f"[AGENT] [NON-CALC] Try block END. Returning result.")
+                            return result
+                        except Exception as e:
+                            import traceback
+                            logger.error(f"[AGENT] Exception during tool run: {e}\n{traceback.format_exc()}")
+                            state["response"] = f"Ett fel uppstod: {e}"
+                            logger.info(f"[AGENT] [NON-CALC] Try block END (exception). Returning state: {state}")
+                            return state
+                    logger.warning("[AGENT] FELL THROUGH TOOL LOOP! Returning fallback state: %s", state)            
+                    return state
             # Om ingen tool matchade, låt LLM generera svensk följdfråga
         if not state.get("active_tool"):
             clarify_prompt = (
@@ -259,7 +302,7 @@ class ToolUsingPensionAgent:
                     merged["agreement"] = "PA16"
                 if "scenario" not in merged:
                     merged["scenario"] = "Avd1" if merged["agreement"].upper() == "PA16" else "Standard"
-                from src.tools.calculator import CalculatorTool
+                
                 calc = self.tools[0] if isinstance(self.tools[0], CalculatorTool) else CalculatorTool()
                 agreement = merged["agreement"].upper()
                 scenario = merged["scenario"]
