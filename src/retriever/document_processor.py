@@ -4,8 +4,8 @@ import time
 import re
 import logging
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
-from langchain_community.document_loaders import PyPDFLoader
+from typing import List, Dict, Optional, Tuple, Any
+import pdfplumber
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.docstore.document import Document
@@ -313,203 +313,510 @@ class DocumentProcessor:
         return None
 
 
+    def is_valid_pdf_content(self, text: str) -> bool:
+        """
+        Check if the extracted PDF content is valid and contains meaningful text.
+        
+        Args:
+            text: Extracted text from PDF
+            
+        Returns:
+            True if the content is valid, False otherwise
+        """
+        if not text or len(text.strip()) < 50:  # Too short to be meaningful
+            return False
+            
+        # Check if content only contains signatures or names
+        signature_patterns = [
+            r'^\s*[A-Z][a-z]+ [A-Z][a-z]+\s*$',  # Just a name like "Helena Larsson"
+            r'^\s*Vid protokollet\s*$',
+            r'^\s*Justerat den\s*',
+            r'^\s*För [A-Z]',  # Organization signatures
+            r'^\s*[A-Z][a-z]+ [A-Z][a-z]+\s*\n\s*[A-Z][a-z]+ [A-Z][a-z]+\s*$'  # Multiple names
+        ]
+        
+        # If the text matches any signature pattern and is short, it's likely not valid content
+        if len(text.strip()) < 200:  # Short text
+            for pattern in signature_patterns:
+                if re.match(pattern, text.strip(), re.MULTILINE):
+                    return False
+        
+        # Check for actual pension-related content
+        pension_terms = ['pension', 'avtal', 'förmån', 'ersättning', 'kapitel', 'paragraf', '§', 'kap']
+        has_pension_terms = any(term in text.lower() for term in pension_terms)
+        
+        return has_pension_terms
+
+
+    def group_words_by_line(self, words: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+        """
+        Group words into lines based on their vertical position.
+        
+        Args:
+            words: List of word dictionaries from pdfplumber
+            
+        Returns:
+            List of lines, where each line is a list of word dictionaries
+        """
+        if not words:
+            return []
+            
+        # Sort words by top position (vertically)
+        sorted_words = sorted(words, key=lambda w: w['top'])
+        
+        lines = []
+        current_line = [sorted_words[0]]
+        current_top = sorted_words[0]['top']
+        
+        # Group words with similar vertical position
+        for word in sorted_words[1:]:
+            # If the word is within 5 units of the current line, add it to the current line
+            if abs(word['top'] - current_top) < 5:
+                current_line.append(word)
+            else:
+                # Sort words in the current line by horizontal position
+                current_line = sorted(current_line, key=lambda w: w['x0'])
+                lines.append(current_line)
+                
+                # Start a new line
+                current_line = [word]
+                current_top = word['top']
+                
+        # Add the last line
+        if current_line:
+            current_line = sorted(current_line, key=lambda w: w['x0'])
+            lines.append(current_line)
+            
+        return lines
+        
+    def is_bold_line(self, line: List[Dict[str, Any]]) -> bool:
+        """
+        Check if a line contains bold text (used to identify chapter titles).
+        
+        Args:
+            line: List of word dictionaries representing a line
+            
+        Returns:
+            True if the line contains bold text, False otherwise
+        """
+        if not line:
+            return False
+            
+        # Check if any word in the line has a font name containing "Bold"
+        for word in line:
+            if 'fontname' in word and ('Bold' in word['fontname'] or 'bold' in word['fontname'].lower()):
+                return True
+                
+        return False
+        
+    def extract_chapters_from_pdf(self, pdf: Any) -> List[Dict[str, Any]]:
+        """
+        Extract chapters from a PDF file using pdfplumber with enhanced metadata.
+        
+        Args:
+            pdf: A pdfplumber PDF object
+            
+        Returns:
+            List of chapter dictionaries with text and metadata including character positions
+        """
+        chapters = []
+        current_chapter = {
+            "text": "",
+            "chapter_number": None,
+            "title": None,
+            "pages": [],
+            "paragraphs": set(),
+            "chunk_start_page": None,
+            "chunk_end_page": None,
+            "chunk_start_char": 0,
+            "chunk_end_char": 0
+        }
+        
+        # Check if PDF has enough pages to be a valid document
+        if len(pdf.pages) < 3:
+            logger.warning(f"[WARNING] PDF has only {len(pdf.pages)} pages, might not be a valid document")
+        
+        total_words = 0
+        for page_num, page in enumerate(pdf.pages):
+            # Extract words with their formatting information
+            try:
+                words = page.extract_words(
+                    x_tolerance=3,
+                    y_tolerance=3,
+                    keep_blank_chars=False,
+                    use_text_flow=True,
+                    extra_attrs=["fontname", "size"]
+                )
+                total_words += len(words)
+            except Exception as e:
+                logger.warning(f"[WARNING] Error extracting words from page {page_num+1}: {e}")
+                continue
+            
+            if not words:
+                logger.debug(f"No words found on page {page_num+1}")
+                continue
+                
+            # Group words into lines
+            lines = self.group_words_by_line(words)
+            
+            # Extract text from each line
+            page_text = ""
+            for i, line in enumerate(lines):
+                line_text = " ".join(word["text"] for word in line)
+                
+                # Check if this is a chapter title (bold text and matches chapter pattern)
+                is_chapter_title = self.is_bold_line(line) and re.search(r"\b\d+\s*(?:kap|kapitel)\b", line_text.lower())
+                
+                # If this is a chapter title and we have content in the current chapter, save it
+                if is_chapter_title and current_chapter["text"].strip():
+                    # Only add the chapter if it contains valid content
+                    if self.is_valid_pdf_content(current_chapter["text"]):
+                        # Set the end character position
+                        current_chapter["chunk_end_char"] = len(current_chapter["text"])
+                        current_chapter["chunk_end_page"] = page_num
+                        chapters.append(dict(current_chapter))
+                    else:
+                        logger.debug(f"Skipping invalid chapter content: {current_chapter['text'][:100]}...")
+                    
+                    # Extract chapter number
+                    chapter_match = re.search(r"\b(\d+)\s*(?:kap|kapitel)\b", line_text.lower())
+                    chapter_number = chapter_match.group(1) if chapter_match else None
+                    
+                    # Extract chapter title (text after "kap" or "kapitel")
+                    title_match = re.search(r"\b\d+\s*(?:kap|kapitel)\b\s*(.*)", line_text, re.IGNORECASE)
+                    title = title_match.group(1).strip() if title_match else line_text
+                    
+                    # Start a new chapter
+                    current_chapter = {
+                        "text": line_text + "\n",
+                        "chapter_number": chapter_number,
+                        "title": title,
+                        "pages": [page_num + 1],
+                        "paragraphs": set(),
+                        "chunk_start_page": page_num + 1,
+                        "chunk_end_page": page_num + 1,
+                        "chunk_start_char": 0,
+                        "chunk_end_char": len(line_text) + 1
+                    }
+                else:
+                    # Add the line to the current chapter
+                    if current_chapter["text"]:
+                        # Track the character position
+                        current_position = len(current_chapter["text"])
+                        current_chapter["text"] += line_text + "\n"
+                        current_chapter["chunk_end_char"] = len(current_chapter["text"])
+                    else:
+                        current_chapter["text"] = line_text + "\n"
+                        current_chapter["chunk_start_page"] = page_num + 1
+                        current_chapter["chunk_start_char"] = 0
+                        current_chapter["chunk_end_char"] = len(line_text) + 1
+                    
+                    # Update chapter metadata
+                    if page_num + 1 not in current_chapter["pages"]:
+                        current_chapter["pages"].append(page_num + 1)
+                    
+                    # Update end page
+                    current_chapter["chunk_end_page"] = page_num + 1
+                    
+                    # Check for paragraph numbers
+                    paragraph_match = re.search(r"\n\s*(\d+)\s*§", line_text)
+                    if paragraph_match:
+                        current_chapter["paragraphs"].add(paragraph_match.group(1))
+                
+                page_text += line_text + "\n"
+        
+        # Add the last chapter if it has content and it's valid
+        if current_chapter["text"].strip() and self.is_valid_pdf_content(current_chapter["text"]):
+            # Set the end character position if not already set
+            if not current_chapter["chunk_end_char"]:
+                current_chapter["chunk_end_char"] = len(current_chapter["text"])
+            chapters.append(current_chapter)
+        
+        # Validate that we have extracted meaningful chapters
+        if not chapters:
+            logger.warning(f"[WARNING] No valid chapters extracted from PDF with {len(pdf.pages)} pages and {total_words} words")
+        else:
+            logger.info(f"[INFO] Extracted {len(chapters)} valid chapters with {sum(len(c['text']) for c in chapters)} characters")
+            
+        return chapters
+        
+    def split_into_paragraphs(self, text: str) -> List[str]:
+        """
+        Split text into paragraphs based on newlines, section markers, and semantic boundaries.
+        
+        Args:
+            text: The text to split into paragraphs
+            
+        Returns:
+            List of paragraph strings with meaningful content
+        """
+        if not text or len(text.strip()) < 50:
+            return []
+            
+        # First, try to split on double newlines which is the most common paragraph separator
+        paragraphs = re.split(r"\n\s*\n", text)
+        
+        # If we got only one paragraph and it's long, try to split on single newlines
+        # that are followed by capital letters or numbers (likely paragraph starts)
+        if len(paragraphs) == 1 and len(paragraphs[0]) > 1000:
+            potential_splits = re.split(r"\n(?=[A-Z\u00c5\u00c4\u00d60-9])", paragraphs[0])
+            if len(potential_splits) > 1:
+                paragraphs = potential_splits
+        
+        # Further split paragraphs that contain section markers
+        result = []
+        for para in paragraphs:
+            # Skip paragraphs that are too short to be meaningful
+            if len(para.strip()) < 50:
+                continue
+                
+            # Check for section markers like "1 §" or "§ 1"
+            if re.search(r"\b\d+\s*§|§\s*\d+\b", para):
+                # Split on section markers
+                sections = re.split(r"(\b\d+\s*§|§\s*\d+\b)", para)
+                
+                # Combine the section marker with the following text
+                i = 0
+                while i < len(sections) - 1:
+                    if re.match(r"\b\d+\s*§|§\s*\d+\b", sections[i]):
+                        # Section marker is at i, text is at i+1
+                        combined = sections[i] + sections[i+1]
+                        if len(combined.strip()) >= 50:  # Only add if it's substantial
+                            result.append(combined)
+                        i += 2
+                    else:
+                        # Text is at i, section marker is at i+1
+                        if i == 0 and len(sections[i].strip()) >= 50:  # First section might not have a marker before it
+                            result.append(sections[i])
+                        i += 1
+                        
+                # Add the last section if there's one left
+                if i < len(sections) and len(sections[i].strip()) >= 50:
+                    result.append(sections[i])
+            else:
+                # Check if paragraph contains bullet points or numbered lists
+                if re.search(r"\n\s*[•\-\*]|\n\s*\d+\.\s", para):
+                    # Keep bullet points together as they're related
+                    result.append(para)
+                elif len(para.strip()) >= 50:  # Only add substantial paragraphs
+                    result.append(para)
+        
+        # Final cleanup - ensure each paragraph is meaningful
+        cleaned_result = []
+        for p in result:
+            p = p.strip()
+            # Skip paragraphs that are just numbers, single words, or very short phrases
+            if p and len(p) >= 50 and not re.match(r'^\d+$', p) and len(p.split()) > 5:
+                # Remove excessive whitespace
+                p = re.sub(r'\s+', ' ', p)
+                cleaned_result.append(p)
+        
+        return cleaned_result
+        
     def load_pdf(self, pdf_path: Path) -> List[Document]:
         """
         Load a PDF file, extract text and metadata, and return a list of Document objects.
-        Uses an improved chunking strategy that keeps related information together.
+        Uses pdfplumber for paragraph-accurate PDF processing with enhanced metadata.
         """
-        logger.info(f"📄 Loading PDF: {pdf_path}")
+        logger.info(f"[INFO] Loading PDF: {pdf_path}")
         agreement_name = pdf_path.parent.name
+        all_splits = []
         
         try:
-            loader = PyPDFLoader(str(pdf_path))
-            pages = loader.load()
-            
-            # Group pages by chapter and section to keep related content together
-            sections = []
-            current_section = {
-                "text": "",
-                "chapter": None,
-                "title": None,
-                "pages": [],
-                "paragraphs": set(),
-                "linked_titles": set(),
-                "references": set(),
-                "is_amendment": False,
-                "footnotes": "",
-                "acronyms": set(),
-                "definitions": {},
-                "target_groups": set(),
-                "language": "sv"
-            }
-            
-            current_chapter = None
-            current_paragraph = None
-            
-            # First pass: group pages by chapter/section
-            for i, page in enumerate(pages):
-                if not page.page_content.strip():
-                    continue
+            # Try using pdfplumber for enhanced paragraph extraction
+            with pdfplumber.open(pdf_path) as pdf:
                     
-                text = page.page_content
-                main_text, footnotes = self.isolate_main_text(text)
+                # Extract chapters with their structure
+                chapters = self.extract_chapters_from_pdf(pdf)
                 
-                # Detect language
-                try:
-                    lang = detect(main_text)
-                except:
-                    lang = "sv"  # Default to Swedish if detection fails
+                if not chapters:
+                    logger.warning(f"[WARNING] No valid chapters found in {pdf_path.name}. Trying fallback method.")
+                    raise ValueError("No valid chapters extracted")
                 
-                # Extract chapter and title information
-                chapter_title = self.extract_chapter_title(main_text)
-                chapter_number = self.extract_chapter_number(main_text)
-                paragraph_number = self.extract_paragraph_number(main_text)
-                
-                # Extract other metadata
-                linked_titles, references, is_amendment = self.detect_linked_chunks(main_text)
-                acronyms, definitions, target_groups = self.extract_acronyms_and_definitions(main_text)
-                transitional_provisions = self.extract_transitional_provisions(main_text)
-                
-                # Determine if this is a new section
-                new_section = False
-                
-                # Start a new section if chapter changes or we find a major title
-                if chapter_number and chapter_number != current_section["chapter"]:
-                    new_section = True
-                    current_chapter = chapter_number
-                elif chapter_title and chapter_title != current_section["title"] and len(main_text) < 1000:
-                    # Only consider it a new section if the page is relatively short (likely a title page)
-                    new_section = True
-                
-                # If this is a new section and we have content in the current section, save it
-                if new_section and current_section["text"]:
-                    sections.append(dict(current_section))  # Make a copy
+                # Process each chapter
+                for chapter_idx, chapter in enumerate(chapters):
+                    # Skip chapters with invalid content (e.g., just signatures)
+                    if not self.is_valid_pdf_content(chapter["text"]):
+                        logger.debug(f"Skipping invalid chapter {chapter_idx} in {pdf_path.name}")
+                        continue
+                        
+                    # Split the chapter text into paragraphs
+                    paragraphs = self.split_into_paragraphs(chapter["text"])
                     
-                    # Reset the current section
-                    current_section = {
-                        "text": "",
-                        "chapter": chapter_number or current_section["chapter"],
-                        "title": chapter_title or "",
-                        "pages": [],
-                        "paragraphs": set(),
-                        "linked_titles": set(),
-                        "references": set(),
-                        "is_amendment": False,
-                        "footnotes": "",
-                        "acronyms": set(),
-                        "definitions": {},
-                        "target_groups": set(),
-                        "language": lang
-                    }
+                    # Process each paragraph
+                    for paragraph_idx, paragraph_text in enumerate(paragraphs):
+                        # Skip empty or too short paragraphs
+                        if not paragraph_text.strip() or len(paragraph_text.strip()) < 50:
+                            continue
+                            
+                        # Detect language
+                        try:
+                            lang = detect(paragraph_text)
+                        except:
+                            lang = "sv"  # Default to Swedish if detection fails
+                        
+                        # Extract metadata
+                        linked_titles, references, is_amendment = self.detect_linked_chunks(paragraph_text)
+                        acronyms, definitions, target_groups = self.extract_acronyms_and_definitions(paragraph_text)
+                        transitional_provisions = self.extract_transitional_provisions(paragraph_text)
+                        
+                        # Extract main text and footnotes
+                        main_text, footnotes = self.isolate_main_text_and_footnotes(paragraph_text)
+                        
+                        # Skip if main text is too short after footnote removal
+                        if len(main_text.strip()) < 50:
+                            continue
+                        
+                        # Split the paragraph into chunks if it's too long
+                        chunks = self.text_splitter.split_text(main_text)
+                        
+                        # Track character positions for chunks
+                        chunk_start_char = 0
+                        
+                        # Create Document objects for each chunk
+                        for chunk_idx, chunk in enumerate(chunks):
+                            # Skip empty chunks
+                            if not chunk.strip():
+                                continue
+                                
+                            # Calculate character positions
+                            chunk_end_char = chunk_start_char + len(chunk)
+                            
+                            # Format metadata
+                            paragraphs_str = ", ".join([f"{p} §" for p in sorted(chapter["paragraphs"])]) if chapter["paragraphs"] else None
+                            chapter_str = f"{chapter['chapter_number']} KAP" if chapter["chapter_number"] else None
+                            
+                            # Create the document with metadata
+                            doc = Document(
+                                page_content=chunk,
+                                metadata={
+                                    "agreement_name": agreement_name,
+                                    "title": chapter["title"],
+                                    "chapter": chapter_str,
+                                    "paragraph": paragraphs_str,
+                                    "linked_titles": list(linked_titles),
+                                    "references": list(references),
+                                    "is_amendment": is_amendment,
+                                    "footnotes": footnotes,
+                                    "source": str(pdf_path.relative_to(self.agreements_dir)),
+                                    "file_path": str(pdf_path),
+                                    "page_numbers": chapter["pages"],
+                                    "language": lang,
+                                    "acronyms": list(acronyms),
+                                    "definitions": definitions,
+                                    "target_groups": list(target_groups),
+                                    "transitional_provisions": transitional_provisions,
+                                    "semantic_section": True,  # Flag to indicate this is a semantic chunk
+                                    "chunk_start_page": chapter["chunk_start_page"],
+                                    "chunk_end_page": chapter["chunk_end_page"],
+                                    "chunk_start_char": chunk_start_char,
+                                    "chunk_end_char": chunk_end_char,
+                                    "chapter_idx": chapter_idx,
+                                    "paragraph_idx": paragraph_idx,
+                                    "chunk_idx": chunk_idx
+                                }
+                            )
+                            all_splits.append(doc)
+                            
+                            # Update start position for next chunk
+                            chunk_start_char = chunk_end_char
                 
-                # Update the current section
-                if current_section["text"]:
-                    current_section["text"] += "\n\n" + main_text
-                else:
-                    current_section["text"] = main_text
+                if not all_splits:
+                    logger.warning(f"[WARNING] No valid chunks created from {pdf_path.name} using pdfplumber. Trying fallback.")
+                    raise ValueError("No valid chunks created")
                     
-                current_section["pages"].append(i + 1)
+                logger.info(f"[INFO] Created {len(all_splits)} chunks from {pdf_path.name} using pdfplumber")
+                return all_splits
                 
-                if paragraph_number:
-                    current_section["paragraphs"].add(paragraph_number)
-                    current_paragraph = paragraph_number
-                
-                current_section["linked_titles"].update(linked_titles)
-                current_section["references"].update(references)
-                current_section["is_amendment"] = current_section["is_amendment"] or is_amendment
-                
-                if footnotes:
-                    if current_section["footnotes"]:
-                        current_section["footnotes"] += "\n" + footnotes
-                    else:
-                        current_section["footnotes"] = footnotes
-                
-                current_section["acronyms"].update(acronyms)
-                current_section["definitions"].update(definitions)
-                current_section["target_groups"].update(target_groups)
-                
-                # If the section text is getting too long, close it and start a new one
-                if len(current_section["text"]) > 2000:
-                    sections.append(dict(current_section))  # Make a copy
-                    
-                    # Start a new section with the same metadata
-                    current_section = {
-                        "text": "",
-                        "chapter": current_section["chapter"],
-                        "title": current_section["title"],
-                        "pages": [],
-                        "paragraphs": set(),
-                        "linked_titles": set(),
-                        "references": set(),
-                        "is_amendment": current_section["is_amendment"],
-                        "footnotes": "",
-                        "acronyms": set(),
-                        "definitions": {},
-                        "target_groups": set(),
-                        "language": lang
-                    }
-            
-            # Add the last section if it has content
-            if current_section["text"]:
-                sections.append(current_section)
-            
-            # Second pass: create chunks from each section
-            all_splits = []
-            
-            for section in sections:
-                # Split the section text into chunks
-                chunks = self.text_splitter.split_text(section["text"])
-                
-                # Create Document objects for each chunk
-                for chunk in chunks:
-                    # Format metadata
-                    paragraphs_str = ", ".join([f"{p} §" for p in sorted(section["paragraphs"])]) if section["paragraphs"] else None
-                    chapter_str = f"{section['chapter']} KAP" if section["chapter"] else None
-                    
-                    # Create the document with metadata
-                    doc = Document(
-                        page_content=chunk,
-                        metadata={
-                            "agreement_name": agreement_name,
-                            "title": section["title"],
-                            "chapter": chapter_str,
-                            "paragraph": paragraphs_str,
-                            "linked_titles": list(section["linked_titles"]),
-                            "references": list(section["references"]),
-                            "is_amendment": section["is_amendment"],
-                            "footnotes": section["footnotes"],
-                            "source": str(pdf_path.relative_to(self.agreements_dir)),
-                            "file_path": str(pdf_path),
-                            "page_numbers": section["pages"],  # Now a list of page numbers
-                            "language": section["language"],
-                            "acronyms": list(section["acronyms"]),
-                            "definitions": section["definitions"],
-                            "target_groups": list(section["target_groups"]),
-                            "transitional_provisions": transitional_provisions if 'transitional_provisions' in locals() else {},
-                            "semantic_section": True  # Flag to indicate this is a semantic chunk
-                        }
-                    )
-                    all_splits.append(doc)
-
-                # Rensa onödiga fält
-                for k in ["producer", "creator", "title"]:
-                    split.metadata.pop(k, None)
-
-            all_splits.extend(splits)
-
-            logger.info(f"🔹 Created {len(all_splits)} chunks from {pdf_path.name}")
-            return all_splits
         except Exception as e:
-            logger.error(f"❌ Error loading PDF {pdf_path}: {e}")
-            return []
-
-
-
+            logger.warning(f"[WARNING] Error using pdfplumber for {pdf_path}: {e}. Falling back to basic processing.")
+            
+            # If pdfplumber fails, try to fall back to a simpler approach
+            try:
+                from langchain_community.document_loaders import PyPDFLoader
+                
+                loader = PyPDFLoader(str(pdf_path))
+                pages = loader.load()
+                
+                # Simple processing: just split each page into chunks
+                for page_idx, page in enumerate(pages):
+                    if not page.page_content.strip() or len(page.page_content.strip()) < 50:
+                        continue
+                        
+                    # Skip pages that only contain signatures or short text
+                    if not self.is_valid_pdf_content(page.page_content):
+                        continue
+                        
+                    # Extract metadata
+                    text = page.page_content
+                    chapter_title = self.extract_chapter_title(text)
+                    paragraph_number = self.extract_paragraph_number(text)
+                    linked_titles, references, is_amendment = self.detect_linked_chunks(text)
+                    acronyms, definitions, target_groups = self.extract_acronyms_and_definitions(text)
+                    
+                    # Split the page into chunks
+                    chunks = self.text_splitter.split_text(text)
+                    
+                    # Track character positions
+                    chunk_start_char = 0
+                    
+                    # Create Document objects for each chunk
+                    for chunk_idx, chunk in enumerate(chunks):
+                        # Skip empty chunks
+                        if not chunk.strip():
+                            continue
+                            
+                        # Calculate character positions
+                        chunk_end_char = chunk_start_char + len(chunk)
+                        
+                        doc = Document(
+                            page_content=chunk,
+                            metadata={
+                                "agreement_name": agreement_name,
+                                "title": chapter_title,
+                                "chapter": None,
+                                "paragraph": paragraph_number,
+                                "linked_titles": list(linked_titles),
+                                "references": list(references),
+                                "is_amendment": is_amendment,
+                                "footnotes": "",
+                                "source": str(pdf_path.relative_to(self.agreements_dir)),
+                                "file_path": str(pdf_path),
+                                "page_numbers": [page.metadata.get("page", 0) + 1],
+                                "language": "sv",
+                                "acronyms": list(acronyms),
+                                "definitions": definitions,
+                                "target_groups": list(target_groups),
+                                "transitional_provisions": {},
+                                "semantic_section": False,  # Flag to indicate this is not a semantic chunk
+                                "chunk_start_page": page.metadata.get("page", 0) + 1,
+                                "chunk_end_page": page.metadata.get("page", 0) + 1,
+                                "chunk_start_char": chunk_start_char,
+                                "chunk_end_char": chunk_end_char,
+                                "page_idx": page_idx,
+                                "chunk_idx": chunk_idx
+                            }
+                        )
+                        all_splits.append(doc)
+                        
+                        # Update start position for next chunk
+                        chunk_start_char = chunk_end_char
+                
+                if not all_splits:
+                    logger.warning(f"[WARNING] No valid chunks created from {pdf_path.name} using fallback method.")
+                    return []
+                    
+                logger.info(f"[INFO] Created {len(all_splits)} chunks from {pdf_path.name} using fallback method")
+                return all_splits
+                
+            except Exception as e:
+                logger.error(f"[ERROR] Error loading PDF {pdf_path}: {e}")
+                return []
 
 
     def process_documents(self) -> Optional[FAISS]:
         if not self.agreements_dir.exists():
-            logger.error(f"❌ Agreements folder missing: {self.agreements_dir}")
+            logger.error(f"[ERROR] Agreements folder missing: {self.agreements_dir}")
             return
 
         json_path = Path(SUMMARY_JSON_PATH)
@@ -520,95 +827,211 @@ class DocumentProcessor:
                     existing_data = json.load(f)
                 existing_agreements = {entry["name"] for entry in existing_data.get("agreements", [])}
             except Exception as e:
-                logger.warning(f"⚠️ Could not parse summary.json: {e}")
+                logger.warning(f"[WARNING] Could not parse summary.json: {e}")
 
         found_agreements = {f.name for f in self.agreements_dir.iterdir() if f.is_dir()}
         if found_agreements != existing_agreements:
-            logger.info("🛠 Detected changes in agreement folders — rebuilding vectorstore.")
+            logger.info("Detected changes in agreement folders — rebuilding vectorstore.")
             self.rebuild_vectorstore(found_agreements)
         else:
-            logger.info("✅ All agreements matched. Vectorstore already built.")
+            logger.info("All agreements matched. Vectorstore already built.")
 
         index_file = self.persist_dir / "index.faiss"
         if index_file.exists():
             return FAISS.load_local(str(self.persist_dir), self.embeddings, allow_dangerous_deserialization=True)
         else:
-            logger.warning(f"⚠️ Vectorstore missing at {index_file} — rebuilding.")
+            logger.warning(f"[WARNING] Vectorstore missing at {index_file} — rebuilding.")
             self.rebuild_vectorstore(found_agreements)
             return FAISS.load_local(str(self.persist_dir), self.embeddings, allow_dangerous_deserialization=True)
 
     def rebuild_vectorstore(self, all_agreements: set):
-        logger.info("🔄 Rebuilding FAISS vectorstore from PDFs...")
+        """
+        Rebuild the vectorstore from PDF files in the agreements directory.
+        Extracts text, generates chunks, creates previews, and builds the FAISS index.
+        
+        Args:
+            all_agreements: Set of agreement names to process
+        """
+        logger.info("Rebuilding FAISS vectorstore from PDFs...")
         all_splits = []
         all_summaries = {}
 
+        # Create directory if it doesn't exist
+        self.persist_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Save chunks.json for BM25 retrieval
+        chunks_path = self.persist_dir / "chunks.json"
+        
         for folder in self.agreements_dir.iterdir():
             if not folder.is_dir():
                 continue
+                
             agreement_name = folder.name
-            folder_splits = []  # ✅ declare properly
+            folder_splits = []  # Collect chunks for this agreement
             all_summaries[agreement_name] = []
+            
+            logger.info(f"[INFO] Processing agreement: {agreement_name}")
 
             for pdf_path in folder.glob("*.pdf"):
+                logger.info(f"[INFO] Processing PDF: {pdf_path.name}")
                 splits = self.load_pdf(pdf_path)
-                folder_splits.extend(splits)  # ✅ collect here
+                
+                if not splits:
+                    logger.warning(f"[WARNING] No valid chunks extracted from {pdf_path.name}")
+                    continue
+                    
+                folder_splits.extend(splits)  # Collect chunks for this agreement
 
-                # Summarize
-                context = "\n\n".join([s.page_content[:500] for s in splits[:3]])
-                prompt = f"Sammanfatta innehållet i följande dokument ({pdf_path.name}) i 2–3 meningar på svenska."
-                llm = ChatOpenAI(model="gpt-4", temperature=0.2, openai_api_key=OPENAI_API_KEY)
-                summary = llm.invoke([
-                    SystemMessage(content=prompt),
-                    HumanMessage(content=context)
-                ]).content.strip()
+                # Generate a summary of the document
+                try:
+                    # Use the first few chunks to generate a summary
+                    context = "\n\n".join([s.page_content[:500] for s in splits[:3]])
+                    prompt = f"Sammanfatta innehållet i följande dokument ({pdf_path.name}) i 2–3 meningar på svenska."
+                    llm = ChatOpenAI(model="gpt-4", temperature=0.2, openai_api_key=OPENAI_API_KEY)
+                    summary = llm.invoke([
+                        SystemMessage(content=prompt),
+                        HumanMessage(content=context)
+                    ]).content.strip()
 
-                all_summaries[agreement_name].append({
-                    "file": pdf_path.name,
-                    "summary": summary
-                })
+                    all_summaries[agreement_name].append({
+                        "file": pdf_path.name,
+                        "summary": summary
+                    })
+                except Exception as e:
+                    logger.warning(f"[WARNING] Error generating summary for {pdf_path.name}: {e}")
+                    all_summaries[agreement_name].append({
+                        "file": pdf_path.name,
+                        "summary": f"Dokument från {agreement_name}"
+                    })
 
-            all_splits.extend(folder_splits)  # ✅ now this is meaningful
+            logger.info(f"[INFO] Processed {len(folder_splits)} chunks from {agreement_name}")
+            all_splits.extend(folder_splits)
 
-        # Save chunks
-        preview_path = self.persist_dir / "chunk_preview.json"
-        self.persist_dir.mkdir(parents=True, exist_ok=True)
-        with open(preview_path, "w", encoding="utf-8") as f:
-            json.dump([{"text": c.page_content, "metadata": c.metadata} for c in all_splits], f, ensure_ascii=False, indent=2)
-        logger.info(f"💾 Saved {len(all_splits)} chunk previews → {preview_path}")
+        # Check if we have any valid chunks
+        if not all_splits:
+            logger.error("No valid chunks extracted from any PDF. Vectorstore build failed.")
+            return
+            
+        # Save chunks to chunks.json for BM25 retrieval
+        with open(chunks_path, "w", encoding="utf-8") as f:
+            json.dump([{"id": f"chunk_{i}", "text": c.page_content, "metadata": c.metadata} 
+                      for i, c in enumerate(all_splits)], f, ensure_ascii=False, indent=2)
+        logger.info(f"[INFO] Saved {len(all_splits)} chunks to {chunks_path}")
+        
+        # Generate and save chunk previews
+        self.update_chunk_preview(all_splits)
 
-        # Embed in batches
+        # Embed in batches for better memory management
         batch_size = 1000
-        logger.info(f"🚀 Embedding {len(all_splits)} chunks...")
+        logger.info(f"[INFO] Embedding {len(all_splits)} chunks...")
         for i in range(0, len(all_splits), batch_size):
             batch = all_splits[i:i+batch_size]
-            faiss_index = FAISS.from_documents(batch, self.embeddings)
+            if i == 0:  # First batch - create the index
+                faiss_index = FAISS.from_documents(batch, self.embeddings)
+            else:  # Subsequent batches - add to existing index
+                batch_index = FAISS.from_documents(batch, self.embeddings)
+                faiss_index.merge_from(batch_index)
+                
+            # Save after each batch to prevent data loss
             faiss_index.save_local(str(self.persist_dir))
-            logger.info(f"✅ Embedded batch {i//batch_size + 1}")
+            logger.info(f"[INFO] Embedded and saved batch {i//batch_size + 1}/{(len(all_splits)-1)//batch_size + 1}")
 
+        # Save summary data
         self.save_summary_json(all_agreements, all_summaries)
-        logger.info("🎉 Vectorstore build complete.")
+        logger.info("Vectorstore build complete with enhanced chunk extraction and previews.")
+
+
+    def update_chunk_preview(self, documents: List[Document]):
+        """
+        Update the chunk_preview.json file with meaningful previews for each chunk.
+        
+        Args:
+            documents: List of Document objects with chunks and metadata
+        """
+        preview_path = self.persist_dir / "chunk_preview.json"
+        previews = {}
+        
+        # Create preview for each document
+        for i, doc in enumerate(documents):
+            # Generate a unique ID for the chunk
+            chunk_id = f"chunk_{i}"
+            
+            # Extract metadata for preview
+            metadata = doc.metadata
+            agreement = metadata.get("agreement_name", "")
+            chapter = metadata.get("chapter", "")
+            title = metadata.get("title", "")
+            paragraph = metadata.get("paragraph", "")
+            page_numbers = metadata.get("page_numbers", [])
+            
+            # Create a preview of the content (first 100 characters)
+            content_preview = doc.page_content[:100] + "..." if len(doc.page_content) > 100 else doc.page_content
+            
+            # Format the preview with key information
+            preview_text = f"{agreement} - {chapter} {title}\n"
+            if paragraph:
+                preview_text += f"Paragraph: {paragraph}\n"
+            preview_text += f"Pages: {', '.join(map(str, page_numbers))}\n\n"
+            preview_text += content_preview
+            
+            # Add to previews dictionary
+            previews[chunk_id] = {
+                "id": chunk_id,
+                "agreement": agreement,
+                "chapter": chapter,
+                "title": title,
+                "paragraph": paragraph,
+                "pages": page_numbers,
+                "preview": content_preview,
+                "formatted_preview": preview_text
+            }
+        
+        # Save to JSON file
+        with open(preview_path, "w", encoding="utf-8") as f:
+            json.dump(previews, f, ensure_ascii=False, indent=2)
+            
+        logger.info(f"[INFO] Created {len(previews)} chunk previews in {preview_path}")
 
 
     def save_summary_json(self, agreements: set, all_summaries: Dict[str, List[Dict[str, str]]]):
-        Path(SUMMARY_JSON_PATH).parent.mkdir(parents=True, exist_ok=True)
-        data = {"agreements": []}
-        for agreement in sorted(agreements):
-            data["agreements"].append({
-                "name": agreement,
-                "description": f"Auto-generated description for {agreement}",
-                "documents": all_summaries.get(agreement, [])
-            })
+        """
+        Save summary data to JSON file.
+        """
+        summary_path = Path(SUMMARY_JSON_PATH)
+        
+        # Create summary structure
+        summary_data = {
+            "agreements": list(agreements),
+            "summaries": all_summaries
+        }
+        
+        # Save to JSON file
+        with open(summary_path, "w", encoding="utf-8") as f:
+            json.dump(summary_data, f, ensure_ascii=False, indent=2)
+            
+        logger.info(f"[INFO] Saved summary data to {summary_path}")
 
-        with open(SUMMARY_JSON_PATH, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        logger.info(f"📄 Saved structured summary.json → {SUMMARY_JSON_PATH}")
 
     def load_vectorstore(self) -> Optional[FAISS]:
         return self.process_documents()
 
 
 if __name__ == "__main__":
-    print("🚀 Running upgraded DocumentProcessor...")
+    print("Running upgraded DocumentProcessor...")
     processor = DocumentProcessor()
-    processor.load_vectorstore()
-    print("✅ DocumentProcessor completed.")
+    
+    # Check if we should force rebuild
+    import sys
+    force_rebuild = "--force" in sys.argv
+    
+    if force_rebuild:
+        print("Forcing vectorstore rebuild...")
+        # Get the list of agreements
+        agreements = {folder.name for folder in processor.agreements_dir.iterdir() if folder.is_dir()}
+        # Force rebuild
+        processor.rebuild_vectorstore(agreements)
+    else:
+        # Normal operation
+        processor.load_vectorstore()
+        
+    print("DocumentProcessor completed.")
