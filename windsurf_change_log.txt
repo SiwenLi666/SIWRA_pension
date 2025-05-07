@@ -1,0 +1,77 @@
+# Windsurf Change Log: PDF Chunking Logic Upgrade
+
+## Summary of Changes Made
+
+1. **Replaced PyPDFLoader with pdfplumber**
+   - Integrated pdfplumber for more accurate PDF text extraction with formatting information
+   - Added support for detecting bold text to identify chapter titles
+   - Implemented paragraph-aware text extraction
+
+2. **Added New Helper Methods**
+   - `group_words_by_line`: Groups words into lines based on vertical position
+   - `is_bold_line`: Detects if a line contains bold text (for chapter titles)
+   - `extract_chapters_from_pdf`: Extracts chapters with their structure from PDFs
+   - `split_into_paragraphs`: Splits chapter text into logical paragraphs
+
+3. **Enhanced Metadata Extraction**
+   - Improved chapter detection using font attributes
+   - Better paragraph boundary detection
+   - Maintained all existing metadata fields for compatibility
+
+4. **Added Fallback Mechanism**
+   - Implemented graceful error handling for PDF processing failures
+   - Added fallback to PyPDFLoader if pdfplumber fails
+   - Ensured no exceptions stop the overall processing
+
+## Reasoning Behind Key Decisions
+
+1. **Font-based Chapter Detection**
+   - Used font attributes (bold text) to identify chapter titles, which is more reliable than just pattern matching
+   - This approach better handles PDFs with varying formatting styles
+
+2. **Hierarchical Processing Approach**
+   - Implemented a top-down approach: PDF → Chapters → Paragraphs → Chunks
+   - This preserves the document structure better than the previous page-by-page approach
+
+3. **Paragraph-level Chunking**
+   - Chunking at paragraph level rather than arbitrary text blocks improves semantic coherence
+   - Helps maintain context within chunks for better retrieval results
+
+4. **Fallback Strategy**
+   - Added multiple layers of fallback to ensure robustness
+   - System can still process documents even if the enhanced extraction fails
+
+## Old Logic Removed or Preserved
+
+1. **Removed:**
+   - Page-by-page processing approach
+   - References to undefined methods (`extract_chapter_number`, `isolate_main_text`)
+   - References to undefined variables (`split`, `splits`)
+
+2. **Preserved:**
+   - All metadata extraction functions
+   - Vectorstore saving/loading logic
+   - Summary generation for PDFs
+   - Document metadata structure for compatibility
+
+## Notes for Future Improvements
+
+1. **Performance Optimization**
+   - The current implementation may be slower for very large PDFs
+   - Consider adding caching for processed PDFs
+
+2. **Enhanced Font Analysis**
+   - Could further improve chapter/section detection by analyzing font sizes
+   - Add support for detecting italics and other formatting
+
+3. **Language-specific Enhancements**
+   - Add more language-specific patterns for Swedish pension documents
+   - Improve paragraph detection for different languages
+
+4. **PDF Table Extraction**
+   - Add support for extracting and processing tables in PDFs
+   - Consider using pdfplumber's table extraction capabilities
+
+5. **Testing and Validation**
+   - Add comprehensive tests for different PDF formats
+   - Validate extraction quality with domain experts

@@ -1,60 +1,58 @@
 {
   "agreements": [
-    {
-      "name": "PA16",
-      "description": "Auto-generated description for PA16",
-      "documents": [
-        {
-          "file": "arbetsgivarnyckel-till-pa16-230509.pdf",
-          "summary": "Dokumentet är en arbetsgivarnyckel till PA 16 som innehåller föreskrifter om utövande av arbetsgivarens befogenheter, utfärdade av Arbetsgivarverket. Föreskrifterna gäller endast om regeringen inte föreskriver något annat. Dokumentet specificerar också vilka myndigheter som har befogenhet att agera som arbetsgivare i olika sammanhang, inklusive universitet, högskolor och icke-obligatoriska medlemmar av Arbetsgivarverket."
-        },
-        {
-          "file": "enskild-overenskommelse-om-arbete-med-uppskjuten-pension-bilaga3-forhandlingsprotokoll-20230505.pdf",
-          "summary": "Dokumentet är en överenskommelse om arbete med uppskjuten pension för yrkesofficerare. Det tillåter en arbetstagare och arbetsgivare att komma överens om att skjuta upp utbetalning av pension för att fortsätta arbeta, med en maximal period på 48 månader. En förnyad överenskommelse krävs för att skjuta upp pensionsperioden ytterligare och arbetstagaren kan inte ensidigt skjuta fram pensionsuttaget."
-        },
-        {
-          "file": "forhandlingsprotokoll-2022-12-07--forandringar-med-anledning-av-andrade-bestammelser-i-socialforsakringsbalken-2010-110-sfb.pdf",
-          "summary": "Dokumentet är ett förhandlingsprotokoll mellan Arbetsgivarverket och flera fackförbund gällande ändringar i Socialförsäkringsbalken. Från och med 2023 kommer åldersgränser för utbetalning av vissa socialförsäkringsförmåner att höjas till 66 år. Detta innebär att sjukersättning kommer att kunna betalas ut till och med månaden före den månad då arbetstagaren fyller 66 år, och garantipension kommer inte att betalas ut före den månad då någon fyller 66 år."
-        },
-        {
-          "file": "forhandlingsprotokoll-enskilda-overenskommelser-seko-bilaga3-20231114.pdf",
-          "summary": "Dokumentet är ett förhandlingsprotokoll mellan Arbetsgivarverket och Seko (Service- och kommunikationsfacket) daterat 14 november 2023. Parterna har kommit överens om att centrala avtal ska reglera möjligheten för Seko-medlemmar att teckna enskilda överenskommelser med arbetsgivaren, inklusive avsättning till pension. Ändringar i Villkorsavtal och Affärsverksavtal (AVA) ska gälla från och med 1 januari 2024."
-        },
-        {
-          "file": "forhandlingsprotokoll-uppehall-i-utbetalning-av-formansbestamd-pension-20241213.pdf",
-          "summary": "Dokumentet är ett förhandlingsprotokoll från den 13 december 2024, där Arbetsgivarsidan och Arbetstagarsidan diskuterar ändringar i inkomstskattelagen. Ändringarna innebär att en arbetstagare kan göra ett eller flera uppehåll med utbetalningarna av ålderspensionen inom ramen för statliga tjänstepensionsbestämmelser, och detta ska vara kostnadsfritt för den försäkrade. De nya bestämmelserna gäller från och med 1 januari 2025 och omfattar ålderspension som betalas ut under minst fem år."
-        },
-        {
-          "file": "forhandlingsprotokoll-uppehall-i-utbetalning-av-premiebestamd-pension-20241213.pdf",
-          "summary": "Dokumentet är ett förhandlingsprotokoll mellan Arbetsgivarverket och olika fackförbund gällande ändringar i utbetalning av premiebestämda ålderspensioner. Ändringarna, som gäller från 1 januari 2025, innebär att det blir möjligt att göra uppehåll i utbetalningen samt att ändra utbetalningstiden, vilket ska vara kostnadsfritt för den försäkrade. Dessutom öppnar lagstiftningen för möjligheten att göra uppehåll i utbetalningen av efterlevandepension."
-        },
-        {
-          "file": "overenskommelse-om-andringar-i-pa16-forhandlingsprotokoll-20230505.pdf",
-          "summary": "Dokumentet är ett förhandlingsprotokoll mellan Arbetsgivarverket och flera arbetstagarsidor, där parterna har kommit överens om ändringar i PA 16 och andra avtal. De nya bestämmelserna, som träder i kraft 2024-01-01, innefattar bland annat ett längre intjänande av premiebestämda pensioner och införandet av Ålderspension flex. Ändringarna finansieras genom förändringar i vissa pensionsbestämmelser och har inte retroaktiv verkan."
-        },
-        {
-          "file": "overgangsbestammelser-pa16-bilaga2-forhandlingsprotokoll-20230505.pdf",
-          "summary": "Dokumentet innehåller övergångsbestämmelser för PA 16, som gäller för arbetstagare födda 1965 eller tidigare. Det specificerar regler för intjänande av individuell ålderspension och kompletterande ålderspension, särskilt för de som går i pension före 65 års ålder eller fortsätter att arbeta efter 65. Det behandlar också situationer där en arbetstagare går i pension före 65 och sedan återgår till arbete."
-        },
-        {
-          "file": "pa16-pensionsavtal-bilaga1-20231231.pdf",
-          "summary": "Dokumentet är en överenskommelse om pensionsavtal 2016 (PA 16) som undertecknades av Arbetsgivarverket, Saco-S och Seko. Det nya avtalet ersatte tidigare pensionsbestämmelser och består av två avdelningar. Under 2023 har parterna förhandlat om ändringar i avtalet, vilka kommer att tillämpas från och med 2024."
-        },
-        {
-          "file": "utdrag-ur-forhandlingsprotokoll-2016-02-23-mellan-arbetsgivarverket-och-ofr-spo.pdf",
-          "summary": "Dokumentet är ett utdrag ur ett förhandlingsprotokoll mellan Arbetsgivarverket och OFR/S,P,O från 23 februari 2016. Det handlar om en överenskommelse där parterna kommit överens om att en ytterligare premie (avgift) ska kunna tillgodoräknas arbetstagare efter en ny enskild överenskommelse mellan arbetsgivaren och arbetstagaren. Denna överenskommelse ska gälla från och med den månad arbetstagaren börjar."
-        }
-      ]
-    },
-    {
-      "name": "SKR2023",
-      "description": "Auto-generated description for SKR2023",
-      "documents": [
-        {
-          "file": "SKR2023 Tryckversion AKAP-KR i lydelse 2023-01-01 474115_1_1_siwen.pdf",
-          "summary": "Dokumentet SKR2023 Tryckversion AKAP-KR i lydelse 2023-01-01 474115_1_1_siwen.pdf är en överenskommelse om avgiftsbestämd kollektivavtalad pension (AKAP-KR) som gäller från 2023-01-01. Det innehåller information om centrala och lokala protokollsanteckningar, övergångsbestämmelser, anslutningsvillkor, godkända avgifter och regler för kapitalflytt för avgiftsbestämd ålderspension enligt kommunala tjänstepensionsavtal."
-        }
-      ]
-    }
-  ]
+    "PA16",
+    "SKR2023",
+    "summaries"
+  ],
+  "summaries": {
+    "PA16": [
+      {
+        "file": "arbetsgivarnyckel-till-pa16-230509.pdf",
+        "summary": "Dokumentet är en arbetsgivarnyckel till PA 16 från Arbetsgivarverket, som ger föreskrifter om hur arbetsgivarens befogenheter ska utövas. Detta gäller specifikt för myndigheter under regeringen, med undantag för vissa fall som Regeringskansliet, kommittéer och vissa domstolar. För icke-obligatoriska medlemmar utövas befogenheten av respektive medlem, om inget annat anges."
+      },
+      {
+        "file": "enskild-overenskommelse-om-arbete-med-uppskjuten-pension-bilaga3-forhandlingsprotokoll-20230505.pdf",
+        "summary": "Dokumentet handlar om en enskild överenskommelse mellan en arbetsgivare och en yrkesofficer om att skjuta upp pensionen. Genom överenskommelsen kan arbetstagaren fortsätta arbeta och skjuta upp uttaget av pensionen till senast månaden efter att de fyllt 65 år, under förutsättning att de fortsätter arbeta fram till dess."
+      },
+      {
+        "file": "forhandlingsprotokoll-2022-12-07--forandringar-med-anledning-av-andrade-bestammelser-i-socialforsakringsbalken-2010-110-sfb.pdf",
+        "summary": "Dokumentet handlar om förändringar i Socialförsäkringsbalken (2010:110) där åldersgränser för utbetalning av vissa socialförsäkringsförmåner kommer att höjas till 66 år inför 2023. Det pågår även förhandlingar mellan parterna om pensionsbestämmelser som är relaterade till dessa ändringar, men dessa förhandlingar har ännu inte slutförts."
+      },
+      {
+        "file": "forhandlingsprotokoll-enskilda-overenskommelser-seko-bilaga3-20231114.pdf",
+        "summary": "Dokumentet handlar om en överenskommelse mellan parterna i avtalsrörelsen 2023 som gör det möjligt för medlemmar i Seko att teckna enskilda avtal med arbetsgivaren. Det inkluderar också ändringar i Villkorsavtal och Affärsverksavtal (AVA) som träder i kraft från och med 1 januari 2024."
+      },
+      {
+        "file": "forhandlingsprotokoll-uppehall-i-utbetalning-av-formansbestamd-pension-20241213.pdf",
+        "summary": "Dokumentet handlar om en ändring i Inkomstskattelagen (1999:1229) som tillåter arbetstagare att göra ett eller flera uppehåll i utbetalningarna av sin tjänstepension under de första fem åren. Denna ändring gäller från och med 1 januari 2025. Parterna har kommit överens om att införa möjligheter att göra uppehåll under utbetalning av förmånsbestämd ålderspension, fribrev och egenlivränta enligt statliga tjänstepensionsbestämmelser."
+      },
+      {
+        "file": "forhandlingsprotokoll-uppehall-i-utbetalning-av-premiebestamd-pension-20241213.pdf",
+        "summary": "Dokumentet handlar om en ändring i Inkomstskattelagen (1999:1229) som tillåter arbetstagare att göra ett eller flera uppehåll i utbetalningarna av ålderspensionen inom ramen för tjänstepensionen under de första fem åren av tjänstepensionsutbetalning. Lagen tillåter också ändring av utbetalningstiden. Dessa ändringar träder i kraft från och med den 1 januari 2025."
+      },
+      {
+        "file": "overenskommelse-om-andringar-i-pa16-forhandlingsprotokoll-20230505.pdf",
+        "summary": "Dokumentet handlar om en överenskommelse mellan arbetsgivare och OFR:s förbundsområden inom det statliga förhandlingsområdet om ändringar i PA 16 och andra avtal. De nya bestämmelserna kommer att träda i kraft den 1 januari 2024, om inget annat anges i protokollet eller dess bilagor."
+      },
+      {
+        "file": "overgangsbestammelser-pa16-bilaga2-forhandlingsprotokoll-20230505.pdf",
+        "summary": "Dokumentet handlar om övergångsbestämmelser för arbetstagare som omfattas av PA 16, Avdelning II och är födda 1965 eller tidigare. Det specificerar att de som går i pension före 65 års ålder ska få premier enligt kapitel 3. Det klargör också att de som redan har fått sin premiebestämda ålderspension inte kommer att tjäna in ytterligare pension före 65 års ålder."
+      },
+      {
+        "file": "pa16-pensionsavtal-bilaga1-20231231.pdf",
+        "summary": "Dokumentet beskriver pensionsavtalet PA 16, som undertecknades 2015 av Arbetsgivarverket, Saco-S och Seko, och som OFR/S,P,O anslöt sig till 2016. Avtalet, som ersatte tidigare pensionsbestämmelser, består av två avdelningar: Avdelning I gäller för arbetstagare födda 1988 och senare och innefattar nya ålderspensionsbestämmelser, medan Avdelning II gäller för de födda 1987 eller tidigare och i stort sett behåller pensionsbestämmelserna enligt PA 03."
+      },
+      {
+        "file": "utdrag-ur-forhandlingsprotokoll-2016-02-23-mellan-arbetsgivarverket-och-ofr-spo.pdf",
+        "summary": "Dokumentet innehåller ett utdrag ur ett förhandlingsprotokoll mellan Arbetsgivarverket och OFR/S,P,O från den 23 februari 2016. Innehållet i dokumentet är inte specificerat, men det antas att det handlar om arbetsrelaterade frågor och överenskommelser mellan de två parterna."
+      }
+    ],
+    "SKR2023": [
+      {
+        "file": "SKR2023 Tryckversion AKAP-KR i lydelse 2023-01-01 474115_1_1_siwen.pdf",
+        "summary": "Dokumentet SKR2023 Tryckversion AKAP-KR i lydelse 2023-01-01 474115_1_1_siwen.pdf handlar om Avgiftsbestämd KollektivAvtalad Pension (AKAP-KR), inklusive centrala och lokala protokollsanteckningar. Det innehåller också information om särskild avtalspension för arbetstagare inom räddningstjänsten."
+      }
+    ],
+    "summaries": []
+  }
 }

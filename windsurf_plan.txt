@@ -1,0 +1,67 @@
+# Windsurf Plan: Upgrading PDF Chunking Logic
+
+## Current Understanding
+✅ The current implementation in `DocumentProcessor.load_pdf()` uses `PyPDFLoader` to load PDF files and then processes them into chunks with metadata. The method has several issues:
+- It doesn't accurately extract paragraphs and chapter structures
+- There are references to undefined methods (`extract_chapter_number`, `isolate_main_text`)
+- The code has some logical errors (e.g., undefined variables like `split` and `splits`)
+
+## Upgrade Strategy
+
+### 1. What to Replace/Refactor
+✅ - Replace `PyPDFLoader` with `pdfplumber` for PDF loading
+✅ - Refactor the entire `load_pdf()` method to use paragraph-accurate processing
+✅ - Fix the undefined methods and variables
+✅ - Maintain all metadata extraction functionality
+
+### 2. Integration of Reference Functions
+✅ - **extract_chapters_from_pdf**: Will be implemented as a class method to identify chapter boundaries, titles, and numbers using font attributes (bold text) and pattern matching.
+✅ - **split_into_paragraphs**: Will process each chapter to identify paragraph boundaries based on indentation, line breaks, and paragraph markers.
+✅ - **group_words_by_line**: Will be a helper method to organize PDF content into logical lines for better text extraction.
+✅ - **is_bold_line**: Will be a helper method to identify chapter titles and section headers by detecting bold formatting.
+
+### 3. Preserving Chunk Metadata Format
+✅ - Maintain all existing metadata fields:
+  - agreement_name
+  - title
+  - chapter
+  - paragraph
+  - linked_titles
+  - references
+  - is_amendment
+  - footnotes
+  - source
+  - file_path
+  - page_numbers
+  - language
+  - acronyms
+  - definitions
+  - target_groups
+  - transitional_provisions
+✅ - Ensure the format matches what's expected by `rebuild_vectorstore()`
+
+### 4. Maintaining Vectorstore Compatibility
+✅ - Keep the same Document structure for compatibility with FAISS
+✅ - Ensure the chunks.json file can still be generated for BM25 retrieval
+✅ - Maintain the same metadata structure for hybrid search functionality
+✅ - Preserve the summary generation logic that uses the first 3 chunks
+
+### 5. Fallback Path
+✅ - Implement try/except blocks to handle PDF loading failures
+✅ - If `pdfplumber` fails, log the error and:
+  1. Try to fall back to the original `PyPDFLoader` approach
+  2. If that also fails, skip the document and continue processing other documents
+  3. Return an empty list of documents rather than raising exceptions
+
+## Implementation Phases
+✅ 1. Add the new helper methods for PDF processing
+✅ 2. Refactor the `load_pdf()` method to use `pdfplumber`
+✅ 3. Ensure metadata extraction is preserved
+✅ 4. Add fallback mechanisms
+✅ 5. Test with existing documents
+
+## Expected Challenges
+✅ - Handling different PDF formats and structures
+✅ - Maintaining compatibility with the existing vectorstore
+✅ - Ensuring accurate chapter and paragraph detection
+✅ - Preserving all metadata extraction functionality
