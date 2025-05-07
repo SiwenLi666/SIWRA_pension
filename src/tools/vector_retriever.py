@@ -90,19 +90,31 @@ class VectorRetrieverTool(BaseTool):
             references = []
             
             for i, doc in enumerate(documents):
-                content = doc["content"]
-                metadata = doc.get("metadata", {})
-
                 # Extract metadata fields
-                agreement = metadata.get("agreement_name", "okänt avtal")
+                metadata = doc["metadata"]
+                content = doc["page_content"]
+                agreement = metadata.get("agreement_name", "")
                 chapter = metadata.get("chapter", "")
-                paragraph = (
-                    ", ".join(metadata.get("paragraphs", []))
-                    if isinstance(metadata.get("paragraphs", []), list)
-                    else metadata.get("paragraph", "")
-                )
-                page_numbers = metadata.get("pages", []) or metadata.get("page_number", [])
-                page = f"sida {', '.join(map(str, page_numbers))}" if isinstance(page_numbers, list) and page_numbers else ""
+                
+                # Handle paragraph field which could be in different formats
+                paragraph = metadata.get("paragraph", "")
+                if not paragraph and isinstance(metadata.get("paragraphs", []), list):
+                    paragraph = ", ".join(metadata.get("paragraphs", []))
+                
+                # Handle page numbers which could be in different formats
+                page_numbers = []
+                if "page_numbers" in metadata and metadata["page_numbers"]:
+                    page_numbers = metadata["page_numbers"]
+                elif "pages" in metadata and metadata["pages"]:
+                    page_numbers = metadata["pages"]
+                elif "page_number" in metadata:
+                    if isinstance(metadata["page_number"], list):
+                        page_numbers = metadata["page_number"]
+                    else:
+                        page_numbers = [metadata["page_number"]]
+                
+                # Format page numbers as string
+                page = f"sida {', '.join(map(str, page_numbers))}" if page_numbers else ""
 
                 # Create reference ID
                 ref_id = f"[{i+1}]"
