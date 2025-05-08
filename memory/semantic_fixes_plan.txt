@@ -1,0 +1,69 @@
+# Semantic Fixes Implementation Plan
+
+## 1. Reinstate Pension Glossary Integration
+
+### Tasks:
+- [ ] Check if pension glossary exists in document_processor.py or reasoning_utils.py
+- [ ] If not found, create a new glossary module with common pension terms
+- [ ] Implement a glossary lookup function to check if user query matches a glossary term
+- [ ] Add integration to the retrieval pipeline to prioritize glossary answers for matching terms
+- [ ] Add fallback to RAG when glossary doesn't have an answer
+
+### Implementation Details:
+- Create a `glossary_utils.py` file with a dictionary of pension terms
+- Add a `check_glossary` function to determine if a query matches a glossary term
+- Modify vector_retriever.py to check glossary before doing document retrieval
+- Add logging when glossary is used for answering
+
+## 2. Fix Reference Formatting for Missing PDF File Name
+
+### Tasks:
+- [ ] Update reference formatting in vector_retriever.py to include PDF filename
+- [ ] Extract filename from metadata.source or metadata.file_path
+- [ ] Ensure only filename (not full path) is shown in references
+- [ ] Limit page numbers to top 1-3 pages with highest similarity
+
+### Implementation Details:
+- Add helper function to extract filename from path
+- Update reference parts construction to include filename
+- Format references as "PA16 | filename.pdf | sida 1, 2, 3"
+
+## 3. Smart Fallback When No Agreement Is Mentioned
+
+### Tasks:
+- [ ] Enhance agreement detection to be more robust
+- [ ] Implement logic to retrieve across all agreements when no agreement is specified
+- [ ] Group retrieved documents by agreement_name
+- [ ] Create a summarization function to generate separate summaries for each agreement
+- [ ] Format the output with clear sections for each agreement
+
+### Implementation Details:
+- Update agreement_utils.py to improve agreement detection
+- Modify vector_retriever.py to handle the case when no agreement is specified
+- Add document grouping by agreement_name
+- Update the LLM prompt to generate sectioned summaries
+- Format the output with clear visual separation between agreements
+
+## 4. Additional Requirements
+
+### Tasks:
+- [ ] Add fallback message when no useful content is found
+- [ ] Update logging to indicate when fallback or glossary was triggered
+- [ ] Add helper functions for agreement extraction from queries
+- [ ] Ensure all changes are well-commented and traceable
+
+## Testing Plan
+
+### Test Cases:
+1. "Vad är PA16?" → Should return glossary answer
+2. "Vad är pensionsålder?" → Should return glossary answer or RAG if missing
+3. "Vad är ändringarna i pensionsavtalet?" → Should return grouped summary per agreement
+4. "När börjar nya regler i PA16?" → Should return PA16 only
+5. "När börjar regler i ITP1?" → Should return ITP1 only
+
+## Implementation Order
+1. First implement the glossary integration
+2. Then fix the reference formatting
+3. Finally implement the smart fallback mechanism
+4. Add comprehensive logging throughout
+5. Test all scenarios and document results

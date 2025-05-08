@@ -1,0 +1,94 @@
+# PDF Chunking Bugfix Plan
+
+## Diagnosis Summary
+
+The recent upgrade to the PDF chunking system using `pdfplumber` has introduced several regressions:
+
+1. **Content Issues**: Empty or malformed `page_content` and `content` fields in chunks
+2. **Reference Display**: Broken "källor" (sources) in chat responses due to metadata structure changes
+3. **Preview Generation**: Empty `chunk_preview.json` file
+4. **BM25 Retriever Failures**: Errors related to missing `content` or `page_content` keys
+5. **Metadata Structure**: Inconsistencies between old and new metadata formats
+
+## Root Causes
+
+- The new chunking logic may be incorrectly filtering out valid content
+- Signature detection logic may be too aggressive
+- Metadata field names have changed but reference formatting code wasn't updated
+- The chunk preview generation may not be handling the new chunk structure correctly
+- BM25 retriever expects specific fields that may be missing or renamed
+
+## Planned Fixes
+
+### 1. Diagnose the Root Causes
+- [ ] Review current `chunks.json` and `chunk_preview.json` files
+- [ ] Analyze the document processor code to identify filtering issues
+- [ ] Check signature detection and content validation logic
+- [ ] Examine metadata field mapping between old and new formats
+- [ ] Trace the BM25 retriever code path to identify expected fields
+
+### 2. Fix Chunk Data Issues
+- [ ] Modify `is_valid_pdf_content` to be less aggressive in filtering content
+- [ ] Adjust minimum content length thresholds in `split_into_paragraphs`
+- [ ] Ensure paragraph merging logic preserves meaningful content
+- [ ] Add additional validation to prevent empty `page_content` fields
+- [ ] Fix character position tracking for chunk boundaries
+
+### 3. Fix `chunk_preview.json` Generation
+- [ ] Debug `update_chunk_preview` method to ensure it's being called
+- [ ] Verify preview generation handles all metadata fields correctly
+- [ ] Add error handling for missing or malformed metadata
+- [ ] Ensure preview includes meaningful content snippets
+- [ ] Add logging to track preview generation process
+
+### 4. Fix Reference Display Bug in Chat
+- [ ] Update `vector_retriever.py` to handle new metadata field structure
+- [ ] Add fallback logic for missing metadata fields
+- [ ] Ensure compatibility with both old and new chunk formats
+- [ ] Fix page number extraction and formatting
+- [ ] Test reference generation with various document types
+
+### 5. Fix BM25 and Vectorstore Compatibility
+- [ ] Ensure consistent field naming between chunks and retriever
+- [ ] Add field validation before saving chunks
+- [ ] Update BM25 retriever to handle both `content` and `page_content`
+- [ ] Add error recovery for malformed chunks
+- [ ] Ensure FAISS compatibility with updated chunk structure
+
+### 6. Test Chat and RAG Flow
+- [ ] Test with 3 different types of pension questions
+- [ ] Verify reference display in chat responses
+- [ ] Check chunk retrieval accuracy
+- [ ] Confirm no errors in logs
+- [ ] Validate metadata richness is preserved
+
+### 7. Write a Repair Log
+- [ ] Document all changes made
+- [ ] Explain bug fixes and their rationale
+- [ ] Note preserved functionality
+- [ ] Suggest future improvements
+
+## Files and Methods to Touch
+
+1. **`document_processor.py`**
+   - `is_valid_pdf_content`: Adjust content validation logic
+   - `split_into_paragraphs`: Fix paragraph splitting thresholds
+   - `load_pdf`: Ensure proper metadata mapping
+   - `rebuild_vectorstore`: Fix chunk saving logic
+   - `update_chunk_preview`: Debug preview generation
+
+2. **`vector_retriever.py`**
+   - `_generate_response`: Update metadata field handling
+   - Reference formatting logic for "källor"
+
+3. **`retriever_tool.py`**
+   - `_initialize_bm25_if_needed`: Fix field mapping
+   - `_hybrid_search`: Ensure compatibility with both formats
+
+## Implementation Strategy
+
+1. Make minimal, targeted changes to fix immediate issues
+2. Add robust error handling to prevent future crashes
+3. Maintain backward compatibility where possible
+4. Add detailed logging to track chunk processing
+5. Implement thorough validation to catch malformed chunks early

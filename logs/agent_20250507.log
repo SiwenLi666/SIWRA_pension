@@ -621,3 +621,166 @@ En annan skillnad är att i AKAP-KR kan löneväxlat belopp och särskild avsät
 2025-05-07 17:56:35,574 INFO main: Cleaned response: Jag har information om följande pensionsavtal: PA16 (för statligt anställda) och SKR2023 (för kommun...
 2025-05-07 17:56:35,574 INFO main: [chat endpoint] Final response: 'Jag har information om följande pensionsavtal: PA16 (för statligt anställda) och SKR2023 (för kommunalt anställda).'
 2025-05-07 18:05:07,389 INFO main:  Shutting down system...
+2025-05-07 18:18:59,143 INFO main: Starting server on localhost:9090
+2025-05-07 18:18:59,438 INFO main:  Starting system initialization...
+2025-05-07 18:18:59,442 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\data
+2025-05-07 18:18:59,444 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs
+2025-05-07 18:18:59,446 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs\agreements
+2025-05-07 18:18:59,450 INFO main:  Creating new cost tracking database...
+2025-05-07 18:18:59,450 INFO main:  System initialization completed successfully
+2025-05-07 18:20:05,539 INFO main: Received message: Vad är PA16 och när träder de nya ändringarna i kraft?
+2025-05-07 18:20:05,540 INFO main: Session ID: ::1
+2025-05-07 18:20:05,540 INFO main: Creating new LangGraph session for ::1
+2025-05-07 18:20:05,550 WARNING main: LangGraph visualization module not available. Visualization features will be disabled.
+2025-05-07 18:20:05,908 INFO main: Processing message: Vad är PA16 och när träder de nya ändringarna i kraft?
+2025-05-07 18:20:05,913 INFO src.graph.pension_graph: Processing question: Vad är PA16 och när träder de nya ändringarna i kraft?
+2025-05-07 18:20:05,914 INFO agent_logger: [AGENT] Start process. State: {'question': 'Vad är PA16 och när träder de nya ändringarna i kraft?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...'}
+2025-05-07 18:20:05,915 INFO agent_logger: [AGENT] Received question: 'vad är pa16 och när träder de nya ändringarna i kraft?'
+2025-05-07 18:20:05,915 INFO agent_logger: [AGENT] Trying tool: CalculatorTool
+2025-05-07 18:20:05,916 INFO agent_logger: [AGENT] Tool CalculatorTool.can_handle returned: False
+2025-05-07 18:20:05,916 INFO agent_logger: [AGENT] Trying tool: SummaryCheckerTool
+2025-05-07 18:20:05,917 INFO src.tools.summary_checker: No matching summary found
+2025-05-07 18:20:05,918 INFO agent_logger: [AGENT] Tool SummaryCheckerTool.can_handle returned: False
+2025-05-07 18:20:05,918 INFO agent_logger: [AGENT] Trying tool: VectorRetrieverTool
+2025-05-07 18:20:05,918 INFO agent_logger: [AGENT] Tool VectorRetrieverTool.can_handle returned: True
+2025-05-07 18:20:05,919 INFO agent_logger: [AGENT] Selected tool: VectorRetrieverTool
+2025-05-07 18:20:05,919 INFO agent_logger: [AGENT] Running tool VectorRetrieverTool with standard execution (no parameter extraction)
+2025-05-07 18:20:05,919 INFO agent_logger: [AGENT] [NON-CALC] Try block START. state id: 2290344576512; state: {'question': 'Vad är PA16 och när träder de nya ändringarna i kraft?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'VectorRetrieverTool'}
+2025-05-07 18:20:05,920 INFO agent_logger: [AGENT] [NON-CALC] Before tool run. state id: 2290344576512; state: {'question': 'Vad är PA16 och när träder de nya ändringarna i kraft?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'VectorRetrieverTool'}
+2025-05-07 18:20:05,920 INFO vector_retriever_logger: Running vector retriever tool
+2025-05-07 18:20:06,862 INFO faiss.loader: Loading faiss with AVX2 support.
+2025-05-07 18:20:06,958 INFO faiss.loader: Successfully loaded faiss with AVX2 support.
+2025-05-07 18:20:06,971 INFO faiss: Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes.
+2025-05-07 18:20:07,002 INFO src.retriever.retriever_tool: ✅ Vectorstore loaded successfully
+2025-05-07 18:20:07,070 ERROR src.retriever.retriever_tool: ❌ Failed to initialize BM25 retriever: 'content'
+2025-05-07 18:20:08,199 ERROR vector_retriever_logger: Error in _generate_response: 'page_content'
+2025-05-07 18:20:08,200 INFO vector_retriever_logger: Returning response: Tyvärr kunde jag inte generera ett svar baserat på den hämtade informationen.
+2025-05-07 18:20:08,201 INFO agent_logger: [AGENT] [NON-CALC] After tool run. result id: 2290344576512; result: {'question': 'Vad är PA16 och när träder de nya ändringarna i kraft?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'VectorRetrieverTool', 'retriever': <src.retriever.retriever_tool.RetrieverTool object at 0x0000021546EB01A0>, 'response': 'Tyvärr kunde jag inte generera ett svar baserat på den hämtade informationen.', 'response_source': 'vector_db'}
+2025-05-07 18:20:08,203 INFO agent_logger: [AGENT] [NON-CALC] Try block END. Returning result.
+2025-05-07 18:20:08,206 INFO main: Final state from LangGraph: {'question': 'Vad är PA16 och när träder de nya ändringarna i kraft?', 'user_language': 'sv', 'conversation_history': [], 'status': '✅ Klar', 'followup_count': 0, 'active_tool': 'VectorRetrieverTool', 'retriever': <src.retriever.retriever_tool.RetrieverTool object at 0x0000021546EB01A0>, 'response': 'Tyvärr kunde jag inte generera ett svar baserat på den hämtade informationen.', 'response_source': 'vector_db'}
+2025-05-07 18:20:08,208 INFO main: [DEBUG] state keys: ['question', 'user_language', 'conversation_history', 'status', 'followup_count', 'active_tool', 'retriever', 'response', 'response_source']
+2025-05-07 18:20:08,209 INFO main: Tyvärr kunde jag inte generera ett svar baserat på den hämtade informationen.
+2025-05-07 18:20:08,210 INFO main: [chat endpoint] Final response: 'Tyvärr kunde jag inte generera ett svar baserat på den hämtade informationen.'
+2025-05-07 18:20:29,665 INFO main: Received message: Vilka möjligheter finns det att skjuta upp pensionsutbetalningar enligt PA16?
+2025-05-07 18:20:29,665 INFO main: Session ID: ::1
+2025-05-07 18:20:29,669 INFO main: Processing message: Vilka möjligheter finns det att skjuta upp pensionsutbetalningar enligt PA16?
+2025-05-07 18:20:29,671 INFO src.graph.pension_graph: Processing question: Vilka möjligheter finns det att skjuta upp pensionsutbetalningar enligt PA16?
+2025-05-07 18:20:29,671 INFO agent_logger: [AGENT] Start process. State: {'question': 'Vilka möjligheter finns det att skjuta upp pensionsutbetalningar enligt PA16?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...'}
+2025-05-07 18:20:29,672 INFO agent_logger: [AGENT] Received question: 'vilka möjligheter finns det att skjuta upp pensionsutbetalningar enligt pa16?'
+2025-05-07 18:20:29,672 INFO agent_logger: [AGENT] Trying tool: CalculatorTool
+2025-05-07 18:20:29,673 INFO agent_logger: [AGENT] Tool CalculatorTool.can_handle returned: False
+2025-05-07 18:20:29,673 INFO agent_logger: [AGENT] Trying tool: SummaryCheckerTool
+2025-05-07 18:20:29,674 INFO src.tools.summary_checker: No matching summary found
+2025-05-07 18:20:29,675 INFO agent_logger: [AGENT] Tool SummaryCheckerTool.can_handle returned: False
+2025-05-07 18:20:29,675 INFO agent_logger: [AGENT] Trying tool: VectorRetrieverTool
+2025-05-07 18:20:29,676 INFO agent_logger: [AGENT] Tool VectorRetrieverTool.can_handle returned: True
+2025-05-07 18:20:29,676 INFO agent_logger: [AGENT] Selected tool: VectorRetrieverTool
+2025-05-07 18:20:29,677 INFO agent_logger: [AGENT] Running tool VectorRetrieverTool with standard execution (no parameter extraction)
+2025-05-07 18:20:29,678 INFO agent_logger: [AGENT] [NON-CALC] Try block START. state id: 2289220448256; state: {'question': 'Vilka möjligheter finns det att skjuta upp pensionsutbetalningar enligt PA16?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'VectorRetrieverTool'}
+2025-05-07 18:20:29,679 INFO agent_logger: [AGENT] [NON-CALC] Before tool run. state id: 2289220448256; state: {'question': 'Vilka möjligheter finns det att skjuta upp pensionsutbetalningar enligt PA16?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'VectorRetrieverTool'}
+2025-05-07 18:20:29,679 INFO vector_retriever_logger: Running vector retriever tool
+2025-05-07 18:20:30,467 INFO src.retriever.retriever_tool: ✅ Vectorstore loaded successfully
+2025-05-07 18:20:30,525 ERROR src.retriever.retriever_tool: ❌ Failed to initialize BM25 retriever: 'content'
+2025-05-07 18:20:31,180 ERROR vector_retriever_logger: Error in _generate_response: 'page_content'
+2025-05-07 18:20:31,180 INFO vector_retriever_logger: Returning response: Tyvärr kunde jag inte generera ett svar baserat på den hämtade informationen.
+2025-05-07 18:20:31,181 INFO agent_logger: [AGENT] [NON-CALC] After tool run. result id: 2289220448256; result: {'question': 'Vilka möjligheter finns det att skjuta upp pensionsutbetalningar enligt PA16?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'VectorRetrieverTool', 'retriever': <src.retriever.retriever_tool.RetrieverTool object at 0x0000021546EC0CD0>, 'response': 'Tyvärr kunde jag inte generera ett svar baserat på den hämtade informationen.', 'response_source': 'vector_db'}
+2025-05-07 18:20:31,182 INFO agent_logger: [AGENT] [NON-CALC] Try block END. Returning result.
+2025-05-07 18:20:31,183 INFO main: Final state from LangGraph: {'question': 'Vilka möjligheter finns det att skjuta upp pensionsutbetalningar enligt PA16?', 'user_language': 'sv', 'conversation_history': [], 'status': '✅ Klar', 'followup_count': 0, 'active_tool': 'VectorRetrieverTool', 'retriever': <src.retriever.retriever_tool.RetrieverTool object at 0x0000021546EC0CD0>, 'response': 'Tyvärr kunde jag inte generera ett svar baserat på den hämtade informationen.', 'response_source': 'vector_db'}
+2025-05-07 18:20:31,184 INFO main: [DEBUG] state keys: ['question', 'user_language', 'conversation_history', 'status', 'followup_count', 'active_tool', 'retriever', 'response', 'response_source']
+2025-05-07 18:20:31,184 INFO main: Tyvärr kunde jag inte generera ett svar baserat på den hämtade informationen.
+2025-05-07 18:20:31,185 INFO main: [chat endpoint] Final response: 'Tyvärr kunde jag inte generera ett svar baserat på den hämtade informationen.'
+2025-05-07 18:40:08,877 INFO main:  Shutting down system...
+2025-05-07 18:44:06,991 INFO main: Starting server on localhost:9090
+2025-05-07 18:44:07,116 INFO main:  Starting system initialization...
+2025-05-07 18:44:07,119 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\data
+2025-05-07 18:44:07,121 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs
+2025-05-07 18:44:07,123 INFO main:  Ensured directory exists: D:\AI folder\AI agent\LangGraph_agent\SIWRA_pension_restructured\docs\agreements
+2025-05-07 18:44:07,124 INFO main:  Creating new cost tracking database...
+2025-05-07 18:44:07,125 INFO main:  System initialization completed successfully
+2025-05-07 18:44:25,416 INFO main: Received message: vilka avtal har du kolla på just nu?
+2025-05-07 18:44:25,417 INFO main: Session ID: ::1
+2025-05-07 18:44:25,417 INFO main: Creating new LangGraph session for ::1
+2025-05-07 18:44:25,421 WARNING main: LangGraph visualization module not available. Visualization features will be disabled.
+2025-05-07 18:44:25,810 INFO main: Processing message: vilka avtal har du kolla på just nu?
+2025-05-07 18:44:25,813 INFO src.graph.pension_graph: Processing question: vilka avtal har du kolla på just nu?
+2025-05-07 18:44:25,813 INFO agent_logger: [AGENT] Start process. State: {'question': 'vilka avtal har du kolla på just nu?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...'}
+2025-05-07 18:44:25,813 INFO agent_logger: [AGENT] Received question: 'vilka avtal har du kolla på just nu?'
+2025-05-07 18:44:25,814 INFO agent_logger: [AGENT] Trying tool: CalculatorTool
+2025-05-07 18:44:25,814 INFO agent_logger: [AGENT] Tool CalculatorTool.can_handle returned: False
+2025-05-07 18:44:25,815 INFO agent_logger: [AGENT] Trying tool: SummaryCheckerTool
+2025-05-07 18:44:25,816 INFO src.tools.summary_checker: Found matching summary: available_agreements.json
+2025-05-07 18:44:25,816 INFO src.tools.summary_checker: Returning summary content: Jag har information om följande pensionsavtal: PA16 (för statligt anställda) och SKR2023 (för kommunalt anställda).
+2025-05-07 18:44:25,817 INFO agent_logger: [AGENT] Tool SummaryCheckerTool.can_handle returned: True
+2025-05-07 18:44:25,817 INFO agent_logger: [AGENT] Selected tool: SummaryCheckerTool
+2025-05-07 18:44:25,817 INFO agent_logger: [AGENT] Running tool SummaryCheckerTool with standard execution (no parameter extraction)
+2025-05-07 18:44:25,817 INFO agent_logger: [AGENT] [NON-CALC] Try block START. state id: 3025348627264; state: {'question': 'vilka avtal har du kolla på just nu?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'SummaryCheckerTool'}
+2025-05-07 18:44:25,818 INFO agent_logger: [AGENT] [NON-CALC] Before tool run. state id: 3025348627264; state: {'question': 'vilka avtal har du kolla på just nu?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'SummaryCheckerTool'}
+2025-05-07 18:44:25,818 INFO src.tools.summary_checker: Running summary checker tool with question: 'vilka avtal har du kolla på just nu?'
+2025-05-07 18:44:25,819 INFO src.tools.summary_checker: Found matching summary: available_agreements.json
+2025-05-07 18:44:25,820 INFO src.tools.summary_checker: Returning summary content: Jag har information om följande pensionsavtal: PA16 (för statligt anställda) och SKR2023 (för kommunalt anställda).
+2025-05-07 18:44:25,820 INFO src.tools.summary_checker: [SUMMARY_TOOL] _find_matching_summary returned: 'Jag har information om följande pensionsavtal: PA16 (för statligt anställda) och SKR2023 (för kommunalt anställda).'
+2025-05-07 18:44:25,820 INFO src.tools.summary_checker: Returning summary response: Jag har information om följande pensionsavtal: PA16 (för statligt anställda) och SKR2023 (för kommunalt anställda).
+2025-05-07 18:44:25,821 INFO agent_logger: [AGENT] [NON-CALC] After tool run. result id: 3025348627264; result: {'question': 'vilka avtal har du kolla på just nu?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'SummaryCheckerTool', 'response': 'Jag har information om följande pensionsavtal: PA16 (för statligt anställda) och SKR2023 (för kommunalt anställda).', 'response_source': 'summary_json'}
+2025-05-07 18:44:25,821 INFO agent_logger: [AGENT] [NON-CALC] Try block END. Returning result.
+2025-05-07 18:44:25,822 INFO main: Final state from LangGraph: {'question': 'vilka avtal har du kolla på just nu?', 'user_language': 'sv', 'conversation_history': [], 'status': '✅ Klar', 'followup_count': 0, 'active_tool': 'SummaryCheckerTool', 'response': 'Jag har information om följande pensionsavtal: PA16 (för statligt anställda) och SKR2023 (för kommunalt anställda).', 'response_source': 'summary_json'}
+2025-05-07 18:44:25,823 INFO main: [DEBUG] state keys: ['question', 'user_language', 'conversation_history', 'status', 'followup_count', 'active_tool', 'response', 'response_source']
+2025-05-07 18:44:25,823 INFO main: Cleaned response: Jag har information om följande pensionsavtal: PA16 (för statligt anställda) och SKR2023 (för kommun...
+2025-05-07 18:44:25,823 INFO main: [chat endpoint] Final response: 'Jag har information om följande pensionsavtal: PA16 (för statligt anställda) och SKR2023 (för kommunalt anställda).'
+2025-05-07 18:44:35,368 INFO main: Received message: Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?
+2025-05-07 18:44:35,368 INFO main: Session ID: ::1
+2025-05-07 18:44:35,370 INFO main: Processing message: Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?
+2025-05-07 18:44:35,372 INFO src.graph.pension_graph: Processing question: Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?
+2025-05-07 18:44:35,373 INFO agent_logger: [AGENT] Start process. State: {'question': 'Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...'}
+2025-05-07 18:44:35,373 INFO agent_logger: [AGENT] Received question: 'hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?'
+2025-05-07 18:44:35,374 INFO agent_logger: [AGENT] Trying tool: CalculatorTool
+2025-05-07 18:44:35,374 INFO agent_logger: [AGENT] Tool CalculatorTool.can_handle returned: True
+2025-05-07 18:44:35,374 INFO agent_logger: [AGENT] Selected tool: CalculatorTool
+2025-05-07 18:44:35,376 INFO agent_logger: [AGENT] After parameter extraction. Extracted: {'age': 45, 'monthly_salary': 35000}, State: {'question': 'Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'CalculatorTool'}
+2025-05-07 18:44:35,376 INFO agent_logger: [AGENT] After merging/defaulting. Merged: {'age': 45, 'monthly_salary': 35000}, State: {'question': 'Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'CalculatorTool'}
+2025-05-07 18:44:35,377 INFO agent_logger: [AGENT] Before calling tool: CalculatorTool. State: {'question': 'Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'CalculatorTool'}
+2025-05-07 18:44:35,378 INFO calculator_logger: 🧹 Loggen har rensats för en ny beräkning.
+2025-05-07 18:44:35,379 INFO calculator_logger: 🧮 Beräkning startad: ålder=45, lön=35000, pensionsålder=65, år till pension=20, tillväxt=0.019, löneväxling=0, löneväxlingspremie=0
+2025-05-07 18:44:35,379 INFO calculator_logger: 🔢 Inkomsttak (årsvis) = 555000.0, under tak = 420000, över tak = 0
+2025-05-07 18:44:35,379 INFO calculator_logger: 💰 Avsättning: 4.5% av 420000 = 18900.00, 30.0% av 0 = 0.00
+2025-05-07 18:44:35,380 INFO calculator_logger: 💰 Löneväxlingspremie: 0 * 0.0% = 0
+2025-05-07 18:44:35,380 INFO calculator_logger: 📅 Årlig avsättning = 18900.00, månatlig = 1575.00
+2025-05-07 18:44:35,380 INFO calculator_logger: 📈 År 1: insättning + tillväxt = 27025.35
+2025-05-07 18:44:35,380 INFO calculator_logger: 📈 År 2: insättning + tillväxt = 26521.44
+2025-05-07 18:44:35,381 INFO calculator_logger: 📈 År 3: insättning + tillväxt = 26026.93
+2025-05-07 18:44:35,381 INFO calculator_logger: 📈 År 4: insättning + tillväxt = 25541.64
+2025-05-07 18:44:35,381 INFO calculator_logger: 📈 År 5: insättning + tillväxt = 25065.40
+2025-05-07 18:44:35,381 INFO calculator_logger: 📈 År 6: insättning + tillväxt = 24598.03
+2025-05-07 18:44:35,382 INFO calculator_logger: 📈 År 7: insättning + tillväxt = 24139.38
+2025-05-07 18:44:35,382 INFO calculator_logger: 📈 År 8: insättning + tillväxt = 23689.29
+2025-05-07 18:44:35,382 INFO calculator_logger: 📈 År 9: insättning + tillväxt = 23247.58
+2025-05-07 18:44:35,382 INFO calculator_logger: 📈 År 10: insättning + tillväxt = 22814.12
+2025-05-07 18:44:35,383 INFO calculator_logger: 📈 År 11: insättning + tillväxt = 22388.73
+2025-05-07 18:44:35,383 INFO calculator_logger: 📈 År 12: insättning + tillväxt = 21971.28
+2025-05-07 18:44:35,383 INFO calculator_logger: 📈 År 13: insättning + tillväxt = 21561.61
+2025-05-07 18:44:35,383 INFO calculator_logger: 📈 År 14: insättning + tillväxt = 21159.57
+2025-05-07 18:44:35,384 INFO calculator_logger: 📈 År 15: insättning + tillväxt = 20765.04
+2025-05-07 18:44:35,384 INFO calculator_logger: 📈 År 16: insättning + tillväxt = 20377.86
+2025-05-07 18:44:35,384 INFO calculator_logger: 📈 År 17: insättning + tillväxt = 19997.90
+2025-05-07 18:44:35,384 INFO calculator_logger: 📈 År 18: insättning + tillväxt = 19625.02
+2025-05-07 18:44:35,385 INFO calculator_logger: 📈 År 19: insättning + tillväxt = 19259.10
+2025-05-07 18:44:35,385 INFO calculator_logger: 📈 År 20: insättning + tillväxt = 18900.00
+2025-05-07 18:44:35,385 INFO calculator_logger: 📦 Totalt kapital med tillväxt = 454675.26, månatlig pension = 1894.48
+2025-05-07 18:44:35,386 INFO agent_logger: [AGENT] After tool run. State: {'question': 'Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'active_tool': 'CalculatorTool', 'user_profile': {'age': 45, 'monthly_salary': 35000, 'agreement': 'PA16', 'scenario': 'Avd1', 'retirement_age': 65, 'growth': 0.019}, 'response': 'Baserat på dina uppgifter uppskattas din pension enligt PA16 (Avd1) till ca 1894 kr/mån från 65 års ålder. Det motsvarar ett totalt kapital på ca 454675 kr, baserat på en avsättning på 1575 kr/mån under 20 år.', 'last_calculation': {'input': {'age': 45, 'monthly_salary': 35000, 'agreement': 'PA16', 'scenario': 'Avd1', 'retirement_age': 65, 'growth': 0.019}, 'result': {'monthly_pension': 1894, 'total_pension': 454675, 'monthly_contribution': 1575, 'years_to_pension': 20, 'breakdown': {'below_cap_amount': 420000, 'above_cap_amount': 0, 'contrib_below': 18900, 'contrib_above': 0, 'rate_below': 0.045, 'rate_above': 0.3}}, 'agreement': 'PA16', 'scenario': 'Avd1'}}
+2025-05-07 18:44:35,390 INFO main: Final state from LangGraph: {'question': 'Hur mycket pension får jag om min lön är 35000 kr och jag är 45 år?', 'user_language': 'sv', 'conversation_history': [], 'status': '✅ Klar', 'followup_count': 0, 'active_tool': 'CalculatorTool', 'user_profile': {'age': 45, 'monthly_salary': 35000, 'agreement': 'PA16', 'scenario': 'Avd1', 'retirement_age': 65, 'growth': 0.019}, 'response': 'Baserat på dina uppgifter uppskattas din pension enligt PA16 (Avd1) till ca 1894 kr/mån från 65 års ålder. Det motsvarar ett totalt kapital på ca 454675 kr, baserat på en avsättning på 1575 kr/mån under 20 år.', 'last_calculation': {'input': {'age': 45, 'monthly_salary': 35000, 'agreement': 'PA16', 'scenario': 'Avd1', 'retirement_age': 65, 'growth': 0.019}, 'result': {'monthly_pension': 1894, 'total_pension': 454675, 'monthly_contribution': 1575, 'years_to_pension': 20, 'breakdown': {'below_cap_amount': 420000, 'above_cap_amount': 0, 'contrib_below': 18900, 'contrib_above': 0, 'rate_below': 0.045, 'rate_above': 0.3}}, 'agreement': 'PA16', 'scenario': 'Avd1'}}
+2025-05-07 18:44:35,391 INFO main: [DEBUG] state keys: ['question', 'user_language', 'conversation_history', 'status', 'followup_count', 'active_tool', 'user_profile', 'response', 'last_calculation']
+2025-05-07 18:44:35,392 INFO main: Cleaned response: Baserat på dina uppgifter uppskattas din pension enligt PA16 (Avd1) till ca 1894 kr/mån från 65 års ...
+2025-05-07 18:44:35,392 INFO main: [chat endpoint] Final response: 'Baserat på dina uppgifter uppskattas din pension enligt PA16 (Avd1) till ca 1894 kr/mån från 65 års ålder. Det motsvarar ett totalt kapital på ca 454675 kr, baserat på en avsättning på 1575 kr/mån under 20 år.'
+2025-05-07 18:44:41,450 INFO main: Received message: hur räknade du?
+2025-05-07 18:44:41,450 INFO main: Session ID: ::1
+2025-05-07 18:44:41,453 INFO main: Processing message: hur räknade du?
+2025-05-07 18:44:41,455 INFO src.graph.pension_graph: Processing question: hur räknade du?
+2025-05-07 18:44:41,455 INFO agent_logger: [AGENT] Start process. State: {'question': 'hur räknade du?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...'}
+2025-05-07 18:44:41,456 INFO agent_logger: [AGENT] Received question: 'hur räknade du?'
+2025-05-07 18:44:41,457 INFO agent_logger: [AGENT] Final state to return (calculation log fallback): {'question': 'hur räknade du?', 'user_language': 'sv', 'conversation_history': [], 'status': '🔍 Bearbetar frågan...', 'followup_count': 0, 'response': 'Här är stegen från senaste beräkningen:\n\n🧮 🧮 Beräkning startad: ålder=45, lön=35000, pensionsålder=65, år till pension=20, tillväxt=0.019, löneväxling=0, löneväxlingspremie=0\n🔢 🔢 Inkomsttak (årsvis) = 555000.0, under tak = 420000, över tak = 0\n💰 💰 Avsättning: 4.5% av 420000 = 18900.00, 30.0% av 0 = 0.00\n📅 📅 Årlig avsättning = 18900.00, månatlig = 1575.00\n📈 📈 År 1: insättning + tillväxt = 27025.35\n📈 📈 År 2: insättning + tillväxt = 26521.44\n📈 📈 År 3: insättning + tillväxt = 26026.93\n📈 📈 År 4: insättning + tillväxt = 25541.64\n📈 📈 År 5: insättning + tillväxt = 25065.40\n📈 📈 År 6: insättning + tillväxt = 24598.03\n📈 📈 År 7: insättning + tillväxt = 24139.38\n📈 📈 År 8: insättning + tillväxt = 23689.29\n📈 📈 År 9: insättning + tillväxt = 23247.58\n📈 📈 År 10: insättning + tillväxt = 22814.12\n📈 📈 År 11: insättning + tillväxt = 22388.73\n📈 📈 År 12: insättning + tillväxt = 21971.28\n📈 📈 År 13: insättning + tillväxt = 21561.61\n📈 📈 År 14: insättning + tillväxt = 21159.57\n📈 📈 År 15: insättning + tillväxt = 20765.04\n📈 📈 År 16: insättning + tillväxt = 20377.86\n📈 📈 År 17: insättning + tillväxt = 19997.90\n📈 📈 År 18: insättning + tillväxt = 19625.02\n📈 📈 År 19: insättning + tillväxt = 19259.10\n📈 📈 År 20: insättning + tillväxt = 18900.00\n📦 📦 Totalt kapital med tillväxt = 454675.26, månatlig pension = 1894.48'}
+2025-05-07 18:44:41,460 INFO main: Final state from LangGraph: {'question': 'hur räknade du?', 'user_language': 'sv', 'conversation_history': [], 'status': '✅ Klar', 'followup_count': 0, 'response': 'Här är stegen från senaste beräkningen:\n\n🧮 🧮 Beräkning startad: ålder=45, lön=35000, pensionsålder=65, år till pension=20, tillväxt=0.019, löneväxling=0, löneväxlingspremie=0\n🔢 🔢 Inkomsttak (årsvis) = 555000.0, under tak = 420000, över tak = 0\n💰 💰 Avsättning: 4.5% av 420000 = 18900.00, 30.0% av 0 = 0.00\n📅 📅 Årlig avsättning = 18900.00, månatlig = 1575.00\n📈 📈 År 1: insättning + tillväxt = 27025.35\n📈 📈 År 2: insättning + tillväxt = 26521.44\n📈 📈 År 3: insättning + tillväxt = 26026.93\n📈 📈 År 4: insättning + tillväxt = 25541.64\n📈 📈 År 5: insättning + tillväxt = 25065.40\n📈 📈 År 6: insättning + tillväxt = 24598.03\n📈 📈 År 7: insättning + tillväxt = 24139.38\n📈 📈 År 8: insättning + tillväxt = 23689.29\n📈 📈 År 9: insättning + tillväxt = 23247.58\n📈 📈 År 10: insättning + tillväxt = 22814.12\n📈 📈 År 11: insättning + tillväxt = 22388.73\n📈 📈 År 12: insättning + tillväxt = 21971.28\n📈 📈 År 13: insättning + tillväxt = 21561.61\n📈 📈 År 14: insättning + tillväxt = 21159.57\n📈 📈 År 15: insättning + tillväxt = 20765.04\n📈 📈 År 16: insättning + tillväxt = 20377.86\n📈 📈 År 17: insättning + tillväxt = 19997.90\n📈 📈 År 18: insättning + tillväxt = 19625.02\n📈 📈 År 19: insättning + tillväxt = 19259.10\n📈 📈 År 20: insättning + tillväxt = 18900.00\n📦 📦 Totalt kapital med tillväxt = 454675.26, månatlig pension = 1894.48'}
+2025-05-07 18:44:41,461 INFO main: [DEBUG] state keys: ['question', 'user_language', 'conversation_history', 'status', 'followup_count', 'response']
+2025-05-07 18:44:41,462 INFO main: Cleaned response: Här är stegen från senaste beräkningen:
+
+🧮 🧮 Beräkning startad: ålder=45, lön=35000, pensionsålder=6...
+2025-05-07 18:44:41,462 INFO main: [chat endpoint] Final response: 'Här är stegen från senaste beräkningen:\n\n🧮 🧮 Beräkning startad: ålder=45, lön=35000, pensionsålder=65, år till pension=20, tillväxt=0.019, löneväxling=0, löneväxlingspremie=0\n🔢 🔢 Inkomsttak (årsvis) = 555000.0, under tak = 420000, över tak = 0\n💰 💰 Avsättning: 4.5% av 420000 = 18900.00, 30.0% av 0 = 0.00\n📅 📅 Årlig avsättning = 18900.00, månatlig = 1575.00\n📈 📈 År 1: insättning + tillväxt = 27025.35\n📈 📈 År 2: insättning + tillväxt = 26521.44\n📈 📈 År 3: insättning + tillväxt = 26026.93\n📈 📈 År 4: insättning + tillväxt = 25541.64\n📈 📈 År 5: insättning + tillväxt = 25065.40\n📈 📈 År 6: insättning + tillväxt = 24598.03\n📈 📈 År 7: insättning + tillväxt = 24139.38\n📈 📈 År 8: insättning + tillväxt = 23689.29\n📈 📈 År 9: insättning + tillväxt = 23247.58\n📈 📈 År 10: insättning + tillväxt = 22814.12\n📈 📈 År 11: insättning + tillväxt = 22388.73\n📈 📈 År 12: insättning + tillväxt = 21971.28\n📈 📈 År 13: insättning + tillväxt = 21561.61\n📈 📈 År 14: insättning + tillväxt = 21159.57\n📈 📈 År 15: insättning + tillväxt = 20765.04\n📈 📈 År 16: insättning + tillväxt = 20377.86\n📈 📈 År 17: insättning + tillväxt = 19997.90\n📈 📈 År 18: insättning + tillväxt = 19625.02\n📈 📈 År 19: insättning + tillväxt = 19259.10\n📈 📈 År 20: insättning + tillväxt = 18900.00\n📦 📦 Totalt kapital med tillväxt = 454675.26, månatlig pension = 1894.48'
+2025-05-07 19:11:57,727 INFO main:  Shutting down system...

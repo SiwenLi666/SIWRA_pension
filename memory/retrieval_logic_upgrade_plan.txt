@@ -1,0 +1,142 @@
+# Retrieval Logic Upgrade Plan
+
+## Current Issues Identified
+
+1. **Over-defensive Retrieval**: The system is too quick to return "no information found" responses.
+   - Strict agreement filtering leads to missed relevant content
+   - Low-confidence but potentially useful results are discarded
+   - Premature fallback to PA16 even when other agreements might have relevant information
+
+2. **Suboptimal Scoring Mechanism**: Current scoring doesn't effectively combine BM25 and vector search results.
+   - No re-ranking of combined results
+   - No consideration of semantic overlap between agreements and acronyms
+   - No LLM-based selection of most relevant chunks
+
+3. **Poor Response Generation**: LLM responses are too apologetic and miss opportunities to provide partial information.
+   - Too many "sorry" messages when partial information exists
+   - No attempt to combine partial evidence across documents
+   - No uncertainty expressions when information is incomplete
+
+4. **Lack of Feedback Loop**: No mechanism to track and learn from queries that fail to retrieve useful information.
+   - No logging of unanswered queries
+   - No tracking of retrieval performance
+   - No way to identify common failure patterns
+
+## Implementation Plan
+
+### 1. Improve Agreement Filtering
+
+- [ ] Update agreement detection to support more variations and acronyms
+- [ ] Implement strict filtering only when agreement is explicitly mentioned
+- [ ] Add semantic overlap detection (e.g., "AKAP-KR" implies SKR2023)
+- [ ] Modify fallback behavior to retrieve from all agreements instead of defaulting to PA16
+- [ ] Only use PA16 fallback when truly ambiguous with no relevant hits anywhere
+
+Implementation details:
+- Enhance `detect_agreement_name` in agreement_utils.py to handle more variations
+- Update `filter_documents_by_agreement` to be less strict when no agreement is explicitly mentioned
+- Add semantic mapping between acronyms and agreements
+
+### 2. Upgrade Scoring Mechanism
+
+- [ ] Implement vector re-ranking for top BM25 results
+- [ ] Combine and sort top 20 results from both BM25 and vector search
+- [ ] Add LLM-based selection of best 5 chunks when scores disagree
+- [ ] Adjust threshold to keep low-confidence but potentially useful results
+- [ ] Add semantic relevance scoring based on agreement overlap
+
+Implementation details:
+- Update `rank_documents` in reference_utils.py to combine BM25 and vector scores
+- Implement LLM-based re-ranking function for selecting most relevant chunks
+- Adjust scoring thresholds to be more inclusive
+
+### 3. Fix LLM Response Logic
+
+- [ ] Remove apologetic language from system prompts
+- [ ] Update prompts to encourage combining partial evidence
+- [ ] Add instructions for expressing uncertainty rather than giving up
+- [ ] Implement post-processing to detect and remove "sorry" messages
+- [ ] Only skip sections if all chunks are truly irrelevant after re-ranking
+
+Implementation details:
+- Update system prompts in `_generate_response` and `_generate_multi_agreement_response`
+- Add post-processing step to detect and replace apologetic language
+- Modify relevance threshold for skipping sections
+
+### 4. Add Smart Fallback & Logging
+
+- [ ] Create logging mechanism for unanswered queries
+- [ ] Implement JSON-based log file for tracking retrieval performance
+- [ ] Add metadata about retrieved chunks to logs
+- [ ] Create directory structure for logs if it doesn't exist
+
+Implementation details:
+- Create new function `log_unanswered_query` to record problematic queries
+- Add logging calls in retriever when no good results are found
+- Create logs directory and unanswered_queries.json file
+
+## Code Files to Modify
+
+1. **src/utils/agreement_utils.py**
+   - Update agreement detection and filtering logic
+   - Add semantic overlap detection
+   - Modify fallback behavior
+
+2. **src/utils/reference_utils.py**
+   - Enhance document ranking and scoring
+   - Implement vector re-ranking
+   - Add LLM-based selection
+
+3. **src/tools/vector_retriever.py**
+   - Update response generation logic
+   - Modify system prompts
+   - Add post-processing for apologetic language
+   - Implement query logging
+
+4. **src/retriever/retriever_tool.py**
+   - Update BM25 and vector search integration
+   - Adjust retrieval parameters
+   - Implement combined scoring
+
+## Testing Plan
+
+1. Test with query: "Vad står AKAP-KR för?"
+   - Expected: Glossary definition + relevant information from SKR2023
+   - No apologetic language
+   - Clear indication of source
+
+2. Test with query: "Vilka ändringar träder i kraft 1 januari 2025?"
+   - Expected: Information from all relevant agreements
+   - Combination of partial evidence if available
+   - Expression of uncertainty if details are missing
+
+3. Test with query: "Vilka övergångsbestämmelser gäller för 1965 års födda?"
+   - Expected: Information from multiple agreements if available
+   - No premature fallback to PA16
+   - Logging if truly no relevant information is found
+
+## Implementation Checklist
+
+### Phase 1: Agreement Filtering Improvements
+- [ ] Update agreement detection in agreement_utils.py
+- [ ] Modify filtering logic to be less strict
+- [ ] Add semantic overlap detection
+- [ ] Test with various agreement mentions
+
+### Phase 2: Scoring Mechanism Upgrades
+- [ ] Implement vector re-ranking in reference_utils.py
+- [ ] Add combined scoring for BM25 and vector results
+- [ ] Implement LLM-based selection
+- [ ] Test with various query types
+
+### Phase 3: Response Logic Fixes
+- [ ] Update system prompts in vector_retriever.py
+- [ ] Add post-processing for apologetic language
+- [ ] Modify section skipping logic
+- [ ] Test response generation with partial information
+
+### Phase 4: Logging Implementation
+- [ ] Create logging directory structure
+- [ ] Implement unanswered query logging
+- [ ] Add metadata tracking
+- [ ] Test logging with problematic queries

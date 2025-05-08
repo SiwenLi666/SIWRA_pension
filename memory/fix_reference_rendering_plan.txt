@@ -1,0 +1,98 @@
+# Fix Reference Rendering and Source Filtering Plan
+
+## Problem Analysis
+
+1. **Too many references shown**: The system is showing entire document collections (like SKR2023) for queries about specific agreements (like PA16).
+
+2. **Page numbers are misleading**: References include unrelated page numbers or excessive page ranges.
+
+3. **Missing metadata handling is not robust**: The system doesn't gracefully handle missing metadata fields.
+
+4. **User intent not honored**: When a user asks about a specific agreement (e.g., PA16), other agreements (e.g., SKR2023) are still included.
+
+5. **Empty metadata fields are shown poorly**: Empty `chapter` and `paragraph` fields are displayed in an unfriendly way.
+
+6. **Retrieval logic doesn't prioritize agreement name**: The system doesn't give enough weight to the agreement name mentioned in the query.
+
+7. **Default agreement handling**: PA16 should be the default agreement if no match is found, but this isn't implemented.
+
+## Implementation Plan
+
+### Phase 1: Agreement Detection and Filtering
+
+1. Create a function to detect agreement names in user queries:
+   - Implement `detect_agreement_name(query: str) -> Optional[str]`
+   - Check for common agreement names like "PA16", "SKR2023", etc.
+   - Return the detected agreement name or None if not found
+
+2. Update the retrieval process to prioritize matching agreements:
+   - Modify `_retrieve_documents` in `vector_retriever.py`
+   - Apply a filter based on detected agreement name
+   - If no agreement is detected, default to PA16
+   - Log the agreement detection and filtering decisions
+
+### Phase 2: Reference Formatting Improvement
+
+1. Update the reference formatting logic in `_generate_response`:
+   - Format references as `agreement_name | chapter | paragraph`
+   - Implement fallback logic for missing metadata:
+     - If chapter/paragraph missing, use `agreement_name | page N, M, ...`
+     - Limit to 1-3 page numbers for clarity
+     - If page numbers missing, use source file information
+
+2. Clean up the reference display:
+   - Remove duplicate references
+   - Ensure consistent formatting
+   - Handle missing metadata gracefully
+   - Avoid showing excessive page ranges
+
+### Phase 3: Retrieval Logic Enhancement
+
+1. Modify the retrieval weighting in `retriever_tool.py`:
+   - Boost scores for documents matching the detected agreement
+   - Implement post-retrieval filtering to remove unmatched agreements
+   - Ensure PA16 is used as the default if no agreement is specified
+
+2. Add logging for retrieval decisions:
+   - Log when filtering by agreement name
+   - Log when falling back to PA16
+   - Log any issues with metadata or content
+
+### Phase 4: Testing and Validation
+
+1. Test with specific queries:
+   - "Vad är PA16 och när träder ändringarna i kraft?"
+   - "Vad innebär SKR2023:s nya regler?"
+   - "Vad innebär ändringarna i pensionsavtalet?"
+
+2. Verify that:
+   - Only relevant agreement references are shown
+   - References are formatted correctly
+   - Page numbers are limited and relevant
+   - Default to PA16 works when no agreement is specified
+
+## Implementation Checklist
+
+### Agreement Detection and Filtering
+- [ ] Implement `detect_agreement_name` function
+- [ ] Update retrieval process to use detected agreement
+- [ ] Implement default to PA16 when no agreement is detected
+- [ ] Add logging for agreement detection decisions
+
+### Reference Formatting
+- [ ] Update reference formatting to use `agreement_name | chapter | paragraph`
+- [ ] Implement fallback to page numbers when metadata is missing
+- [ ] Limit page numbers to 1-3 most relevant
+- [ ] Clean up reference display to avoid duplicates and excessive information
+
+### Retrieval Logic Enhancement
+- [ ] Boost scores for documents matching detected agreement
+- [ ] Implement post-retrieval filtering
+- [ ] Ensure PA16 is used as default
+- [ ] Add logging for retrieval decisions
+
+### Testing and Validation
+- [ ] Test with specific queries
+- [ ] Verify reference formatting
+- [ ] Verify agreement filtering
+- [ ] Verify default to PA16

@@ -1,0 +1,144 @@
+# Reference Summary Fix Implementation Plan
+
+## Current Issues Identified
+
+1. **Poor Visual Formatting**: Agreement sections lack proper visual separation in multi-agreement responses.
+   - No clear visual breaks between different agreement sections
+   - Makes it difficult to distinguish between different agreements
+
+2. **Meaningless Reference Blocks**: Empty or irrelevant agreement sections are still displayed.
+   - Shows "Jag beklagar, men jag har inte tillräcklig information..." even when no relevant content exists
+   - Should skip these sections entirely instead of showing apology messages
+
+3. **Ineffective Summary Generation**: Summaries include apologetic messages instead of focusing on available information.
+   - Too many "I don't have enough information" statements
+   - Should only summarize what's available and skip sections with no relevant content
+
+4. **Duplicate Source References**: The same source appears multiple times in references.
+   - Same file with same pages appears as separate reference entries
+   - Creates visual clutter and confusion
+
+5. **Glossary Integration**: Glossary definitions aren't properly highlighted or prioritized.
+   - When a user asks for a definition, the system should prioritize glossary entries
+   - Should bypass retrieval entirely for pure glossary queries
+
+## Implementation Plan
+
+### 1. Improve Visual Formatting
+
+- [✅] Add double line breaks (\n\n) before each agreement section (## AGREEMENT_NAME)
+- [✅] Ensure consistent formatting between single and multi-agreement responses
+- [✅] Add visual separators between main content and references section
+
+Implementation details:
+- Modify _generate_multi_agreement_response to add proper spacing
+- Ensure consistent formatting in both single and multi-agreement responses
+- Add clear visual distinction for the references section
+
+### 2. Remove Meaningless Reference Blocks
+
+- [✅] Skip agreement sections with no relevant content
+- [✅] Implement logic to detect when all chunks for an agreement are irrelevant
+- [✅] Add fallback to PA16 with explanatory message when no agreements match
+- [✅] Test with queries that have no relevant content for some agreements
+
+Implementation details:
+- Add content relevance check before generating agreement-specific summaries
+- Skip entire agreement section if no relevant chunks exist
+- Add fallback message: "Inget specifikt avtal nämndes. Jag söker därför i PA16 som exempel."
+
+### 3. Improve Summary Generation
+
+- [✅] Remove apologetic messages when no information is available
+- [✅] Focus summaries on available information only
+- [✅] Skip agreement blocks entirely when no relevant content exists
+- [✅] Ensure summaries are concise and informative
+
+Implementation details:
+- Modify the prompt to focus on available information
+- Add logic to skip agreement sections with no relevant content
+- Update system message to avoid apologetic language
+
+### 4. Fix Duplicate Source References
+
+- [✅] Enhance reference deduplication to merge references to the same file and pages
+- [✅] Combine reference IDs for duplicate sources
+- [✅] Format merged references clearly in the HTML output
+- [✅] Test with queries that retrieve multiple chunks from the same source
+
+Implementation details:
+- Leverage the existing deduplicate_references function
+- Enhance deduplicate_html_references to merge references by source and page
+- Update reference formatting to show combined reference IDs
+
+### 5. Prioritize Glossary Integration
+
+- [✅] Enhance glossary query detection for better accuracy
+- [✅] Bypass retrieval process entirely for glossary-only queries
+- [✅] Format glossary responses distinctly from RAG responses
+- [✅] Add clear indication when a response comes from the glossary
+
+Implementation details:
+- Update is_glossary_query function for better pattern matching
+- Modify the run method to return immediately for glossary matches
+- Add distinct formatting for glossary responses
+
+## Testing Plan
+
+1. Test with query: "Vad är PA16 och när träder ändringarna i kraft?"
+   - Expected: Both glossary definition and retrieval results
+   - Clear separation between glossary and retrieval content
+   - No duplicate references
+
+2. Test with query: "Vilka ändringar träder i kraft 1 januari 2025?"
+   - Expected: Results grouped by agreement
+   - Only agreements with relevant content shown
+   - No apologetic messages
+
+3. Test with query: "Hur länge kan en yrkesofficerare skjuta upp sin pension?"
+   - Expected: Specific agreement results if available
+   - No empty or irrelevant agreement sections
+   - Clean reference formatting
+
+4. Test with query: "Vad står AKAP-KR för?"
+   - Expected: Only glossary definition shown
+   - No retrieval results or references
+   - Clear glossary formatting
+
+## Implementation Checklist
+
+### Phase 1: Visual Formatting Improvements
+- [✅] Add double line breaks between agreement sections
+- [✅] Ensure consistent formatting across response types
+- [✅] Add clear visual separation for references section
+- [✅] Test visual formatting with multi-agreement queries
+
+### Phase 2: Meaningless Block Removal
+- [✅] Implement relevance check for agreement sections
+- [✅] Add logic to skip irrelevant agreement blocks
+- [✅] Implement fallback to PA16 with explanatory message
+- [✅] Test with queries that have no relevant content for some agreements
+
+### Phase 3: Summary Generation Enhancement
+- [✅] Update prompts to focus on available information
+- [✅] Remove apologetic language from summaries
+- [✅] Implement logic to skip empty agreement sections
+- [✅] Test summary generation with various query types
+
+### Phase 4: Reference Deduplication
+- [✅] Enhance reference merging by source and page
+- [✅] Implement combined reference ID formatting
+- [✅] Update HTML reference formatting
+- [✅] Test reference deduplication with various queries
+
+### Phase 5: Glossary Integration
+- [✅] Enhance glossary query detection
+- [✅] Implement bypass of retrieval for glossary queries
+- [✅] Add distinct formatting for glossary responses
+- [✅] Test with various glossary terms
+
+### Phase 6: Testing and Documentation
+- [✅] Test all improvements with sample queries
+- [✅] Document all changes in reference_summary_fix_log.txt
+- [✅] Add detailed comments to code
+- [✅] Mark completed tasks with ✅
