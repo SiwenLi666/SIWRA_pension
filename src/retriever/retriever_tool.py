@@ -215,26 +215,89 @@ class RetrieverTool:
 
 
 class BM25Retriever:
-    def __init__(self, chunk_data_path):
-        with open(chunk_data_path, encoding="utf-8") as f:
-            self.data = json.load(f)
-        self.documents = [entry["content"] for entry in self.data]
-        self.tokenized_docs = [doc.lower().split() for doc in self.documents]
-        self.bm25 = BM25Okapi(self.tokenized_docs)
-        logger.info(f"📚 BM25 initialized with {len(self.documents)} documents")
+    """BM25 retriever for document search"""
+    def __init__(self, chunk_data_path: str):
+        self.chunk_data_path = chunk_data_path
+        self.documents = []
+        self.bm25 = None
+        self.document_to_corpus_index = {}  # Map document ID to corpus index
+        self._load_documents()
+        
+    def _load_documents(self):
+        """Load documents from the chunk data file"""
+        try:
+            with open(self.chunk_data_path, "r", encoding="utf-8") as f:
+                self.documents = json.load(f)
+                
+            # Extract corpus for BM25
+            corpus = []
+            valid_docs = []
+            
+            for i, doc in enumerate(self.documents):
+                # Get content field, which could be in different formats
+                content = None
+                
+                # Try different content field locations
+                if "content" in doc and doc["content"]:
+                    content = doc["content"]
+                elif "page_content" in doc and doc["page_content"]:
+                    content = doc["page_content"]
+                elif "metadata" in doc and "content" in doc["metadata"] and doc["metadata"]["content"]:
+                    content = doc["metadata"]["content"]
+                
+                # Skip documents with no content
+                if not content or len(content.strip()) < 50:
+                    logger.warning(f"Document {i} missing or has insufficient content, skipping")
+                    continue
+                    
+                # Keep track of valid documents
+                valid_docs.append(doc)
+                
+                # Map document index to corpus index
+                self.document_to_corpus_index[len(valid_docs) - 1] = len(corpus)
+                    
+                # Tokenize the content
+                tokens = content.lower().split()
+                corpus.append(tokens)
+            
+            # Update documents list to only include valid ones
+            self.documents = valid_docs
+                
+            # Initialize BM25
+            if corpus:
+                self.bm25 = BM25Okapi(corpus)
+                logger.info(f"Loaded {len(self.documents)} documents for BM25 search")
+            else:
+                logger.error("No valid documents found for BM25 search")
+                raise ValueError("No valid documents found for BM25 search")
+                
+        except Exception as e:
+            logger.error(f"Failed to load documents for BM25: {str(e)}")
+            raise
 
     def retrieve(self, query, top_k=5):
         """Retrieve documents using BM25 ranking"""
         # Handle empty queries
-        if not query.strip():
-            return [(self.data[i], 0.0) for i in range(min(top_k, len(self.data)))]
+        if not query.strip() or not self.documents:
+            return [(self.documents[i], 0.0) for i in range(min(top_k, len(self.documents)))]
             
         # Tokenize query and get scores
         tokenized_query = query.lower().split()
         scores = self.bm25.get_scores(tokenized_query)
         
         # Create (document, score) pairs and sort by score
-        doc_score_pairs = list(zip(self.data, scores))
+        doc_score_pairs = []
+        for i, doc in enumerate(self.documents):
+            # Get the corresponding corpus index
+            corpus_idx = self.document_to_corpus_index.get(i)
+            if corpus_idx is not None and corpus_idx < len(scores):
+                doc_score_pairs.append((doc, scores[corpus_idx]))
+            else:
+                # If there's a mismatch, use a default low score
+                logger.warning(f"Document index {i} has no corresponding corpus index")
+                doc_score_pairs.append((doc, 0.0))
+        
+        # Sort by score (descending)
         ranked = sorted(doc_score_pairs, key=lambda x: x[1], reverse=True)
         
         return ranked[:top_k]
