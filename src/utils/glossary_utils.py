@@ -74,12 +74,14 @@ def is_glossary_query(query: str) -> Tuple[bool, Optional[str]]:
     
     # Common patterns for glossary queries
     patterns = [
-        r"vad är ([a-zåäöA-ZÅÄÖ0-9-]+)(\?)?$",
-        r"vad betyder ([a-zåäöA-ZÅÄÖ0-9-]+)(\?)?$",
-        r"vad innebär ([a-zåäöA-ZÅÄÖ0-9-]+)(\?)?$",
-        r"förklara ([a-zåäöA-ZÅÄÖ0-9-]+)(\?)?$",
-        r"definiera ([a-zåäöA-ZÅÄÖ0-9-]+)(\?)?$",
-        r"vad menas med ([a-zåäöA-ZÅÄÖ0-9-]+)(\?)?$"
+        r"vad är ([a-zåäöA-ZÅÄÖ0-9-]+)\s*(\?)?$",
+        r"vad betyder ([a-zåäöA-ZÅÄÖ0-9-]+)\s*(\?)?$",
+        r"vad innebär ([a-zåäöA-ZÅÄÖ0-9-]+)\s*(\?)?$",
+        r"förklara ([a-zåäöA-ZÅÄÖ0-9-]+)\s*(\?)?$",
+        r"definiera ([a-zåäöA-ZÅÄÖ0-9-]+)\s*(\?)?$",
+        r"vad menas med ([a-zåäöA-ZÅÄÖ0-9-]+)\s*(\?)?$",
+        r"vad står ([a-zåäöA-ZÅÄÖ0-9-]+) för\s*(\?)?$",
+        r"vad är definitionen av ([a-zåäöA-ZÅÄÖ0-9-]+)\s*(\?)?$"
     ]
     
     # Check each pattern
@@ -87,26 +89,75 @@ def is_glossary_query(query: str) -> Tuple[bool, Optional[str]]:
         match = re.search(pattern, query_lower)
         if match:
             term = match.group(1).strip()
-            # Check if the term exists in our glossary
-            for glossary_term in EXTENDED_GLOSSARY:
-                if term == glossary_term.lower():
-                    logger.info(f"Matched glossary term: {glossary_term}")
-                    return True, glossary_term
-                
-                # Also check for terms with spaces instead of hyphens
-                if "-" in glossary_term:
-                    space_variant = glossary_term.replace("-", " ").lower()
-                    if term == space_variant:
-                        logger.info(f"Matched glossary term (space variant): {glossary_term}")
-                        return True, glossary_term
+            logger.info(f"Detected potential glossary term: {term}")
+            matched_term = find_matching_term(term)
+            if matched_term:
+                return True, matched_term
     
-    # Special case for acronyms which might be in uppercase
+    # Special case for direct acronym queries
     for term in EXTENDED_GLOSSARY:
+        # Check if the query is just the term itself (with optional question mark)
+        if term.lower() == query_lower or term.lower() + "?" == query_lower:
+            logger.info(f"Matched direct glossary term: {term}")
+            return True, term
+        
+        # Check if the query is the term in uppercase
         if term.upper() == query_lower or term.upper() + "?" == query_lower:
             logger.info(f"Matched glossary term (uppercase): {term}")
             return True, term
     
     return False, None
+
+def find_matching_term(search_term: str) -> Optional[str]:
+    """
+    Find a matching term in the glossary using various matching strategies.
+    
+    Args:
+        search_term: The term to search for
+        
+    Returns:
+        The matched glossary term or None if no match is found
+    """
+    # Normalize the search term
+    search_term = search_term.lower().strip()
+    
+    # Direct match
+    for glossary_term in EXTENDED_GLOSSARY:
+        if search_term == glossary_term.lower():
+            logger.info(f"Exact match for glossary term: {glossary_term}")
+            return glossary_term
+    
+    # Match with space/hyphen variants
+    for glossary_term in EXTENDED_GLOSSARY:
+        # Check hyphen to space conversion
+        if "-" in glossary_term:
+            space_variant = glossary_term.replace("-", " ").lower()
+            if search_term == space_variant:
+                logger.info(f"Matched glossary term (space variant): {glossary_term}")
+                return glossary_term
+        
+        # Check space to hyphen conversion
+        if " " in search_term and "-" not in search_term:
+            hyphen_variant = search_term.replace(" ", "-")
+            if hyphen_variant == glossary_term.lower():
+                logger.info(f"Matched glossary term (hyphen variant): {glossary_term}")
+                return glossary_term
+    
+    # Check for acronyms (all uppercase terms)
+    if search_term.isupper() or all(c.isupper() or not c.isalpha() for c in search_term):
+        for glossary_term in EXTENDED_GLOSSARY:
+            if glossary_term.isupper() and search_term == glossary_term.lower():
+                logger.info(f"Matched glossary acronym: {glossary_term}")
+                return glossary_term
+    
+    # Check for partial matches in acronyms (e.g., "KR" in "AKAP-KR")
+    for glossary_term in EXTENDED_GLOSSARY:
+        if "-" in glossary_term and glossary_term.split("-")[-1].lower() == search_term:
+            logger.info(f"Matched partial acronym in glossary term: {glossary_term}")
+            return glossary_term
+    
+    logger.info(f"No matching term found for '{search_term}'")
+    return None
 
 def get_glossary_response(term: str) -> str:
     """

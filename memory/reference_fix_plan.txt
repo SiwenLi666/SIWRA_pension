@@ -1,0 +1,142 @@
+# Reference Fix Implementation Plan
+
+## Current Issues Identified
+
+1. **Duplicate References**: The same chunk appears multiple times in the references list, creating redundancy and confusion.
+   - Example: In the test output, the same SKR2023 file with the same page numbers appears 5 times.
+
+2. **Reference Format Issues**: References lack proper structure and hierarchy.
+   - Missing filename in some cases
+   - Too many page numbers shown
+   - Inconsistent formatting between different types of references
+
+3. **Glossary Integration**: Glossary terms are not prioritized for definition queries.
+   - When users ask "Vad är X?", the system should check the glossary first.
+
+4. **Agreement Relevance**: Documents are not properly filtered or grouped by agreement name.
+   - When a specific agreement is mentioned, results should be limited to that agreement.
+   - When no agreement is mentioned, results should be grouped by agreement.
+
+5. **Reference Ranking**: Generic or repetitive chunks are not penalized in the ranking.
+   - First pages of documents often appear regardless of relevance.
+   - Chunks with more matching tokens should be prioritized.
+
+## Implementation Plan
+
+### 1. Fix Reference Deduplication
+
+- [✅] Modify the reference generation process to track unique document identifiers
+- [✅] Create a deduplication function that combines references with the same source
+- [✅] Ensure page numbers are combined when merging duplicate references
+- [✅] Update the HTML formatting to display deduplicated references
+
+Implementation details:
+- Create a unique identifier for each document based on filename, agreement, and content hash
+- Use a dictionary to track references by their unique ID
+- Merge page numbers when the same document appears multiple times
+
+### 2. Improve Chunk Filtering in Reference Display
+
+- [✅] Update reference formatting to follow the pattern: AGREEMENT_NAME | FILENAME.pdf | CHAPTER | PARAGRAPH | page x, y, z
+- [✅] Limit displayed page numbers to maximum 3 most relevant pages
+- [✅] Implement fallback to filename + page when chapter/paragraph is missing
+- [✅] Ensure all metadata fields are properly extracted and formatted
+
+Implementation details:
+- Extract filename from file_path or source
+- Format chapter and paragraph information consistently
+- Sort page numbers by relevance and limit to top 3
+- Create a clean reference string with proper separators
+
+### 3. Prioritize Pension Glossary for Definitions
+
+- [✅] Enhance glossary query detection to match patterns like "Vad är X" or "Vad står X för"
+- [✅] Implement direct glossary lookup before retrieval process
+- [✅] Format glossary responses distinctly from RAG responses
+- [✅] Add fallback to RAG when glossary term is not found
+
+Implementation details:
+- Use regex patterns to detect definition queries
+- Check against the pension_terms dictionary
+- Return formatted definition directly if found
+- Skip retrieval process for glossary matches
+
+### 4. Improve Agreement-Name Relevance
+
+- [✅] Enhance agreement name detection in queries
+- [✅] Implement filtering logic to prioritize chunks matching the mentioned agreement
+- [✅] Add grouping by agreement when no specific agreement is mentioned
+- [✅] Add clear indication when searching across all agreements
+
+Implementation details:
+- Update agreement detection regex/logic
+- Modify document filtering to prioritize matching agreements
+- Implement document grouping by agreement_name
+- Update response formatting to show agreement sections
+
+### 5. Improve Reference Ranking
+
+- [✅] Implement scoring penalties for generic/repetitive chunks
+- [✅] Add bonuses for chunks with more matching tokens to the query
+- [✅] Consider context length in ranking
+- [✅] Ensure diversity in selected references
+
+Implementation details:
+- Add a scoring function that penalizes first pages of documents
+- Implement token matching score based on query overlap
+- Add length normalization to favor longer, more informative chunks
+- Update the ranking algorithm to balance relevance and diversity
+
+## Testing Plan
+
+1. Test with query: "Vad står AKAP-KR för?"
+   - Expected: Glossary definition should be returned directly
+   - References should be minimal or none
+
+2. Test with query: "När börjar PA16 gälla?"
+   - Expected: Only PA16 documents should be referenced
+   - References should show proper filename, chapter, and page info
+   - No duplicate references
+
+3. Test with query: "Vad är nytt i pensionsutbetalningarna 2025?"
+   - Expected: Results grouped by agreement
+   - Clear indication that all agreements were searched
+   - Deduplicated references with proper formatting
+
+## Implementation Checklist
+
+### Phase 1: Reference Deduplication
+- [✅] Implement unique document identifier generation
+- [✅] Create reference deduplication function
+- [✅] Update reference formatting for deduplicated entries
+- [✅] Test with sample queries to verify deduplication
+
+### Phase 2: Reference Format Improvement
+- [✅] Update reference parts construction with proper hierarchy
+- [✅] Implement page number limitation
+- [✅] Add filename extraction and formatting
+- [✅] Test reference formatting with various document types
+
+### Phase 3: Glossary Integration
+- [✅] Enhance glossary query detection
+- [✅] Implement direct glossary response generation
+- [✅] Add fallback to RAG when needed
+- [✅] Test with various glossary terms
+
+### Phase 4: Agreement Relevance
+- [✅] Improve agreement detection in queries
+- [✅] Update document filtering based on agreement
+- [✅] Implement multi-agreement grouping
+- [✅] Test with agreement-specific and generic queries
+
+### Phase 5: Reference Ranking
+- [✅] Implement scoring adjustments for generic chunks
+- [✅] Add token matching score calculation
+- [✅] Update ranking algorithm
+- [✅] Test with various queries to verify improved ranking
+
+### Phase 6: Logging and Documentation
+- [✅] Document all changes in reference_fix_log.txt
+- [✅] Add detailed comments to code
+- [✅] Mark completed tasks with ✅
+- [✅] Perform final testing with sample queries

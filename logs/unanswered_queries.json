@@ -1,0 +1,74 @@
+[
+  {
+    "query": "Vilka är de viktigaste skillnaderna mellan PA16 och SKR2023?",
+    "timestamp": "2025-05-08 18:10:46",
+    "retrieved_chunks": [
+      {
+        "content_preview": "Fr.o.m. 1 januari 2008 gäller att de kvinnor som har haft rätt till ålderspension en- ligt i övergångsbestämmelserna till PAF angivna kriterier och deras tillämpning och de män som uppfyller samma kri...",
+        "agreement": "PA16",
+        "source": "PA16\\pa16-pensionsavtal-bilaga1-20231231.pdf",
+        "page": ""
+      },
+      {
+        "content_preview": "Fr.o.m. 1 januari 2008 gäller att de kvinnor som har haft rätt till ålderspension en- ligt motsvarande i övergångsbestämmelserna till PAF angivna kriterier och deras tillämpning och de män som uppfyll...",
+        "agreement": "PA16",
+        "source": "PA16\\pa16-pensionsavtal-bilaga1-20231231.pdf",
+        "page": ""
+      },
+      {
+        "content_preview": "Se även förhandlingsprotokoll 2007-11-07 RALS 2007-2010 samt för- handlingsprotokoll 2010-10-25 och 2023-09-30 till RALS-T mellan Ar- betsgivarverket och Saco-S, förhandlingsprotokoll 2016-02-23 mella...",
+        "agreement": "PA16",
+        "source": "PA16\\pa16-pensionsavtal-bilaga1-20231231.pdf",
+        "page": ""
+      },
+      {
+        "content_preview": "Arbetstagaren ges möjlighet att själv välja tjänstepensionsförsäkring för individu- ell ålderspension inom de av parterna fastställda ramarna samt de vid varje tid- punkt gällande anslutningsvillkoren...",
+        "agreement": "PA16",
+        "source": "PA16\\pa16-pensionsavtal-bilaga1-20231231.pdf",
+        "page": ""
+      },
+      {
+        "content_preview": "1938 eller senare vilka omfattas av pensionsavtalet PA 74.",
+        "agreement": "PA16",
+        "source": "PA16\\pa16-pensionsavtal-bilaga1-20231231.pdf",
+        "page": ""
+      }
+    ]
+  },
+  {
+    "query": "Vilka är de viktigaste skillnaderna mellan PA16 och SKR2023?",
+    "timestamp": "2025-05-08 18:12:39",
+    "retrieved_chunks": [
+      {
+        "content_preview": "Fr.o.m. 1 januari 2008 gäller att de kvinnor som har haft rätt till ålderspension en- ligt i övergångsbestämmelserna till PAF angivna kriterier och deras tillämpning och de män som uppfyller samma kri...",
+        "agreement": "PA16",
+        "source": "PA16\\pa16-pensionsavtal-bilaga1-20231231.pdf",
+        "page": ""
+      },
+      {
+        "content_preview": "Fr.o.m. 1 januari 2008 gäller att de kvinnor som har haft rätt till ålderspension en- ligt motsvarande i övergångsbestämmelserna till PAF angivna kriterier och deras tillämpning och de män som uppfyll...",
+        "agreement": "PA16",
+        "source": "PA16\\pa16-pensionsavtal-bilaga1-20231231.pdf",
+        "page": ""
+      },
+      {
+        "content_preview": "Se även förhandlingsprotokoll 2007-11-07 RALS 2007-2010 samt för- handlingsprotokoll 2010-10-25 och 2023-09-30 till RALS-T mellan Ar- betsgivarverket och Saco-S, förhandlingsprotokoll 2016-02-23 mella...",
+        "agreement": "PA16",
+        "source": "PA16\\pa16-pensionsavtal-bilaga1-20231231.pdf",
+        "page": ""
+      },
+      {
+        "content_preview": "Arbetstagaren ges möjlighet att själv välja tjänstepensionsförsäkring för individu- ell ålderspension inom de av parterna fastställda ramarna samt de vid varje tid- punkt gällande anslutningsvillkoren...",
+        "agreement": "PA16",
+        "source": "PA16\\pa16-pensionsavtal-bilaga1-20231231.pdf",
+        "page": ""
+      },
+      {
+        "content_preview": "1938 eller senare vilka omfattas av pensionsavtalet PA 74.",
+        "agreement": "PA16",
+        "source": "PA16\\pa16-pensionsavtal-bilaga1-20231231.pdf",
+        "page": ""
+      }
+    ]
+  }
+]
